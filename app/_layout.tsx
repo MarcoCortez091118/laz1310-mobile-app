@@ -17,21 +17,24 @@ import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { MiniPlayer } from '../src/components/MiniPlayer';
+import { AuthProvider } from '../src/features/auth/AuthProvider';
 import { RadioProvider } from '../src/features/radio/RadioProvider';
 import { useRadio } from '../src/features/radio/useRadio';
-import { colors } from '../src/theme/tokens';
+import { ThemeProvider, useAppTheme } from '../src/theme/ThemeProvider';
 
 void SplashScreen.preventAutoHideAsync();
 
 function AppNavigator() {
   const pathname = usePathname();
   const { hasStarted } = useRadio();
+  const { colors, preference } = useAppTheme();
 
   const showMiniPlayer =
     hasStarted && pathname !== '/' && pathname !== '/radio';
 
   return (
-    <View style={styles.app}>
+    <View style={[styles.app, { backgroundColor: colors.black }]}> 
+      <StatusBar style={preference === 'dark' ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
           animation: 'fade',
@@ -67,17 +70,19 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <RadioProvider>
-        <StatusBar style="light" />
-        <AppNavigator />
-      </RadioProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <RadioProvider>
+            <AppNavigator />
+          </RadioProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
   app: {
-    backgroundColor: colors.black,
     flex: 1,
   },
 });

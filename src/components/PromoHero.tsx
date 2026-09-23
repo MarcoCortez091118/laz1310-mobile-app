@@ -1,19 +1,42 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, fonts, radii, spacing } from '../theme/tokens';
+import { useAppTheme } from '../theme/ThemeProvider';
+import { fonts, radii, spacing } from '../theme/tokens';
 
-export function PromoHero() {
+interface PromoHeroProps {
+  onPress?: () => void;
+}
+
+export function PromoHero({ onPress }: PromoHeroProps) {
+  const { colors } = useAppTheme();
+
   return (
-    <Pressable style={styles.container}>
-      <View style={styles.glow} />
-      <View style={styles.diagonal} />
-      <Text style={styles.eyebrow}>★ EVENTO DESTACADO</Text>
-      <Text style={styles.title}>TARDEADA{String.fromCharCode(10)}BAILE</Text>
-      <View style={styles.cta}>
-        <Text style={styles.ctaText}>MÁS INFORMACIÓN</Text>
+    <Pressable
+      accessibilityLabel="Abrir dinámicas"
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.container,
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+          opacity: pressed && onPress ? 0.84 : 1,
+        },
+      ]}
+    >
+      <View style={[styles.glow, { backgroundColor: colors.red }]} />
+      <View style={[styles.diagonal, { backgroundColor: colors.red }]} />
+      <Text style={[styles.eyebrow, { color: colors.red }]}>
+        ★ DINÁMICA DESTACADA
+      </Text>
+      <Text style={[styles.title, { color: colors.white }]}>
+        PARTICIPA{String.fromCharCode(10)}CON LA Z
+      </Text>
+      <View style={[styles.cta, { backgroundColor: colors.red }]}> 
+        <Text style={styles.ctaText}>VER DINÁMICAS</Text>
       </View>
-      <View style={styles.badge}>
-        <Text style={styles.badgeText}>CAMPAÑA</Text>
+      <View style={[styles.badge, { backgroundColor: colors.red }]}> 
+        <Text style={styles.badgeText}>ACTIVA</Text>
       </View>
     </Pressable>
   );
@@ -21,8 +44,6 @@ export function PromoHero() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.black,
-    borderColor: colors.border,
     borderRadius: radii.md,
     borderWidth: 1,
     height: 224,
@@ -30,7 +51,6 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   glow: {
-    backgroundColor: colors.red,
     borderRadius: 180,
     height: 280,
     opacity: 0.18,
@@ -40,7 +60,6 @@ const styles = StyleSheet.create({
     width: 280,
   },
   diagonal: {
-    backgroundColor: colors.red,
     height: 360,
     opacity: 0.82,
     position: 'absolute',
@@ -50,13 +69,11 @@ const styles = StyleSheet.create({
     width: 78,
   },
   eyebrow: {
-    color: colors.red,
     fontFamily: fonts.bodySemiBold,
     fontSize: 11,
     letterSpacing: 1.2,
   },
   title: {
-    color: colors.white,
     fontFamily: fonts.displayBlack,
     fontSize: 40,
     lineHeight: 39,
@@ -64,19 +81,17 @@ const styles = StyleSheet.create({
   },
   cta: {
     alignSelf: 'flex-start',
-    backgroundColor: colors.red,
     borderRadius: 10,
     marginTop: 18,
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
   ctaText: {
-    color: colors.white,
+    color: '#FEFEFE',
     fontFamily: fonts.bodyBold,
     fontSize: 12,
   },
   badge: {
-    backgroundColor: colors.red,
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -85,7 +100,7 @@ const styles = StyleSheet.create({
     top: 14,
   },
   badgeText: {
-    color: colors.white,
+    color: '#FEFEFE',
     fontFamily: fonts.bodyBold,
     fontSize: 10,
   },

@@ -7,7 +7,8 @@ import {
 } from 'react-native';
 
 import { useRadio } from '../features/radio/useRadio';
-import { colors, fonts, radii, spacing } from '../theme/tokens';
+import { useAppTheme } from '../theme/ThemeProvider';
+import { fonts, radii, spacing } from '../theme/tokens';
 import { PlayPauseButton } from './PlayPauseButton';
 import { VinylArtwork } from './VinylArtwork';
 
@@ -18,6 +19,7 @@ interface MiniPlayerProps {
 export function MiniPlayer({ visible }: MiniPlayerProps) {
   const router = useRouter();
   const { state, toggle } = useRadio();
+  const { colors } = useAppTheme();
 
   if (!visible) {
     return null;
@@ -31,18 +33,31 @@ export function MiniPlayer({ visible }: MiniPlayerProps) {
         : 'play';
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.burgundy,
+          borderColor: colors.border,
+        },
+      ]}
+    >
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Abrir reproductor de LA Z 1310"
         onPress={() => router.push('/radio')}
         style={styles.content}
       >
-        <View style={styles.accent} />
+        <View style={[styles.accent, { backgroundColor: colors.red }]} />
         <VinylArtwork size={48} playing={state === 'playing'} />
         <View style={styles.copy}>
-          <Text style={styles.title}>LA Z 1310</Text>
-          <Text numberOfLines={1} style={styles.subtitle}>
+          <Text style={[styles.title, { color: colors.white }]}>
+            LA Z 1310
+          </Text>
+          <Text
+            numberOfLines={1}
+            style={[styles.subtitle, { color: colors.red }]}
+          >
             {state === 'reconnecting'
               ? 'Reconectando transmisión…'
               : 'LA Z Detroit · EN VIVO'}
@@ -62,8 +77,6 @@ export function MiniPlayer({ visible }: MiniPlayerProps) {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    backgroundColor: colors.burgundy,
-    borderColor: colors.border,
     borderRadius: radii.md,
     borderWidth: 1,
     bottom: 88,
@@ -83,7 +96,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   accent: {
-    backgroundColor: colors.red,
     borderRadius: radii.round,
     height: 48,
     width: 3,
@@ -92,12 +104,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    color: colors.white,
     fontFamily: fonts.bodyBold,
     fontSize: 15,
   },
   subtitle: {
-    color: colors.red,
     fontFamily: fonts.body,
     fontSize: 11,
     marginTop: 2,
