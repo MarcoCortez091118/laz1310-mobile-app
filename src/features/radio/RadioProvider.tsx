@@ -28,7 +28,11 @@ const RECONNECT_DELAYS_MS = [1_000, 2_000, 4_000, 8_000] as const;
  * Foreground playback is still useful there, but lock-screen controls and
  * sustained background playback require a custom development/native build.
  */
-const isExpoGo = Constants.expoGoConfig != null;
+// appOwnership is deprecated for general environment detection, but it is
+// intentionally used here because it uniquely reports "expo" for Expo Go and
+// remains null in our custom development/standalone builds. executionEnvironment
+// cannot distinguish Expo Go from expo-dev-client because both are StoreClient.
+const isExpoGo = Constants.appOwnership === 'expo';
 
 export const RadioContext = createContext<RadioContextValue | null>(null);
 
