@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useRouter } from 'expo-router';
 import {
   ScrollView,
   StyleSheet,
@@ -13,13 +14,21 @@ import { LiveBadge } from '../src/components/LiveBadge';
 import { LiveRadioCard } from '../src/components/LiveRadioCard';
 import { ProgramCard } from '../src/components/ProgramCard';
 import { PromoHero } from '../src/components/PromoHero';
-import { colors, fonts, spacing } from '../src/theme/tokens';
+import { WeatherHeaderBadge } from '../src/components/WeatherHeaderBadge';
+import { useAppTheme } from '../src/theme/ThemeProvider';
+import { fonts, spacing } from '../src/theme/tokens';
 
 const categories = ['Todo', 'Shows', 'Noticias', 'Eventos', 'Música'] as const;
 
 export default function HomeScreen() {
+  const router = useRouter();
+  const { colors } = useAppTheme();
+
   return (
-    <SafeAreaView edges={['top']} style={styles.safe}>
+    <SafeAreaView
+      edges={['top']}
+      style={[styles.safe, { backgroundColor: colors.black }]}
+    >
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -27,12 +36,20 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View style={styles.brandBlock}>
             <BrandLogo width={118} />
-            <Text style={styles.location}>DETROIT, MI</Text>
+            <Text style={[styles.location, { color: colors.gray }]}>
+              DETROIT, MI
+            </Text>
           </View>
 
           <View style={styles.headerActions}>
             <LiveBadge compact />
-            <View style={styles.bell}>
+            <WeatherHeaderBadge />
+            <View
+              style={[
+                styles.bell,
+                { backgroundColor: colors.surfaceElevated },
+              ]}
+            >
               <Ionicons
                 color={colors.white}
                 name="notifications-outline"
@@ -52,12 +69,18 @@ export default function HomeScreen() {
               key={category}
               style={[
                 styles.category,
-                index === 0 && styles.categoryActive,
+                {
+                  backgroundColor:
+                    index === 0
+                      ? colors.red
+                      : colors.surfaceElevated,
+                },
               ]}
             >
               <Text
                 style={[
                   styles.categoryText,
+                  { color: index === 0 ? '#FEFEFE' : colors.white },
                   index === 0 && styles.categoryTextActive,
                 ]}
               >
@@ -67,12 +90,16 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
 
-        <PromoHero />
+        <PromoHero onPress={() => router.push('/dynamics')} />
         <LiveRadioCard />
 
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>PROGRAMAS</Text>
-          <Text style={styles.seeAll}>Ver todos →</Text>
+          <Text style={[styles.sectionTitle, { color: colors.white }]}>
+            PROGRAMAS
+          </Text>
+          <Text style={[styles.seeAll, { color: colors.red }]}>
+            Ver todos →
+          </Text>
         </View>
 
         <View style={styles.programs}>
@@ -94,7 +121,6 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   safe: {
-    backgroundColor: colors.black,
     flex: 1,
   },
   content: {
@@ -113,7 +139,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   location: {
-    color: colors.gray,
     fontFamily: fonts.body,
     fontSize: 9,
     letterSpacing: 1.5,
@@ -127,7 +152,6 @@ const styles = StyleSheet.create({
   },
   bell: {
     alignItems: 'center',
-    backgroundColor: colors.surfaceElevated,
     borderRadius: 20,
     height: 36,
     justifyContent: 'center',
@@ -138,17 +162,12 @@ const styles = StyleSheet.create({
     paddingRight: spacing.md,
   },
   category: {
-    backgroundColor: colors.surfaceElevated,
     borderRadius: 999,
     minWidth: 88,
     paddingHorizontal: spacing.md,
     paddingVertical: 11,
   },
-  categoryActive: {
-    backgroundColor: colors.red,
-  },
   categoryText: {
-    color: colors.white,
     fontFamily: fonts.bodySemiBold,
     fontSize: 14,
     textAlign: 'center',
@@ -162,12 +181,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   sectionTitle: {
-    color: colors.white,
     fontFamily: fonts.displayExtraBold,
     fontSize: 30,
   },
   seeAll: {
-    color: colors.red,
     fontFamily: fonts.bodySemiBold,
     fontSize: 12,
   },

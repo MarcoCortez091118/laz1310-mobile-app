@@ -8,7 +8,8 @@ import {
   View,
 } from 'react-native';
 
-import { colors, fonts, spacing } from '../theme/tokens';
+import { useAppTheme } from '../theme/ThemeProvider';
+import { fonts, spacing } from '../theme/tokens';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -16,28 +17,52 @@ const items: Array<{
   label: string;
   icon: IoniconName;
   iconActive: IoniconName;
-  route?: '/home' | '/radio';
+  route?: '/home' | '/radio' | '/explore' | '/profile';
 }> = [
   { label: 'Inicio', icon: 'home-outline', iconActive: 'home', route: '/home' },
   { label: 'Noticias', icon: 'newspaper-outline', iconActive: 'newspaper' },
   { label: 'Radio', icon: 'radio-outline', iconActive: 'radio', route: '/radio' },
-  { label: 'Explorar', icon: 'compass-outline', iconActive: 'compass' },
-  { label: 'Perfil', icon: 'person-outline', iconActive: 'person' },
+  { label: 'Explorar', icon: 'compass-outline', iconActive: 'compass', route: '/explore' },
+  { label: 'Perfil', icon: 'person-outline', iconActive: 'person', route: '/profile' },
 ];
+
+function isActive(pathname: string, route?: string) {
+  if (!route) {
+    return false;
+  }
+
+  if (route === '/home') {
+    return pathname === '/home';
+  }
+
+  if (route === '/explore') {
+    return pathname === '/explore' || pathname.startsWith('/dynamics');
+  }
+
+  if (route === '/profile') {
+    return pathname === '/profile' || pathname.startsWith('/profile/');
+  }
+
+  return pathname === route;
+}
 
 export function BottomNavigation() {
   const router = useRouter();
   const pathname = usePathname();
+  const { colors } = useAppTheme();
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.black,
+          borderTopColor: colors.border,
+        },
+      ]}
+    >
       {items.map((item) => {
-        const active =
-          item.route === '/home'
-            ? pathname === '/home'
-            : item.route === '/radio'
-              ? pathname === '/radio'
-              : false;
+        const active = isActive(pathname, item.route);
         const isRadio = item.label === 'Radio';
 
         return (
@@ -50,11 +75,20 @@ export function BottomNavigation() {
               { opacity: pressed && item.route ? 0.72 : 1 },
             ]}
           >
-            <View style={[styles.iconWrap, isRadio && styles.radio]}>
+            <View
+              style={[
+                styles.iconWrap,
+                isRadio && styles.radio,
+                isRadio && {
+                  backgroundColor: colors.red,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
               <Ionicons
                 color={
                   isRadio
-                    ? colors.white
+                    ? '#FEFEFE'
                     : active
                       ? colors.red
                       : colors.gray
@@ -66,6 +100,7 @@ export function BottomNavigation() {
             <Text
               style={[
                 styles.label,
+                { color: active ? colors.red : colors.gray },
                 active && styles.activeLabel,
               ]}
             >
@@ -81,8 +116,6 @@ export function BottomNavigation() {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    backgroundColor: colors.black,
-    borderTopColor: colors.border,
     borderTopWidth: 1,
     bottom: 0,
     flexDirection: 'row',
@@ -105,8 +138,6 @@ const styles = StyleSheet.create({
     width: 44,
   },
   radio: {
-    backgroundColor: colors.red,
-    borderColor: 'rgba(255,255,255,0.18)',
     borderRadius: 28,
     borderWidth: 1,
     height: 52,
@@ -114,12 +145,10 @@ const styles = StyleSheet.create({
     width: 52,
   },
   label: {
-    color: colors.gray,
     fontFamily: fonts.body,
     fontSize: 10,
   },
   activeLabel: {
-    color: colors.red,
     fontFamily: fonts.bodySemiBold,
   },
 });

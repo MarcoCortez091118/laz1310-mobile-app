@@ -7,7 +7,7 @@ import {
   ViewStyle,
 } from 'react-native';
 
-import { colors } from '../theme/tokens';
+import { useAppTheme } from '../theme/ThemeProvider';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -27,11 +27,13 @@ export function IconButton({
   onPress,
   size = 42,
   iconSize = 21,
-  backgroundColor = colors.surfaceElevated,
-  iconColor = colors.white,
+  backgroundColor,
+  iconColor,
   style,
   accessibilityLabel,
 }: IconButtonProps) {
+  const { colors } = useAppTheme();
+
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel}
@@ -43,13 +45,17 @@ export function IconButton({
           width: size,
           height: size,
           borderRadius: size / 2,
-          backgroundColor,
+          backgroundColor: backgroundColor ?? colors.surfaceElevated,
           opacity: pressed ? 0.72 : 1,
         },
         style,
       ]}
     >
-      <Ionicons name={name} color={iconColor} size={iconSize} />
+      <Ionicons
+        name={name}
+        color={iconColor ?? colors.white}
+        size={iconSize}
+      />
     </Pressable>
   );
 }

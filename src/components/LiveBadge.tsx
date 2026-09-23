@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, fonts, radii, spacing } from '../theme/tokens';
+import { useAppTheme } from '../theme/ThemeProvider';
+import { fonts, radii, spacing } from '../theme/tokens';
 
 interface LiveBadgeProps {
   live?: boolean;
@@ -11,24 +12,23 @@ export function LiveBadge({
   live = true,
   compact = false,
 }: LiveBadgeProps) {
+  const { colors } = useAppTheme();
+  const stateColor = live ? colors.red : colors.gray;
+
   return (
     <View
       style={[
         styles.container,
         compact && styles.containerCompact,
+        { backgroundColor: colors.surfaceElevated },
       ]}
     >
-      <View
-        style={[
-          styles.dot,
-          { backgroundColor: live ? colors.red : colors.gray },
-        ]}
-      />
+      <View style={[styles.dot, { backgroundColor: stateColor }]} />
       <Text
         style={[
           styles.label,
           compact && styles.labelCompact,
-          { color: live ? colors.red : colors.gray },
+          { color: stateColor },
         ]}
       >
         {live ? 'EN VIVO' : 'FUERA DEL AIRE'}
@@ -41,7 +41,6 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     alignSelf: 'flex-start',
-    backgroundColor: colors.surfaceElevated,
     borderRadius: radii.round,
     flexDirection: 'row',
     gap: spacing.xs,

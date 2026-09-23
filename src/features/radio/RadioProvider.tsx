@@ -65,13 +65,17 @@ export function RadioProvider({ children }: PropsWithChildren) {
     return () => {
       if (retryTimerRef.current) {
         clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
       }
 
-      if (!isExpoGo) {
-        player.clearLockScreenControls();
-      }
+      // useAudioPlayer owns the native AudioPlayer lifecycle and releases the
+      // SharedObject during unmount. Calling a player method from a sibling
+      // cleanup can race with that release on Android and throw
+      // "Cannot use shared object that was already released".
+      // The native player release is responsible for disposing its media
+      // session / lock-screen integration.
     };
-  }, [player]);
+  }, []);
 
   const activateLockScreen = useCallback(() => {
     if (isExpoGo) {

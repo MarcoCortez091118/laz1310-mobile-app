@@ -1,7 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, fonts, radii, spacing } from '../theme/tokens';
+import { useAppTheme } from '../theme/ThemeProvider';
+import { fonts, radii, spacing } from '../theme/tokens';
 
 interface ProgramCardProps {
   title: string;
@@ -12,24 +13,40 @@ export function ProgramCard({
   title,
   schedule,
 }: ProgramCardProps) {
+  const { colors } = useAppTheme();
+
   return (
-    <View style={styles.card}>
-      <View style={styles.artwork}>
-        <View style={styles.glow} />
-        <View style={styles.diagonal} />
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: colors.burgundy,
+          borderColor: colors.border,
+        },
+      ]}
+    >
+      <View style={[styles.artwork, { backgroundColor: colors.surface }]}>
+        <View style={[styles.glow, { backgroundColor: colors.red }]} />
+        <View style={[styles.diagonal, { backgroundColor: colors.red }]} />
         <Ionicons
           color={colors.white}
           name="mic"
           size={30}
           style={styles.mic}
         />
-        <Text style={styles.mark}>LA Z</Text>
+        <Text style={[styles.mark, { color: colors.white }]}>LA Z</Text>
       </View>
       <View style={styles.copy}>
-        <Text numberOfLines={2} style={styles.title}>
+        <Text
+          numberOfLines={2}
+          style={[styles.title, { color: colors.white }]}
+        >
           {title}
         </Text>
-        <Text numberOfLines={2} style={styles.schedule}>
+        <Text
+          numberOfLines={2}
+          style={[styles.schedule, { color: colors.red }]}
+        >
           {schedule}
         </Text>
       </View>
@@ -39,8 +56,6 @@ export function ProgramCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.burgundy,
-    borderColor: colors.border,
     borderRadius: radii.md,
     borderWidth: 1,
     flex: 1,
@@ -48,14 +63,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   artwork: {
-    backgroundColor: colors.surface,
     height: 132,
     justifyContent: 'flex-end',
     overflow: 'hidden',
     padding: spacing.md,
   },
   glow: {
-    backgroundColor: colors.red,
     borderRadius: 90,
     height: 150,
     opacity: 0.13,
@@ -65,7 +78,6 @@ const styles = StyleSheet.create({
     width: 150,
   },
   diagonal: {
-    backgroundColor: colors.red,
     height: 190,
     opacity: 0.88,
     position: 'absolute',
@@ -79,7 +91,6 @@ const styles = StyleSheet.create({
     opacity: 0.92,
   },
   mark: {
-    color: colors.white,
     fontFamily: fonts.displayBold,
     fontSize: 24,
   },
@@ -88,14 +99,12 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
   },
   title: {
-    color: colors.white,
     fontFamily: fonts.displayBold,
     fontSize: 17,
     lineHeight: 18,
     minHeight: 38,
   },
   schedule: {
-    color: colors.red,
     fontFamily: fonts.body,
     fontSize: 10,
     lineHeight: 14,
