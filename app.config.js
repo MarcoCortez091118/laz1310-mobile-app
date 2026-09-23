@@ -7,12 +7,17 @@ module.exports = ({ config }) => ({
   version: '0.1.0',
   orientation: 'portrait',
   userInterfaceStyle: 'dark',
+  icon: './assets/brand/app-icon.png',
   ios: {
     supportsTablet: false,
     bundleIdentifier: 'com.neuromarket.laz1310',
   },
   android: {
     package: 'com.neuromarket.laz1310',
+    adaptiveIcon: {
+      foregroundImage: './assets/brand/adaptive-icon-foreground.png',
+      backgroundColor: '#050101',
+    },
   },
   plugins: [
     'expo-router',
