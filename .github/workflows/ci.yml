@@ -1,0 +1,52 @@
+name: NeuroMarket Mobile CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+      - feat/**
+      - feature/**
+      - fix/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate mobile foundation
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Validate Expo dependency compatibility
+        run: npx expo install --check
+
+      - name: Expo Doctor
+        run: npx expo-doctor
+
+      - name: TypeScript
+        run: npm run typecheck
+
+      - name: Export web smoke build
+        run: npx expo export --platform web --output-dir dist-ci
+
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=critical
