@@ -1,6 +1,4 @@
-import type { ConfigContext, ExpoConfig } from 'expo/config';
-
-export default ({ config }: ConfigContext): ExpoConfig => ({
+module.exports = ({ config }) => ({
   ...config,
   name: 'LA Z 1310',
   slug: 'laz1310-mobile-app',
