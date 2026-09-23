@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import {
   setAudioModeAsync,
   useAudioPlayer,
@@ -22,6 +23,13 @@ import type {
 const MAX_RECONNECT_ATTEMPTS = 4;
 const RECONNECT_DELAYS_MS = [1_000, 2_000, 4_000, 8_000] as const;
 
+/**
+ * Expo Go cannot apply this project's native expo-audio config plugin.
+ * Foreground playback is still useful there, but lock-screen controls and
+ * sustained background playback require a custom development/native build.
+ */
+const isExpoGo = Constants.expoGoConfig != null;
+
 export const RadioContext = createContext<RadioContextValue | null>(null);
 
 export function RadioProvider({ children }: PropsWithChildren) {
@@ -45,7 +53,7 @@ export function RadioProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     void setAudioModeAsync({
       playsInSilentMode: true,
-      shouldPlayInBackground: true,
+      shouldPlayInBackground: !isExpoGo,
       interruptionMode: 'doNotMix',
     });
 
@@ -53,11 +61,18 @@ export function RadioProvider({ children }: PropsWithChildren) {
       if (retryTimerRef.current) {
         clearTimeout(retryTimerRef.current);
       }
-      player.clearLockScreenControls();
+
+      if (!isExpoGo) {
+        player.clearLockScreenControls();
+      }
     };
   }, [player]);
 
   const activateLockScreen = useCallback(() => {
+    if (isExpoGo) {
+      return;
+    }
+
     player.setActiveForLockScreen(
       true,
       {
@@ -119,6 +134,7 @@ export function RadioProvider({ children }: PropsWithChildren) {
       pause();
       return;
     }
+
     play();
   }, [desiredPlayback, pause, play, status.playing]);
 
@@ -141,6 +157,7 @@ export function RadioProvider({ children }: PropsWithChildren) {
       }
 
       const attempt = retryAttemptRef.current;
+
       if (attempt >= MAX_RECONNECT_ATTEMPTS) {
         setManualState('error');
         return;
@@ -160,6 +177,7 @@ export function RadioProvider({ children }: PropsWithChildren) {
         activateLockScreen();
         player.play();
       }, delay);
+
       return;
     }
 
