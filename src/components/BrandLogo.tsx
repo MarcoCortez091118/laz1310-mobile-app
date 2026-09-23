@@ -6,6 +6,8 @@ import {
   ViewStyle,
 } from 'react-native';
 
+import { useAppTheme } from '../theme/ThemeProvider';
+
 interface BrandLogoProps {
   variant?: 'negative' | 'positive';
   width?: number;
@@ -18,10 +20,14 @@ const sources = {
 };
 
 export function BrandLogo({
-  variant = 'negative',
+  variant,
   width = 118,
   style,
 }: BrandLogoProps) {
+  const { preference } = useAppTheme();
+  const resolvedVariant =
+    variant ?? (preference === 'dark' ? 'negative' : 'positive');
+
   const imageStyle: ImageStyle = {
     width,
     height: width * 0.6,
@@ -30,7 +36,7 @@ export function BrandLogo({
 
   return (
     <View style={style}>
-      <Image source={sources[variant]} style={imageStyle} />
+      <Image source={sources[resolvedVariant]} style={imageStyle} />
     </View>
   );
 }

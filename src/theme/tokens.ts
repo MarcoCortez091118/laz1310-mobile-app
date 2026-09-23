@@ -1,4 +1,4 @@
-export const colors = {
+export const darkColors = {
   black: '#050101',
   red: '#D30A12',
   burgundy: '#2F0908',
@@ -9,6 +9,34 @@ export const colors = {
   border: 'rgba(254,254,254,0.08)',
   muted: '#96929A',
 } as const;
+
+export const lightColors = {
+  black: '#F8F7F7',
+  red: '#D30A12',
+  burgundy: '#FFFFFF',
+  white: '#111012',
+  gray: '#68636B',
+  surface: '#FFFFFF',
+  surfaceElevated: '#F1ECEC',
+  border: 'rgba(17,16,18,0.10)',
+  muted: '#77717A',
+} as const;
+
+export type ThemePreference = 'dark' | 'light';
+export type ThemeColors = {
+  [K in keyof typeof darkColors]: string;
+};
+
+export const themeColors: Record<ThemePreference, ThemeColors> = {
+  dark: darkColors,
+  light: lightColors,
+};
+
+/**
+ * Backward-compatible dark palette for components not yet migrated to
+ * useAppTheme. New UI should consume the theme context instead.
+ */
+export const colors = darkColors;
 
 export const spacing = {
   xxs: 4,
