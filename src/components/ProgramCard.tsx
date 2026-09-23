@@ -1,6 +1,7 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, radii, spacing } from '../theme/tokens';
+import { colors, fonts, radii, spacing } from '../theme/tokens';
 
 interface ProgramCardProps {
   title: string;
@@ -14,14 +15,23 @@ export function ProgramCard({
   return (
     <View style={styles.card}>
       <View style={styles.artwork}>
+        <View style={styles.glow} />
         <View style={styles.diagonal} />
+        <Ionicons
+          color={colors.white}
+          name="mic"
+          size={30}
+          style={styles.mic}
+        />
         <Text style={styles.mark}>LA Z</Text>
       </View>
       <View style={styles.copy}>
         <Text numberOfLines={2} style={styles.title}>
           {title}
         </Text>
-        <Text style={styles.schedule}>{schedule}</Text>
+        <Text numberOfLines={2} style={styles.schedule}>
+          {schedule}
+        </Text>
       </View>
     </View>
   );
@@ -30,31 +40,48 @@ export function ProgramCard({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.burgundy,
+    borderColor: colors.border,
     borderRadius: radii.md,
+    borderWidth: 1,
     flex: 1,
     minHeight: 230,
     overflow: 'hidden',
   },
   artwork: {
-    backgroundColor: colors.black,
+    backgroundColor: colors.surface,
     height: 132,
     justifyContent: 'flex-end',
     overflow: 'hidden',
     padding: spacing.md,
   },
+  glow: {
+    backgroundColor: colors.red,
+    borderRadius: 90,
+    height: 150,
+    opacity: 0.13,
+    position: 'absolute',
+    right: -45,
+    top: -40,
+    width: 150,
+  },
   diagonal: {
     backgroundColor: colors.red,
-    height: 220,
+    height: 190,
+    opacity: 0.88,
     position: 'absolute',
-    right: -18,
-    top: -48,
+    right: 0,
+    top: -62,
     transform: [{ rotate: '28deg' }],
-    width: 80,
+    width: 24,
+  },
+  mic: {
+    marginBottom: 8,
+    opacity: 0.92,
   },
   mark: {
     color: colors.white,
-    fontSize: 26,
-    fontWeight: '900',
+    fontFamily: fonts.displayBold,
+    fontSize: 24,
   },
   copy: {
     gap: 5,
@@ -62,12 +89,15 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.white,
-    fontSize: 16,
-    fontWeight: '900',
+    fontFamily: fonts.displayBold,
+    fontSize: 17,
+    lineHeight: 18,
     minHeight: 38,
   },
   schedule: {
     color: colors.red,
+    fontFamily: fonts.body,
     fontSize: 10,
+    lineHeight: 14,
   },
 });

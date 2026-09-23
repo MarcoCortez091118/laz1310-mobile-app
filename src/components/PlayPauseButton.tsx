@@ -1,8 +1,8 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
-  Text,
 } from 'react-native';
 
 import { colors } from '../theme/tokens';
@@ -19,6 +19,7 @@ export function PlayPauseButton({
   onPress,
 }: PlayPauseButtonProps) {
   const dimension = size === 'large' ? 72 : 44;
+  const iconSize = size === 'large' ? 31 : 21;
 
   return (
     <Pressable
@@ -33,6 +34,7 @@ export function PlayPauseButton({
         {
           height: dimension,
           width: dimension,
+          borderRadius: dimension / 2,
           opacity: pressed ? 0.78 : 1,
         },
       ]}
@@ -40,14 +42,12 @@ export function PlayPauseButton({
       {state === 'loading' ? (
         <ActivityIndicator color={colors.white} />
       ) : (
-        <Text
-          style={[
-            styles.icon,
-            { fontSize: size === 'large' ? 30 : 20 },
-          ]}
-        >
-          {state === 'pause' ? 'Ⅱ' : '▶'}
-        </Text>
+        <Ionicons
+          color={colors.white}
+          name={state === 'pause' ? 'pause' : 'play'}
+          size={iconSize}
+          style={state === 'play' ? styles.playOffset : undefined}
+        />
       )}
     </Pressable>
   );
@@ -57,11 +57,9 @@ const styles = StyleSheet.create({
   button: {
     alignItems: 'center',
     backgroundColor: colors.red,
-    borderRadius: 999,
     justifyContent: 'center',
   },
-  icon: {
-    color: colors.white,
-    fontWeight: '900',
+  playOffset: {
+    marginLeft: 3,
   },
 });

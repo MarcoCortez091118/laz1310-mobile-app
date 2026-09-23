@@ -7,9 +7,9 @@ import {
 } from 'react-native';
 
 import { BrandLogo } from '../src/components/BrandLogo';
-import { colors } from '../src/theme/tokens';
+import { colors, fonts } from '../src/theme/tokens';
 
-export default function SplashScreen() {
+export default function SplashRoute() {
   const router = useRouter();
 
   useEffect(() => {
@@ -25,8 +25,9 @@ export default function SplashScreen() {
       <View style={[styles.ring, styles.ringLarge]} />
       <View style={[styles.ring, styles.ringMedium]} />
       <View style={[styles.ring, styles.ringSmall]} />
+
       <View style={styles.center}>
-        <BrandLogo width={170} />
+        <BrandLogo width={188} />
         <Text style={styles.city}>DETROIT, MI</Text>
         <Text style={styles.slogan}>MARCANDO TERRITORIO</Text>
       </View>
@@ -48,14 +49,15 @@ const styles = StyleSheet.create({
   },
   city: {
     color: colors.white,
+    fontFamily: fonts.bodySemiBold,
     fontSize: 12,
-    fontWeight: '700',
     letterSpacing: 2.6,
     marginTop: 20,
     opacity: 0.78,
   },
   slogan: {
     color: colors.red,
+    fontFamily: fonts.body,
     fontSize: 10,
     letterSpacing: 2.1,
     marginTop: 12,

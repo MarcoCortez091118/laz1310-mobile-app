@@ -26,3 +26,13 @@ export const radii = {
   lg: 24,
   round: 999,
 } as const;
+
+export const fonts = {
+  displayBold: 'BarlowCondensed_700Bold',
+  displayExtraBold: 'BarlowCondensed_800ExtraBold',
+  displayBlack: 'BarlowCondensed_900Black',
+  body: 'Outfit_400Regular',
+  bodyMedium: 'Outfit_500Medium',
+  bodySemiBold: 'Outfit_600SemiBold',
+  bodyBold: 'Outfit_700Bold',
+} as const;

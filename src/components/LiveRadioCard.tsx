@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 
 import { useRadio } from '../features/radio/useRadio';
-import { colors, radii, spacing } from '../theme/tokens';
+import { colors, fonts, radii, spacing } from '../theme/tokens';
 import { LiveBadge } from './LiveBadge';
 import { PlayPauseButton } from './PlayPauseButton';
 import { VinylArtwork } from './VinylArtwork';
@@ -34,31 +34,33 @@ export function LiveRadioCard() {
   };
 
   return (
-    <Pressable
-      onPress={() => router.push('/radio')}
-      style={styles.container}
-    >
-      <View style={styles.accent} />
-      <VinylArtwork size={58} playing={state === 'playing'} />
+    <View style={styles.container}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Abrir radio en vivo"
+        onPress={() => router.push('/radio')}
+        style={styles.content}
+      >
+        <View style={styles.accent} />
+        <VinylArtwork size={58} playing={state === 'playing'} />
 
-      <View style={styles.copy}>
-        <LiveBadge live={!error} />
-        <Text style={styles.title}>
-          {error ? 'RADIO NO DISPONIBLE' : 'ESCUCHA EN VIVO'}
-        </Text>
-        <Text style={styles.subtitle}>
-          {error ? 'Toca para reintentar' : 'LA Z 1310 · Detroit'}
-        </Text>
-      </View>
+        <View style={styles.copy}>
+          <LiveBadge compact live={!error} />
+          <Text style={styles.title}>
+            {error ? 'RADIO NO DISPONIBLE' : 'ESCUCHA EN VIVO'}
+          </Text>
+          <Text style={styles.subtitle}>
+            {error ? 'Toca para reintentar' : 'LA Z 1310 · Detroit'}
+          </Text>
+        </View>
+      </Pressable>
 
-      <View onStartShouldSetResponder={() => true}>
-        <PlayPauseButton
-          onPress={handlePrimaryPress}
-          size="compact"
-          state={loading ? 'loading' : state === 'playing' ? 'pause' : 'play'}
-        />
-      </View>
-    </Pressable>
+      <PlayPauseButton
+        onPress={handlePrimaryPress}
+        size="compact"
+        state={loading ? 'loading' : state === 'playing' ? 'pause' : 'play'}
+      />
+    </View>
   );
 }
 
@@ -66,11 +68,19 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     backgroundColor: colors.burgundy,
+    borderColor: colors.border,
     borderRadius: radii.md,
+    borderWidth: 1,
     flexDirection: 'row',
     gap: spacing.sm,
     minHeight: 96,
     padding: spacing.md,
+  },
+  content: {
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row',
+    gap: spacing.sm,
   },
   accent: {
     backgroundColor: colors.red,
@@ -84,12 +94,14 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.white,
-    fontSize: 20,
-    fontWeight: '900',
+    fontFamily: fonts.displayExtraBold,
+    fontSize: 21,
+    lineHeight: 22,
     marginTop: 2,
   },
   subtitle: {
     color: colors.muted,
+    fontFamily: fonts.body,
     fontSize: 11,
   },
 });
