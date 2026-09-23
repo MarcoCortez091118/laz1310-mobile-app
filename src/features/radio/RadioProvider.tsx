@@ -51,6 +51,7 @@ export function RadioProvider({ children }: PropsWithChildren) {
 
   const preparedRef = useRef(false);
   const hasPlayedRef = useRef(false);
+  const needsLiveEdgeRef = useRef(false);
   const retryAttemptRef = useRef(0);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -92,18 +93,27 @@ export function RadioProvider({ children }: PropsWithChildren) {
     );
   }, [player]);
 
-  const loadStream = useCallback(() => {
-    player.replace(RADIO_CONFIG.streamUrl);
-    preparedRef.current = true;
-  }, [player]);
+  const loadStream = useCallback(
+    (fresh = false) => {
+      const separator = RADIO_CONFIG.streamUrl.includes('?') ? '&' : '?';
+      const source = fresh
+        ? `${RADIO_CONFIG.streamUrl}${separator}t=${Date.now()}`
+        : RADIO_CONFIG.streamUrl;
+
+      player.replace(source);
+      preparedRef.current = true;
+    },
+    [player],
+  );
 
   const play = useCallback(() => {
     setDesiredPlayback(true);
     setHasStarted(true);
     setManualState(hasPlayedRef.current ? 'reconnecting' : 'connecting');
 
-    if (!preparedRef.current) {
-      loadStream();
+    if (!preparedRef.current || needsLiveEdgeRef.current) {
+      loadStream(needsLiveEdgeRef.current);
+      needsLiveEdgeRef.current = false;
     }
 
     activateLockScreen();
@@ -120,6 +130,11 @@ export function RadioProvider({ children }: PropsWithChildren) {
     }
 
     player.pause();
+
+    // A live broadcast must resume at the current live edge rather than from
+    // the player's buffered pause position.
+    needsLiveEdgeRef.current = true;
+
     setManualState(preparedRef.current ? 'paused' : 'idle');
   }, [player]);
 
@@ -128,7 +143,8 @@ export function RadioProvider({ children }: PropsWithChildren) {
     setDesiredPlayback(true);
     setHasStarted(true);
     setManualState('reconnecting');
-    loadStream();
+    needsLiveEdgeRef.current = false;
+    loadStream(true);
     activateLockScreen();
     player.play();
   }, [activateLockScreen, loadStream, player]);
@@ -177,7 +193,7 @@ export function RadioProvider({ children }: PropsWithChildren) {
       retryTimerRef.current = setTimeout(() => {
         retryTimerRef.current = null;
         retryAttemptRef.current += 1;
-        loadStream();
+        loadStream(true);
         activateLockScreen();
         player.play();
       }, delay);
