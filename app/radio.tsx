@@ -15,7 +15,8 @@ import { PlayPauseButton } from '../src/components/PlayPauseButton';
 import { VinylArtwork } from '../src/components/VinylArtwork';
 import { RADIO_CONFIG } from '../src/config/radio';
 import { useRadio } from '../src/features/radio/useRadio';
-import { colors, fonts, radii, spacing } from '../src/theme/tokens';
+import { useAppTheme } from '../src/theme/ThemeProvider';
+import { fonts, radii, spacing } from '../src/theme/tokens';
 
 function formatDetroitTime(date: Date) {
   return new Intl.DateTimeFormat('es-MX', {
@@ -28,6 +29,7 @@ function formatDetroitTime(date: Date) {
 export default function RadioScreen() {
   const router = useRouter();
   const { state, error, toggle, retry } = useRadio();
+  const { colors } = useAppTheme();
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -42,11 +44,15 @@ export default function RadioScreen() {
     loading ? 'loading' : state === 'playing' ? 'pause' : 'play';
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.safe}>
+    <SafeAreaView
+      edges={['top', 'bottom']}
+      style={[styles.safe, { backgroundColor: colors.burgundy }]}
+    >
       <View style={styles.topBar}>
         <IconButton
           accessibilityLabel="Volver"
           backgroundColor="transparent"
+          iconColor={colors.white}
           iconSize={28}
           name="chevron-back"
           onPress={() => router.back()}
@@ -54,13 +60,18 @@ export default function RadioScreen() {
         />
 
         <View style={styles.stationHeader}>
-          <Text style={styles.station}>LA Z 1310 AM</Text>
-          <Text style={styles.city}>DETROIT, MI</Text>
+          <Text style={[styles.station, { color: colors.white }]}>
+            LA Z 1310 AM
+          </Text>
+          <Text style={[styles.city, { color: colors.gray }]}>
+            DETROIT, MI
+          </Text>
         </View>
 
         <IconButton
           accessibilityLabel="Más opciones"
           backgroundColor="transparent"
+          iconColor={colors.white}
           iconSize={24}
           name="ellipsis-horizontal"
           size={40}
@@ -73,8 +84,12 @@ export default function RadioScreen() {
 
       <View style={styles.metaRow}>
         <View style={styles.metaCopy}>
-          <Text style={styles.title}>LA Z DETROIT</Text>
-          <Text style={styles.slogan}>Marcando territorio</Text>
+          <Text style={[styles.title, { color: colors.white }]}>
+            LA Z DETROIT
+          </Text>
+          <Text style={[styles.slogan, { color: colors.muted }]}>
+            Marcando territorio
+          </Text>
         </View>
 
         <View style={styles.actions}>
@@ -91,7 +106,7 @@ export default function RadioScreen() {
 
       <View style={styles.liveRow}>
         <LiveBadge live={state !== 'error'} />
-        <Text style={styles.time}>
+        <Text style={[styles.time, { color: colors.gray }]}>
           HORA DETROIT · {detroitTime}
         </Text>
       </View>
@@ -117,24 +132,47 @@ export default function RadioScreen() {
         />
       </View>
 
-      <View style={styles.infoCard}>
-        <Text style={styles.eyebrow}>AHORA AL AIRE</Text>
-        <Text style={styles.nowTitle}>
+      <View
+        style={[
+          styles.infoCard,
+          {
+            backgroundColor: colors.surfaceElevated,
+            borderColor: colors.border,
+          },
+        ]}
+      >
+        <Text style={[styles.eyebrow, { color: colors.red }]}>
+          AHORA AL AIRE
+        </Text>
+        <Text style={[styles.nowTitle, { color: colors.white }]}>
           {state === 'error'
             ? 'TRANSMISIÓN NO DISPONIBLE'
             : state === 'reconnecting'
               ? 'RECONECTANDO TRANSMISIÓN'
               : 'MÚSICA QUE TE MUEVE'}
         </Text>
-        <Text numberOfLines={2} style={styles.infoSubtitle}>
+        <Text
+          numberOfLines={2}
+          style={[styles.infoSubtitle, { color: colors.muted }]}
+        >
           {error ?? 'LA Z 1310 · Transmisión en vivo'}
         </Text>
       </View>
 
-      <Pressable style={styles.programCard}>
+      <Pressable
+        style={[
+          styles.programCard,
+          {
+            backgroundColor: colors.surfaceElevated,
+            borderColor: colors.border,
+          },
+        ]}
+      >
         <View>
-          <Text style={styles.programTitle}>PROGRAMACIÓN</Text>
-          <Text style={styles.infoSubtitle}>
+          <Text style={[styles.programTitle, { color: colors.white }]}>
+            PROGRAMACIÓN
+          </Text>
+          <Text style={[styles.infoSubtitle, { color: colors.muted }]}>
             Consulta lo que sigue al aire
           </Text>
         </View>
@@ -151,7 +189,6 @@ export default function RadioScreen() {
 const styles = StyleSheet.create({
   safe: {
     alignItems: 'center',
-    backgroundColor: colors.burgundy,
     flex: 1,
     gap: 13,
     paddingHorizontal: 20,
@@ -167,12 +204,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   station: {
-    color: colors.white,
     fontFamily: fonts.bodyBold,
     fontSize: 16,
   },
   city: {
-    color: colors.gray,
     fontFamily: fonts.body,
     fontSize: 10,
     letterSpacing: 1.1,
@@ -195,13 +230,11 @@ const styles = StyleSheet.create({
     paddingRight: spacing.sm,
   },
   title: {
-    color: colors.white,
     fontFamily: fonts.displayExtraBold,
     fontSize: 34,
     lineHeight: 34,
   },
   slogan: {
-    color: colors.muted,
     fontFamily: fonts.body,
     fontSize: 15,
     marginTop: 2,
@@ -217,7 +250,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   time: {
-    color: colors.gray,
     fontFamily: fonts.bodySemiBold,
     fontSize: 10,
     letterSpacing: 0.6,
@@ -230,8 +262,6 @@ const styles = StyleSheet.create({
     width: 300,
   },
   infoCard: {
-    backgroundColor: colors.surfaceElevated,
-    borderColor: colors.border,
     borderRadius: radii.md,
     borderWidth: 1,
     gap: 2,
@@ -239,27 +269,22 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   eyebrow: {
-    color: colors.red,
     fontFamily: fonts.bodyBold,
     fontSize: 10,
     letterSpacing: 1.1,
   },
   nowTitle: {
-    color: colors.white,
     fontFamily: fonts.displayExtraBold,
     fontSize: 22,
     lineHeight: 24,
     marginTop: 2,
   },
   infoSubtitle: {
-    color: colors.muted,
     fontFamily: fonts.body,
     fontSize: 11,
   },
   programCard: {
     alignItems: 'center',
-    backgroundColor: colors.surfaceElevated,
-    borderColor: colors.border,
     borderRadius: radii.md,
     borderWidth: 1,
     flexDirection: 'row',
@@ -269,7 +294,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   programTitle: {
-    color: colors.white,
     fontFamily: fonts.bodyBold,
     fontSize: 13,
   },
