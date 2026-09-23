@@ -14,3 +14,7 @@ yarn-error.log*
 *.p12
 *.key
 *.mobileprovision
+
+# Expo generated native projects (CNG)
+android/
+ios/
