@@ -1,5 +1,6 @@
 module.exports = ({ config }) => ({
   ...config,
+  owner: 'neuromarket-llc',
   name: 'LA Z 1310',
   slug: 'laz1310-mobile-app',
   scheme: 'laz1310',
@@ -32,5 +33,12 @@ module.exports = ({ config }) => ({
   ],
   experiments: {
     typedRoutes: true,
+  },
+  extra: {
+    ...config.extra,
+    eas: {
+      ...(config.extra?.eas ?? {}),
+      projectId: '1ff31374-2489-46a3-a611-2113e37ea275',
+    },
   },
 });
