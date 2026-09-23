@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, radii, spacing } from '../theme/tokens';
+import { colors, fonts, radii, spacing } from '../theme/tokens';
 
 export function PromoHero() {
   return (
@@ -9,9 +9,9 @@ export function PromoHero() {
       <View style={styles.diagonal} />
       <Text style={styles.eyebrow}>★ EVENTO DESTACADO</Text>
       <Text style={styles.title}>TARDEADA{String.fromCharCode(10)}BAILE</Text>
-      <Pressable style={styles.cta}>
+      <View style={styles.cta}>
         <Text style={styles.ctaText}>MÁS INFORMACIÓN</Text>
-      </Pressable>
+      </View>
       <View style={styles.badge}>
         <Text style={styles.badgeText}>CAMPAÑA</Text>
       </View>
@@ -22,7 +22,9 @@ export function PromoHero() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.black,
+    borderColor: colors.border,
     borderRadius: radii.md,
+    borderWidth: 1,
     height: 224,
     overflow: 'hidden',
     padding: spacing.lg,
@@ -31,7 +33,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.red,
     borderRadius: 180,
     height: 280,
-    opacity: 0.2,
+    opacity: 0.18,
     position: 'absolute',
     right: -80,
     top: -80,
@@ -40,24 +42,24 @@ const styles = StyleSheet.create({
   diagonal: {
     backgroundColor: colors.red,
     height: 360,
-    opacity: 0.9,
+    opacity: 0.82,
     position: 'absolute',
-    right: -32,
-    top: -70,
+    right: -42,
+    top: -74,
     transform: [{ rotate: '25deg' }],
-    width: 90,
+    width: 78,
   },
   eyebrow: {
     color: colors.red,
+    fontFamily: fonts.bodySemiBold,
     fontSize: 11,
-    fontWeight: '700',
     letterSpacing: 1.2,
   },
   title: {
     color: colors.white,
-    fontSize: 38,
-    fontWeight: '900',
-    lineHeight: 38,
+    fontFamily: fonts.displayBlack,
+    fontSize: 40,
+    lineHeight: 39,
     marginTop: 14,
   },
   cta: {
@@ -70,8 +72,8 @@ const styles = StyleSheet.create({
   },
   ctaText: {
     color: colors.white,
+    fontFamily: fonts.bodyBold,
     fontSize: 12,
-    fontWeight: '800',
   },
   badge: {
     backgroundColor: colors.red,
@@ -84,7 +86,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: colors.white,
+    fontFamily: fonts.bodyBold,
     fontSize: 10,
-    fontWeight: '800',
   },
 });

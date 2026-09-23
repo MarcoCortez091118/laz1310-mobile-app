@@ -21,24 +21,23 @@ export function VinylArtwork({
   const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {
+    animationRef.current?.stop();
+
     if (!playing) {
-      animationRef.current?.stop();
       return;
     }
 
     animationRef.current = Animated.loop(
       Animated.timing(rotation, {
         toValue: 1,
-        duration: 10_000,
+        duration: 12_000,
         useNativeDriver: true,
       }),
     );
 
     animationRef.current.start();
 
-    return () => {
-      animationRef.current?.stop();
-    };
+    return () => animationRef.current?.stop();
   }, [playing, rotation]);
 
   const rotate = rotation.interpolate({
@@ -53,24 +52,21 @@ export function VinylArtwork({
         {
           width: size,
           height: size,
-          borderColor: playing ? colors.red : 'transparent',
+          borderColor: playing ? colors.red : colors.border,
+          borderWidth: playing ? 2 : 1,
         },
       ]}
     >
       <Animated.View
         style={{
-          width: size - 8,
-          height: size - 8,
+          width: size - 10,
+          height: size - 10,
           transform: [{ rotate }],
         }}
       >
         <Image
           source={require('../../assets/brand/vinyl-primary.png')}
-          style={{
-            width: '100%',
-            height: '100%',
-            resizeMode: 'contain',
-          }}
+          style={styles.image}
         />
       </Animated.View>
     </View>
@@ -80,8 +76,13 @@ export function VinylArtwork({
 const styles = StyleSheet.create({
   wrapper: {
     alignItems: 'center',
-    justifyContent: 'center',
     borderRadius: 999,
-    borderWidth: 2,
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  image: {
+    height: '100%',
+    resizeMode: 'contain',
+    width: '100%',
   },
 });

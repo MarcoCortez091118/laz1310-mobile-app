@@ -1,3 +1,4 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import {
   ScrollView,
   StyleSheet,
@@ -12,7 +13,7 @@ import { LiveBadge } from '../src/components/LiveBadge';
 import { LiveRadioCard } from '../src/components/LiveRadioCard';
 import { ProgramCard } from '../src/components/ProgramCard';
 import { PromoHero } from '../src/components/PromoHero';
-import { colors, spacing } from '../src/theme/tokens';
+import { colors, fonts, spacing } from '../src/theme/tokens';
 
 const categories = ['Todo', 'Shows', 'Noticias', 'Eventos', 'Música'] as const;
 
@@ -24,14 +25,19 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <View>
-            <BrandLogo width={108} />
+          <View style={styles.brandBlock}>
+            <BrandLogo width={118} />
             <Text style={styles.location}>DETROIT, MI</Text>
           </View>
+
           <View style={styles.headerActions}>
-            <LiveBadge />
+            <LiveBadge compact />
             <View style={styles.bell}>
-              <Text style={styles.bellText}>♢</Text>
+              <Ionicons
+                color={colors.white}
+                name="notifications-outline"
+                size={20}
+              />
             </View>
           </View>
         </View>
@@ -93,7 +99,7 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: spacing.md,
-    paddingBottom: 180,
+    paddingBottom: 190,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
   },
@@ -101,18 +107,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    minHeight: 74,
+    minHeight: 78,
+  },
+  brandBlock: {
+    alignItems: 'flex-start',
   },
   location: {
     color: colors.gray,
-    fontSize: 10,
-    letterSpacing: 1.4,
-    marginTop: -4,
+    fontFamily: fonts.body,
+    fontSize: 9,
+    letterSpacing: 1.5,
+    marginLeft: 4,
+    marginTop: -8,
   },
   headerActions: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
   },
   bell: {
     alignItems: 'center',
@@ -121,10 +132,6 @@ const styles = StyleSheet.create({
     height: 36,
     justifyContent: 'center',
     width: 36,
-  },
-  bellText: {
-    color: colors.white,
-    fontSize: 18,
   },
   categories: {
     gap: 10,
@@ -142,12 +149,12 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     color: colors.white,
+    fontFamily: fonts.bodySemiBold,
     fontSize: 14,
-    fontWeight: '600',
     textAlign: 'center',
   },
   categoryTextActive: {
-    fontWeight: '800',
+    fontFamily: fonts.bodyBold,
   },
   sectionHeader: {
     alignItems: 'center',
@@ -156,13 +163,13 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     color: colors.white,
-    fontSize: 28,
-    fontWeight: '900',
+    fontFamily: fonts.displayExtraBold,
+    fontSize: 30,
   },
   seeAll: {
     color: colors.red,
+    fontFamily: fonts.bodySemiBold,
     fontSize: 12,
-    fontWeight: '700',
   },
   programs: {
     flexDirection: 'row',

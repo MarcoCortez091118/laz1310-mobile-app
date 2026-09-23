@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 
 import { useRadio } from '../features/radio/useRadio';
-import { colors, radii, spacing } from '../theme/tokens';
+import { colors, fonts, radii, spacing } from '../theme/tokens';
 import { PlayPauseButton } from './PlayPauseButton';
 import { VinylArtwork } from './VinylArtwork';
 
@@ -33,6 +33,8 @@ export function MiniPlayer({ visible }: MiniPlayerProps) {
   return (
     <View style={styles.container}>
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Abrir reproductor de LA Z 1310"
         onPress={() => router.push('/radio')}
         style={styles.content}
       >
@@ -40,7 +42,7 @@ export function MiniPlayer({ visible }: MiniPlayerProps) {
         <VinylArtwork size={48} playing={state === 'playing'} />
         <View style={styles.copy}>
           <Text style={styles.title}>LA Z 1310</Text>
-          <Text style={styles.subtitle}>
+          <Text numberOfLines={1} style={styles.subtitle}>
             {state === 'reconnecting'
               ? 'Reconectando transmisión…'
               : 'LA Z Detroit · EN VIVO'}
@@ -61,15 +63,17 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     backgroundColor: colors.burgundy,
+    borderColor: colors.border,
     borderRadius: radii.md,
+    borderWidth: 1,
     bottom: 88,
     flexDirection: 'row',
     gap: spacing.sm,
-    left: 0,
+    left: 8,
     minHeight: 72,
     paddingHorizontal: spacing.sm,
     position: 'absolute',
-    right: 0,
+    right: 8,
     zIndex: 20,
   },
   content: {
@@ -89,11 +93,12 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.white,
+    fontFamily: fonts.bodyBold,
     fontSize: 15,
-    fontWeight: '700',
   },
   subtitle: {
     color: colors.red,
+    fontFamily: fonts.body,
     fontSize: 11,
     marginTop: 2,
   },

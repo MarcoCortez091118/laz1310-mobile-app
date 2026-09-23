@@ -1,14 +1,23 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, radii, spacing } from '../theme/tokens';
+import { colors, fonts, radii, spacing } from '../theme/tokens';
 
 interface LiveBadgeProps {
   live?: boolean;
+  compact?: boolean;
 }
 
-export function LiveBadge({ live = true }: LiveBadgeProps) {
+export function LiveBadge({
+  live = true,
+  compact = false,
+}: LiveBadgeProps) {
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        compact && styles.containerCompact,
+      ]}
+    >
       <View
         style={[
           styles.dot,
@@ -18,6 +27,7 @@ export function LiveBadge({ live = true }: LiveBadgeProps) {
       <Text
         style={[
           styles.label,
+          compact && styles.labelCompact,
           { color: live ? colors.red : colors.gray },
         ]}
       >
@@ -38,14 +48,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 8,
   },
+  containerCompact: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
   dot: {
     borderRadius: radii.round,
     height: 8,
     width: 8,
   },
   label: {
+    fontFamily: fonts.bodyBold,
     fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1,
+    letterSpacing: 1.1,
+  },
+  labelCompact: {
+    fontSize: 10,
   },
 });
