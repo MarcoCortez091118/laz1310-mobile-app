@@ -20,7 +20,6 @@ export function PromoHero() {
   const router = useRouter();
   const { colors } = useAppTheme();
   const [campaign, setCampaign] = useState<DynamicCampaign | null>(null);
-  const [releaseId, setReleaseId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -35,12 +34,10 @@ export function PromoHero() {
         setCampaign(
           available.find((item) => item.featured) ?? available[0] ?? null,
         );
-        setReleaseId(result.releaseId);
       })
       .catch(() => {
         if (active) {
           setCampaign(null);
-          setReleaseId(null);
         }
       });
 
@@ -60,10 +57,7 @@ export function PromoHero() {
       onPress={() =>
         router.push({
           pathname: '/dynamics/[id]',
-          params: {
-            id: campaign.id,
-            ...(releaseId ? { releaseId } : {}),
-          },
+          params: { id: campaign.id },
         })
       }
       style={({ pressed }) => [
