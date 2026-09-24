@@ -1,5 +1,4 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRouter } from 'expo-router';
 import {
   ScrollView,
   StyleSheet,
@@ -21,7 +20,6 @@ import { fonts, spacing } from '../src/theme/tokens';
 const categories = ['Todo', 'Shows', 'Noticias', 'Eventos', 'Música'] as const;
 
 export default function HomeScreen() {
-  const router = useRouter();
   const { colors } = useAppTheme();
 
   return (
