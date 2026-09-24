@@ -97,12 +97,20 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   image: {
-    ...StyleSheet.absoluteFillObject,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
     height: '100%',
     width: '100%',
   },
   scrim: {
-    ...StyleSheet.absoluteFillObject,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
     backgroundColor: 'rgba(5,1,1,0.74)',
   },
   glow: {
