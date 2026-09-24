@@ -90,7 +90,7 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
 
-        <PromoHero onPress={() => router.push('/dynamics')} />
+        <PromoHero />
         <LiveRadioCard />
 
         <View style={styles.sectionHeader}>
