@@ -275,12 +275,20 @@ const styles = StyleSheet.create({
     width: 112,
   },
   artImage: {
-    ...StyleSheet.absoluteFillObject,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
     height: '100%',
     width: '100%',
   },
   artScrim: {
-    ...StyleSheet.absoluteFillObject,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
     backgroundColor: 'rgba(5,1,1,0.58)',
   },
   artLabel: {
