@@ -49,9 +49,9 @@ export function validateDynamicField(field: DynamicFormField, value: string) {
 }
 
 export function createIdempotencyKey() {
-  const cryptoApi = globalThis.crypto as
-    | (Crypto & { randomUUID?: () => string })
-    | undefined;
+  const cryptoApi = (globalThis as {
+    crypto?: { randomUUID?: () => string };
+  }).crypto;
 
   if (cryptoApi?.randomUUID) {
     return cryptoApi.randomUUID();
