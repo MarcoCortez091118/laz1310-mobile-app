@@ -1,6 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,9 +12,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ApiError } from '../../src/api/client';
 import { BottomNavigation } from '../../src/components/BottomNavigation';
+import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
-import { dynamics } from '../../src/features/dynamics/data';
+import {
+  DynamicCampaign,
+  getDynamics,
+} from '../../src/features/dynamics/api';
+import { dynamicDeadline } from '../../src/features/dynamics/presentation';
 import { useAppTheme } from '../../src/theme/ThemeProvider';
 import { fonts, radii, spacing } from '../../src/theme/tokens';
 
@@ -19,9 +28,39 @@ function participationLabel(type: 'form' | 'external_url') {
   return type === 'form' ? 'Formulario' : 'URL externa';
 }
 
+function errorCopy(error: unknown) {
+  if (error instanceof ApiError && error.status === 503) {
+    return 'Dinámicas no está disponible temporalmente.';
+  }
+
+  return 'No pudimos cargar las dinámicas publicadas.';
+}
+
 export default function DynamicsListScreen() {
   const router = useRouter();
   const { colors } = useAppTheme();
+  const [items, setItems] = useState<DynamicCampaign[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await getDynamics();
+      setItems(result.items.filter((item) => item.status === 'active'));
+    } catch (requestError) {
+      setItems([]);
+      setError(errorCopy(requestError));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   return (
     <SafeAreaView
@@ -34,19 +73,63 @@ export default function DynamicsListScreen() {
       >
         <ScreenHeader title="Dinámicas" />
 
-        <Text style={[styles.title, { color: colors.white }]}>
-          Disponibles
-        </Text>
+        <Text style={[styles.title, { color: colors.white }]}>Disponibles</Text>
         <Text style={[styles.subtitle, { color: colors.muted }]}>
-          Participa en promociones, trivias, encuestas y activaciones de LA Z.
+          Promociones y activaciones publicadas por LA Z.
         </Text>
 
-        <View style={styles.list}>
-          {dynamics
-            .filter((item) => item.status === 'active')
-            .map((item) => (
+        {loading ? (
+          <View style={styles.state}>
+            <ActivityIndicator color={colors.red} />
+            <Text style={[styles.stateText, { color: colors.muted }]}>
+              Consultando dinámicas…
+            </Text>
+          </View>
+        ) : null}
+
+        {!loading && error ? (
+          <View
+            style={[
+              styles.errorCard,
+              {
+                backgroundColor: colors.surfaceElevated,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <Ionicons color={colors.red} name="alert-circle-outline" size={30} />
+            <Text style={[styles.errorText, { color: colors.white }]}>
+              {error}
+            </Text>
+            <PrimaryButton label="Reintentar" onPress={() => void load()} secondary />
+          </View>
+        ) : null}
+
+        {!loading && !error && items.length === 0 ? (
+          <View
+            style={[
+              styles.emptyCard,
+              {
+                backgroundColor: colors.surfaceElevated,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <Ionicons color={colors.red} name="sparkles-outline" size={30} />
+            <Text style={[styles.emptyTitle, { color: colors.white }]}>
+              No hay dinámicas activas
+            </Text>
+            <Text style={[styles.emptyBody, { color: colors.muted }]}>
+              Cuando LA Z publique una nueva promoción aparecerá aquí.
+            </Text>
+          </View>
+        ) : null}
+
+        {!loading && !error && items.length > 0 ? (
+          <View style={styles.list}>
+            {items.map((item) => (
               <Pressable
-                accessibilityLabel={`Abrir dinámica ${item.title}`}
+                accessibilityLabel={'Abrir dinámica ' + item.title}
                 accessibilityRole="button"
                 key={item.id}
                 onPress={() =>
@@ -72,18 +155,12 @@ export default function DynamicsListScreen() {
                     },
                   ]}
                 >
-                  <View
-                    style={[
-                      styles.artGlow,
-                      { backgroundColor: colors.red },
-                    ]}
-                  />
+                  <Image source={{ uri: item.imageUrl }} style={styles.artImage} />
+                  <View style={styles.artScrim} />
                   <Text style={[styles.artLabel, { color: colors.red }]}>
                     {item.artworkLabel}
                   </Text>
-                  <Text style={[styles.artBrand, { color: colors.white }]}>
-                    LA Z
-                  </Text>
+                  <Text style={styles.artBrand}>LA Z</Text>
                 </View>
 
                 <View style={styles.copy}>
@@ -94,7 +171,7 @@ export default function DynamicsListScreen() {
                     {item.title}
                   </Text>
                   <Text style={[styles.deadline, { color: colors.red }]}>
-                    {item.deadline}
+                    {dynamicDeadline(item.endsAt, item.timezone)}
                   </Text>
                   <Text
                     numberOfLines={1}
@@ -103,19 +180,20 @@ export default function DynamicsListScreen() {
                     {item.context}
                   </Text>
                   <Text style={[styles.type, { color: colors.muted }]}>
-                    {participationLabel(item.participationType)}
+                    {participationLabel(item.participation.type)}
                   </Text>
                 </View>
 
                 <Ionicons
                   color={colors.white}
-                  name="heart-outline"
-                  size={24}
-                  style={styles.heart}
+                  name="chevron-forward"
+                  size={22}
+                  style={styles.chevron}
                 />
               </Pressable>
             ))}
-        </View>
+          </View>
+        ) : null}
       </ScrollView>
 
       <BottomNavigation />
@@ -124,9 +202,7 @@ export default function DynamicsListScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-  },
+  safe: { flex: 1 },
   content: {
     paddingBottom: 180,
     paddingHorizontal: spacing.md,
@@ -142,9 +218,47 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginTop: 3,
   },
-  list: {
-    marginTop: spacing.lg,
+  state: {
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 72,
   },
+  stateText: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+  },
+  errorCard: {
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    gap: 14,
+    marginTop: spacing.lg,
+    padding: spacing.lg,
+  },
+  errorText: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  emptyCard: {
+    alignItems: 'center',
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    marginTop: spacing.lg,
+    padding: spacing.lg,
+  },
+  emptyTitle: {
+    fontFamily: fonts.displayBold,
+    fontSize: 24,
+    marginTop: 12,
+  },
+  emptyBody: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 5,
+    textAlign: 'center',
+  },
+  list: { marginTop: spacing.lg },
   row: {
     alignItems: 'center',
     borderBottomWidth: 1,
@@ -160,14 +274,22 @@ const styles = StyleSheet.create({
     padding: 12,
     width: 112,
   },
-  artGlow: {
-    borderRadius: 90,
-    height: 130,
-    opacity: 0.18,
+  artImage: {
+    bottom: 0,
+    left: 0,
     position: 'absolute',
-    right: -46,
-    top: -42,
-    width: 130,
+    right: 0,
+    top: 0,
+    height: '100%',
+    width: '100%',
+  },
+  artScrim: {
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    backgroundColor: 'rgba(5,1,1,0.58)',
   },
   artLabel: {
     fontFamily: fonts.bodyBold,
@@ -176,6 +298,7 @@ const styles = StyleSheet.create({
   },
   artBrand: {
     bottom: 12,
+    color: '#FEFEFE',
     fontFamily: fonts.displayExtraBold,
     fontSize: 26,
     left: 12,
@@ -184,7 +307,7 @@ const styles = StyleSheet.create({
   copy: {
     flex: 1,
     marginLeft: spacing.md,
-    paddingRight: 38,
+    paddingRight: 30,
   },
   itemTitle: {
     fontFamily: fonts.displayBold,
@@ -206,9 +329,8 @@ const styles = StyleSheet.create({
     fontSize: 10,
     marginTop: 3,
   },
-  heart: {
+  chevron: {
     position: 'absolute',
     right: 2,
-    top: 20,
   },
 });

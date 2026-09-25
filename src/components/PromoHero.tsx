@@ -1,42 +1,88 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
+import {
+  DynamicCampaign,
+  getDynamics,
+} from '../features/dynamics/api';
+import { dynamicDeadline } from '../features/dynamics/presentation';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { fonts, radii, spacing } from '../theme/tokens';
 
-interface PromoHeroProps {
-  onPress?: () => void;
-}
-
-export function PromoHero({ onPress }: PromoHeroProps) {
+export function PromoHero() {
+  const router = useRouter();
   const { colors } = useAppTheme();
+  const [campaign, setCampaign] = useState<DynamicCampaign | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    void getDynamics()
+      .then((result) => {
+        if (!active) {
+          return;
+        }
+
+        const available = result.items.filter((item) => item.status === 'active');
+        setCampaign(
+          available.find((item) => item.featured) ?? available[0] ?? null,
+        );
+      })
+      .catch(() => {
+        if (active) {
+          setCampaign(null);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (!campaign) {
+    return null;
+  }
 
   return (
     <Pressable
-      accessibilityLabel="Abrir dinámicas"
+      accessibilityLabel={'Abrir dinámica ' + campaign.title}
       accessibilityRole="button"
-      onPress={onPress}
+      onPress={() =>
+        router.push({
+          pathname: '/dynamics/[id]',
+          params: { id: campaign.id },
+        })
+      }
       style={({ pressed }) => [
         styles.container,
         {
           backgroundColor: colors.surface,
           borderColor: colors.border,
-          opacity: pressed && onPress ? 0.84 : 1,
+          opacity: pressed ? 0.84 : 1,
         },
       ]}
     >
+      <Image source={{ uri: campaign.imageUrl }} style={styles.image} />
+      <View style={styles.scrim} />
       <View style={[styles.glow, { backgroundColor: colors.red }]} />
-      <View style={[styles.diagonal, { backgroundColor: colors.red }]} />
       <Text style={[styles.eyebrow, { color: colors.red }]}>
-        ★ DINÁMICA DESTACADA
+        ★ {campaign.artworkLabel.toUpperCase()}
       </Text>
-      <Text style={[styles.title, { color: colors.white }]}>
-        PARTICIPA{String.fromCharCode(10)}CON LA Z
+      <Text numberOfLines={2} style={[styles.title, { color: colors.white }]}>
+        {campaign.title}
       </Text>
-      <View style={[styles.cta, { backgroundColor: colors.red }]}> 
-        <Text style={styles.ctaText}>VER DINÁMICAS</Text>
-      </View>
-      <View style={[styles.badge, { backgroundColor: colors.red }]}> 
-        <Text style={styles.badgeText}>ACTIVA</Text>
+      <Text style={[styles.deadline, { color: colors.white }]}>
+        {dynamicDeadline(campaign.endsAt, campaign.timezone)}
+      </Text>
+      <View style={[styles.cta, { backgroundColor: colors.red }]}>
+        <Text style={styles.ctaText}>PARTICIPAR</Text>
       </View>
     </Pressable>
   );
@@ -50,6 +96,23 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     padding: spacing.lg,
   },
+  image: {
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    height: '100%',
+    width: '100%',
+  },
+  scrim: {
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    backgroundColor: 'rgba(5,1,1,0.74)',
+  },
   glow: {
     borderRadius: 180,
     height: 280,
@@ -59,15 +122,6 @@ const styles = StyleSheet.create({
     top: -80,
     width: 280,
   },
-  diagonal: {
-    height: 360,
-    opacity: 0.82,
-    position: 'absolute',
-    right: -42,
-    top: -74,
-    transform: [{ rotate: '25deg' }],
-    width: 78,
-  },
   eyebrow: {
     fontFamily: fonts.bodySemiBold,
     fontSize: 11,
@@ -75,14 +129,20 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: fonts.displayBlack,
-    fontSize: 40,
-    lineHeight: 39,
-    marginTop: 14,
+    fontSize: 38,
+    lineHeight: 38,
+    marginTop: 12,
+    maxWidth: '88%',
+  },
+  deadline: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 10,
+    marginTop: 5,
   },
   cta: {
     alignSelf: 'flex-start',
     borderRadius: 10,
-    marginTop: 18,
+    marginTop: 14,
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
@@ -90,18 +150,5 @@ const styles = StyleSheet.create({
     color: '#FEFEFE',
     fontFamily: fonts.bodyBold,
     fontSize: 12,
-  },
-  badge: {
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    position: 'absolute',
-    right: 14,
-    top: 14,
-  },
-  badgeText: {
-    color: '#FEFEFE',
-    fontFamily: fonts.bodyBold,
-    fontSize: 10,
   },
 });

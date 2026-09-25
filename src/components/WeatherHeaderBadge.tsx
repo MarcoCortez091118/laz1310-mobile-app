@@ -1,17 +1,54 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-} from 'react-native';
+import { useEffect, useState } from 'react';
+import { Pressable, StyleSheet, Text } from 'react-native';
 
+import {
+  getWeatherDetail,
+  getWeatherLocations,
+  WeatherResponse,
+} from '../features/weather/api';
+import {
+  conditionIcon,
+  displayTemperature,
+} from '../features/weather/presentation';
+import { useWeatherUnit } from '../features/weather/WeatherUnitProvider';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { fonts, radii } from '../theme/tokens';
 
 export function WeatherHeaderBadge() {
   const router = useRouter();
   const { colors } = useAppTheme();
+  const { unit } = useWeatherUnit();
+  const [weather, setWeather] = useState<WeatherResponse | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    void (async () => {
+      try {
+        const locations = await getWeatherLocations();
+        const primary = locations.find((item) => item.primary) ?? locations[0];
+
+        if (!primary) {
+          return;
+        }
+
+        const value = await getWeatherDetail(primary.id);
+        if (active) {
+          setWeather(value);
+        }
+      } catch {
+        if (active) {
+          setWeather(null);
+        }
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <Pressable
@@ -27,9 +64,22 @@ export function WeatherHeaderBadge() {
         },
       ]}
     >
-      <Ionicons color={colors.red} name="partly-sunny" size={16} />
-      <Text style={[styles.temperature, { color: colors.white }]}> 
-        64°
+      <Ionicons
+        color={weather?.stale ? colors.muted : colors.red}
+        name={
+          weather
+            ? conditionIcon(
+                weather.current.conditionCode,
+                weather.current.isDay,
+              )
+            : 'cloud-outline'
+        }
+        size={16}
+      />
+      <Text style={[styles.temperature, { color: colors.white }]}>
+        {weather
+          ? displayTemperature(weather.current.temperatureC, unit) + '°'
+          : '—'}
       </Text>
     </Pressable>
   );

@@ -1,10 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import {
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PrimaryButton } from '../../src/components/PrimaryButton';
@@ -13,7 +9,11 @@ import { fonts, spacing } from '../../src/theme/tokens';
 
 export default function DynamicsConfirmationScreen() {
   const router = useRouter();
-  const { title } = useLocalSearchParams<{ title?: string }>();
+  const { title, receiptId, submittedAt } = useLocalSearchParams<{
+    title?: string;
+    receiptId?: string;
+    submittedAt?: string;
+  }>();
   const { colors } = useAppTheme();
 
   return (
@@ -31,13 +31,22 @@ export default function DynamicsConfirmationScreen() {
         </Text>
         <Text style={[styles.body, { color: colors.muted }]}>
           {title
-            ? `La participación para “${title}” quedó registrada en esta demostración local.`
-            : 'La participación quedó registrada en esta demostración local.'}
+            ? 'Tu participación para “' + title + '” fue aceptada por LA Z API.'
+            : 'Tu participación fue aceptada por LA Z API.'}
         </Text>
-        <Text style={[styles.note, { color: colors.muted }]}>
-          La persistencia real se habilitará cuando definamos el contrato de
-          participaciones con FastAPI.
-        </Text>
+        {submittedAt ? (
+          <Text style={[styles.note, { color: colors.muted }]}>
+            Recibida {new Date(submittedAt).toLocaleString('es-US')}
+          </Text>
+        ) : null}
+        {receiptId ? (
+          <Text
+            numberOfLines={1}
+            style={[styles.receipt, { color: colors.muted }]}
+          >
+            Recibo: {receiptId}
+          </Text>
+        ) : null}
 
         <View style={styles.actions}>
           <PrimaryButton
@@ -56,9 +65,7 @@ export default function DynamicsConfirmationScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-  },
+  safe: { flex: 1 },
   content: {
     alignItems: 'center',
     flex: 1,
@@ -91,6 +98,12 @@ const styles = StyleSheet.create({
     lineHeight: 15,
     marginTop: 14,
     textAlign: 'center',
+  },
+  receipt: {
+    fontFamily: fonts.body,
+    fontSize: 9,
+    marginTop: 6,
+    maxWidth: '90%',
   },
   actions: {
     gap: 10,

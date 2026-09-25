@@ -71,57 +71,60 @@ Device -> RadioOnlineHD
 
 FastAPI must not proxy, retransmit, cache, or store the audio stream.
 
-## Local typed fixtures
+## Live API integration
 
-Weather and Dynamics use typed local fixtures so UI behavior can be tested
-before their backend contracts are frozen.
+Issue #19 replaces the Weather and Dynamics fixtures with the deployed
+FastAPI V1 contracts.
 
 ### Weather
 
-Current V1 screens:
+Mobile now consumes:
 
-- city list
-- city detail
-- current conditions
-- hourly forecast
-- five-day forecast
-- humidity / wind / precipitation
-- local °F / °C switch
+- `GET /api/v1/weather/locations`
+- `GET /api/v1/weather/{location_id}`
 
-Current locations are Detroit, New York, Chicago, and Washington.
+The backend remains the only client of the weather provider. Mobile keeps the
+canonical Celsius/km/h/mm response in memory and converts units only for
+presentation. The °F/°C preference is persisted locally with AsyncStorage.
+
+The UI renders loading, retry, 404/503-safe states, stale-cache indication and
+the provider attribution returned by the API. No fixture weather is shown when
+the service is unavailable.
 
 ### Dynamics
 
-Current V1 screens:
+Mobile now consumes:
 
-- list
-- detail
-- in-app form participation
-- external URL participation state
-- local confirmation
+- `GET /api/v1/dynamics`
+- `GET /api/v1/dynamics/{dynamic_id}`
+- `POST /api/v1/dynamics/{dynamic_id}/participations`
 
-Supported participation types:
+Campaigns, artwork, dates, status, form fields, legal URLs and participation
+mode come from the published API contract. Form submissions carry the
+`X-Content-Release` value returned by the detail read as `releaseId`, plus a
+stable UUID `Idempotency-Key` and explicit terms/privacy consent.
+
+The transport supports Firebase ID token and App Check headers without
+embedding credentials. Production/staging form acceptance remains gated on the
+separate Firebase mobile Auth/App Check integration; public Weather and Dynamics
+reads are live independently of that work.
+
+Supported participation types remain:
 
 ```ts
-type DynamicsParticipationType =
+type DynamicParticipationType =
   | 'form'
   | 'external_url';
 ```
 
-External URLs are never fabricated. A disabled CTA is rendered until a real
-`participationUrl` is supplied by the eventual backend contract.
+External URLs are taken only from the API and are never fabricated.
 
-## Deferred backend work
+## Deferred product work
 
-Not part of Issue #16:
-
-- weather endpoints/provider integration
-- dynamics catalog/detail endpoints
-- dynamics participation persistence
-- Firebase Auth integration
+- Firebase Auth and App Check token integration
 - account deletion
 - favorites/saved content
-- notification preference synchronization
+- notification preference synchronization and notification center
 
 ## Figma source
 

@@ -20,6 +20,7 @@ import { MiniPlayer } from '../src/components/MiniPlayer';
 import { AuthProvider } from '../src/features/auth/AuthProvider';
 import { RadioProvider } from '../src/features/radio/RadioProvider';
 import { useRadio } from '../src/features/radio/useRadio';
+import { WeatherUnitProvider } from '../src/features/weather/WeatherUnitProvider';
 import { ThemeProvider, useAppTheme } from '../src/theme/ThemeProvider';
 
 void SplashScreen.preventAutoHideAsync();
@@ -71,11 +72,13 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <AuthProvider>
-          <RadioProvider>
-            <AppNavigator />
-          </RadioProvider>
-        </AuthProvider>
+        <WeatherUnitProvider>
+          <AuthProvider>
+            <RadioProvider>
+              <AppNavigator />
+            </RadioProvider>
+          </AuthProvider>
+        </WeatherUnitProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );
