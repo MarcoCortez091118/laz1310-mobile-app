@@ -1,8 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -13,60 +15,117 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BrandLogo } from '../src/components/BrandLogo';
 import { PrimaryButton } from '../src/components/PrimaryButton';
 import { useAuth } from '../src/features/auth/AuthProvider';
+import { authErrorMessage } from '../src/features/auth/errors';
 import { useAppTheme } from '../src/theme/ThemeProvider';
 import { fonts, radii, spacing } from '../src/theme/tokens';
 
 type Step =
   | 'welcome'
-  | 'email'
-  | 'password'
-  | 'name'
-  | 'preferences'
-  | 'notifications';
-
-const preferences = ['Radio', 'Noticias', 'Eventos', 'Shows', 'Comunidad'];
+  | 'registerEmail'
+  | 'registerPassword'
+  | 'registerName'
+  | 'loginEmail'
+  | 'loginPassword';
 
 export default function AuthScreen() {
   const router = useRouter();
-  const { signInDemo } = useAuth();
+  const {
+    isAuthenticated,
+    status,
+    registerWithEmail,
+    signInWithEmail,
+  } = useAuth();
   const { colors } = useAppTheme();
 
   const [step, setStep] = useState<Step>('welcome');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [selected, setSelected] = useState<string[]>(['Radio']);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/profile');
+    }
+  }, [isAuthenticated, router]);
 
   const copy = useMemo(() => {
-    if (step === 'email') {
-      return ['¿Cuál es tu correo?', 'Lo usaremos para identificar tu cuenta.'];
+    switch (step) {
+      case 'registerEmail':
+        return ['Crea tu cuenta', 'Empieza con tu correo electrónico.'];
+      case 'registerPassword':
+        return [
+          'Protege tu cuenta',
+          'Usa una contraseña de al menos 10 caracteres.',
+        ];
+      case 'registerName':
+        return [
+          '¿Cómo te llamas?',
+          'Este nombre aparecerá en tu perfil de LA Z.',
+        ];
+      case 'loginEmail':
+        return ['Bienvenido de vuelta', 'Ingresa el correo de tu cuenta.'];
+      case 'loginPassword':
+        return ['Ingresa tu contraseña', 'Firebase valida tus credenciales.'];
+      default:
+        return ['', ''];
     }
-
-    if (step === 'password') {
-      return ['Crea una contraseña', 'Usa al menos 10 caracteres.'];
-    }
-
-    if (step === 'name') {
-      return ['¿Cómo te llamas?', 'Este nombre aparecerá en tu perfil.'];
-    }
-
-    if (step === 'preferences') {
-      return ['¿Qué te interesa?', 'Elige tus temas para personalizar LA Z.'];
-    }
-
-    if (step === 'notifications') {
-      return [
-        'Activa las notificaciones',
-        'Recibe avisos de programas, noticias, eventos y dinámicas.',
-      ];
-    }
-
-    return ['', ''];
   }, [step]);
 
-  const finish = () => {
-    signInDemo();
-    router.replace('/profile');
+  const goBack = () => {
+    const previous: Record<Exclude<Step, 'welcome'>, Step> = {
+      registerEmail: 'welcome',
+      registerPassword: 'registerEmail',
+      registerName: 'registerPassword',
+      loginEmail: 'welcome',
+      loginPassword: 'loginEmail',
+    };
+
+    setFormError(null);
+
+    if (step === 'welcome') {
+      router.back();
+      return;
+    }
+
+    setStep(previous[step]);
+  };
+
+  const createAccount = async () => {
+    if (submitting) {
+      return;
+    }
+
+    setSubmitting(true);
+    setFormError(null);
+
+    try {
+      await registerWithEmail(email, password, name);
+      router.replace('/profile');
+    } catch (error) {
+      setFormError(authErrorMessage(error));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const login = async () => {
+    if (submitting) {
+      return;
+    }
+
+    setSubmitting(true);
+    setFormError(null);
+
+    try {
+      await signInWithEmail(email, password);
+      router.replace('/profile');
+    } catch (error) {
+      setFormError(authErrorMessage(error));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (step === 'welcome') {
@@ -77,7 +136,8 @@ export default function AuthScreen() {
       >
         <Pressable
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          accessibilityRole="button"
+          onPress={goBack}
           style={styles.back}
         >
           <Ionicons color={colors.white} name="chevron-back" size={26} />
@@ -86,38 +146,50 @@ export default function AuthScreen() {
         <View style={styles.welcome}>
           <BrandLogo width={118} />
           <Text style={[styles.welcomeTitle, { color: colors.white }]}>
-            Únete a LA Z Detroit
+            Tu cuenta LA Z
           </Text>
           <Text style={[styles.welcomeBody, { color: colors.muted }]}>
-            Escucha en vivo, guarda tus programas favoritos y participa en
-            dinámicas.
+            Inicia sesión para participar en dinámicas, administrar tu perfil y
+            recibir funciones personalizadas.
           </Text>
 
           <View style={styles.actions}>
             <PrimaryButton
-              label="Continuar con email"
-              onPress={() => setStep('email')}
+              label="Crear cuenta"
+              onPress={() => {
+                setFormError(null);
+                setStep('registerEmail');
+              }}
             />
             <PrimaryButton
-              label="Continuar con Google"
-              onPress={finish}
-              secondary
-            />
-            <PrimaryButton
-              label="Continuar con Apple"
-              onPress={finish}
+              label="Ya tengo cuenta"
+              onPress={() => {
+                setFormError(null);
+                setStep('loginEmail');
+              }}
               secondary
             />
           </View>
 
-          <Text style={[styles.demoNote, { color: colors.muted }]}>
-            Firebase Auth todavía no está integrado en esta rama. Los botones
-            sociales solo avanzan el prototipo local.
+          <Text style={[styles.securityNote, { color: colors.muted }]}>
+            La contraseña se procesa exclusivamente con Firebase Authentication.
+            LA Z API recibe el ID token y App Check, nunca tu contraseña.
           </Text>
+
+          {status === 'syncing' ? (
+            <View style={styles.syncing}>
+              <ActivityIndicator color={colors.red} size="small" />
+              <Text style={[styles.syncingText, { color: colors.muted }]}>
+                Validando sesión…
+              </Text>
+            </View>
+          ) : null}
         </View>
       </SafeAreaView>
     );
   }
+
+  const isRegister = step.startsWith('register');
 
   return (
     <SafeAreaView
@@ -126,22 +198,20 @@ export default function AuthScreen() {
     >
       <Pressable
         accessibilityLabel="Volver"
-        onPress={() => {
-          const previous: Record<Exclude<Step, 'welcome'>, Step> = {
-            email: 'welcome',
-            password: 'email',
-            name: 'password',
-            preferences: 'name',
-            notifications: 'preferences',
-          };
-          setStep(previous[step]);
-        }}
+        accessibilityRole="button"
+        onPress={goBack}
         style={styles.back}
       >
         <Ionicons color={colors.white} name="chevron-back" size={26} />
       </Pressable>
 
-      <View style={styles.step}>
+      <ScrollView
+        contentContainerStyle={styles.step}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={[styles.stepEyebrow, { color: colors.red }]}>
+          {isRegister ? 'REGISTRO' : 'INICIAR SESIÓN'}
+        </Text>
         <Text style={[styles.stepTitle, { color: colors.white }]}>
           {copy[0]}
         </Text>
@@ -149,11 +219,16 @@ export default function AuthScreen() {
           {copy[1]}
         </Text>
 
-        {step === 'email' ? (
+        {step === 'registerEmail' || step === 'loginEmail' ? (
           <TextInput
             autoCapitalize="none"
+            autoComplete="email"
+            autoCorrect={false}
             keyboardType="email-address"
-            onChangeText={setEmail}
+            onChangeText={(value) => {
+              setEmail(value);
+              setFormError(null);
+            }}
             placeholder="tu@correo.com"
             placeholderTextColor={colors.muted}
             style={[
@@ -168,9 +243,16 @@ export default function AuthScreen() {
           />
         ) : null}
 
-        {step === 'password' ? (
+        {step === 'registerPassword' || step === 'loginPassword' ? (
           <TextInput
-            onChangeText={setPassword}
+            autoCapitalize="none"
+            autoComplete={
+              step === 'registerPassword' ? 'new-password' : 'current-password'
+            }
+            onChangeText={(value) => {
+              setPassword(value);
+              setFormError(null);
+            }}
             placeholder="••••••••••"
             placeholderTextColor={colors.muted}
             secureTextEntry
@@ -186,9 +268,14 @@ export default function AuthScreen() {
           />
         ) : null}
 
-        {step === 'name' ? (
+        {step === 'registerName' ? (
           <TextInput
-            onChangeText={setName}
+            autoCapitalize="words"
+            autoComplete="name"
+            onChangeText={(value) => {
+              setName(value);
+              setFormError(null);
+            }}
             placeholder="Tu nombre"
             placeholderTextColor={colors.muted}
             style={[
@@ -203,106 +290,65 @@ export default function AuthScreen() {
           />
         ) : null}
 
-        {step === 'preferences' ? (
-          <View style={styles.chips}>
-            {preferences.map((item) => {
-              const active = selected.includes(item);
-
-              return (
-                <Pressable
-                  key={item}
-                  onPress={() =>
-                    setSelected((current) =>
-                      active
-                        ? current.filter((value) => value !== item)
-                        : [...current, item],
-                    )
-                  }
-                  style={[
-                    styles.chip,
-                    {
-                      backgroundColor: active
-                        ? colors.red
-                        : colors.surfaceElevated,
-                      borderColor: colors.border,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.chipText,
-                      { color: active ? '#FEFEFE' : colors.white },
-                    ]}
-                  >
-                    {item}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        ) : null}
-
-        {step === 'notifications' ? (
+        {formError ? (
           <View
             style={[
-              styles.notificationArt,
+              styles.errorCard,
               {
                 backgroundColor: colors.surfaceElevated,
                 borderColor: colors.border,
               },
             ]}
           >
-            <Ionicons
-              color={colors.red}
-              name="notifications-outline"
-              size={52}
-            />
+            <Ionicons color={colors.red} name="alert-circle-outline" size={20} />
+            <Text style={[styles.errorText, { color: colors.white }]}>
+              {formError}
+            </Text>
           </View>
         ) : null}
 
         <View style={styles.next}>
-          {step === 'email' ? (
+          {step === 'registerEmail' ? (
             <PrimaryButton
-              disabled={!email.includes('@')}
+              disabled={!email.trim().includes('@')}
               label="Siguiente"
-              onPress={() => setStep('password')}
+              onPress={() => setStep('registerPassword')}
             />
           ) : null}
-          {step === 'password' ? (
+
+          {step === 'registerPassword' ? (
             <PrimaryButton
               disabled={password.length < 10}
               label="Siguiente"
-              onPress={() => setStep('name')}
+              onPress={() => setStep('registerName')}
             />
           ) : null}
-          {step === 'name' ? (
+
+          {step === 'registerName' ? (
             <PrimaryButton
-              disabled={name.trim().length < 2}
+              disabled={name.trim().length < 2 || submitting}
+              label={submitting ? 'Creando cuenta…' : 'Crear cuenta'}
+              onPress={() => void createAccount()}
+            />
+          ) : null}
+
+          {step === 'loginEmail' ? (
+            <PrimaryButton
+              disabled={!email.trim().includes('@')}
               label="Siguiente"
-              onPress={() => setStep('preferences')}
+              onPress={() => setStep('loginPassword')}
             />
           ) : null}
-          {step === 'preferences' ? (
+
+          {step === 'loginPassword' ? (
             <PrimaryButton
-              label="Continuar"
-              onPress={() => setStep('notifications')}
+              disabled={password.length === 0 || submitting}
+              label={submitting ? 'Validando…' : 'Iniciar sesión'}
+              onPress={() => void login()}
             />
-          ) : null}
-          {step === 'notifications' ? (
-            <>
-              <PrimaryButton
-                label="Activar notificaciones"
-                onPress={finish}
-              />
-              <PrimaryButton
-                label="Ahora no"
-                onPress={finish}
-                secondary
-              />
-            </>
           ) : null}
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -343,21 +389,38 @@ const styles = StyleSheet.create({
     marginTop: 34,
     width: '100%',
   },
-  demoNote: {
+  securityNote: {
     fontFamily: fonts.body,
     fontSize: 10,
     lineHeight: 15,
     marginTop: 20,
     textAlign: 'center',
   },
+  syncing: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 16,
+  },
+  syncingText: {
+    fontFamily: fonts.body,
+    fontSize: 10,
+  },
   step: {
-    flex: 1,
+    flexGrow: 1,
+    paddingBottom: 80,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.xl,
+  },
+  stepEyebrow: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 10,
+    letterSpacing: 1.2,
   },
   stepTitle: {
     fontFamily: fonts.displayExtraBold,
     fontSize: 34,
+    marginTop: 8,
   },
   stepBody: {
     fontFamily: fonts.body,
@@ -374,29 +437,20 @@ const styles = StyleSheet.create({
     minHeight: 56,
     paddingHorizontal: spacing.md,
   },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginTop: 22,
-  },
-  chip: {
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 11,
-  },
-  chipText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 13,
-  },
-  notificationArt: {
+  errorCard: {
     alignItems: 'center',
-    borderRadius: radii.lg,
+    borderRadius: radii.md,
     borderWidth: 1,
-    height: 150,
-    justifyContent: 'center',
-    marginTop: 30,
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 16,
+    padding: spacing.md,
+  },
+  errorText: {
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: 11,
+    lineHeight: 16,
   },
   next: {
     gap: 10,
