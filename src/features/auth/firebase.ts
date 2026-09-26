@@ -62,6 +62,7 @@ export async function initializeNativeAppCheck() {
 
 export async function getFirebaseSecurityTokens(
   requireAuth = true,
+  forceIdTokenRefresh = false,
 ): Promise<FirebaseSecurityTokens> {
   const appCheck = await initializeNativeAppCheck();
   const [{ token: appCheckToken }, user] = await Promise.all([
@@ -75,7 +76,7 @@ export async function getFirebaseSecurityTokens(
 
   return {
     appCheckToken,
-    idToken: user ? await getIdToken(user) : undefined,
+    idToken: user ? await getIdToken(user, forceIdTokenRefresh) : undefined,
   };
 }
 
