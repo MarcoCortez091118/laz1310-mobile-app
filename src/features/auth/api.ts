@@ -22,6 +22,10 @@ export interface UpdateLazProfile {
 }
 
 function authHeaders(tokens: FirebaseSecurityTokens) {
+  if (!tokens.idToken) {
+    throw new Error('Firebase ID token is required for this LA Z API request');
+  }
+
   return {
     Authorization: 'Bearer ' + tokens.idToken,
     'X-Firebase-AppCheck': tokens.appCheckToken,
