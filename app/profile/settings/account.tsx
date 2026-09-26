@@ -1,4 +1,6 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -14,8 +16,66 @@ import { fonts, radii, spacing } from '../../../src/theme/tokens';
 
 export default function AccountScreen() {
   const router = useRouter();
-  const { signOut } = useAuth();
+  const {
+    profile,
+    signOut,
+    refreshProfile,
+    sendVerificationEmail,
+  } = useAuth();
   const { colors } = useAppTheme();
+  const [working, setWorking] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const verify = async () => {
+    if (working) {
+      return;
+    }
+
+    setWorking(true);
+    setMessage(null);
+    setError(null);
+
+    try {
+      await sendVerificationEmail();
+      setMessage('Firebase envió un correo de verificación.');
+    } catch (verifyError) {
+      setError(
+        verifyError instanceof Error
+          ? verifyError.message
+          : 'No pudimos enviar el correo.',
+      );
+    } finally {
+      setWorking(false);
+    }
+  };
+
+  const refresh = async () => {
+    if (working) {
+      return;
+    }
+
+    setWorking(true);
+    setMessage(null);
+    setError(null);
+
+    try {
+      await refreshProfile();
+      setMessage('Estado de la cuenta actualizado.');
+    } catch (refreshError) {
+      setError(
+        refreshError instanceof Error
+          ? refreshError.message
+          : 'No pudimos actualizar la cuenta.',
+      );
+    } finally {
+      setWorking(false);
+    }
+  };
+
+  if (!profile) {
+    return null;
+  }
 
   return (
     <SafeAreaView
@@ -25,11 +85,10 @@ export default function AccountScreen() {
       <View style={styles.content}>
         <ScreenHeader title="Cuenta" />
 
-        <Text style={[styles.title, { color: colors.white }]}>
-          Tu cuenta
-        </Text>
+        <Text style={[styles.title, { color: colors.white }]}>Tu cuenta</Text>
         <Text style={[styles.subtitle, { color: colors.muted }]}>
-          Esta pantalla usa datos de demostración hasta integrar Firebase Auth.
+          Identidad administrada por Firebase Authentication y sincronizada con
+          LA Z API.
         </Text>
 
         <View
@@ -43,25 +102,66 @@ export default function AccountScreen() {
         >
           <Text style={[styles.label, { color: colors.muted }]}>CORREO</Text>
           <Text style={[styles.value, { color: colors.white }]}>
-            usuario@correo.com
+            {profile.email || 'Sin correo'}
           </Text>
-          <Text style={[styles.verified, { color: colors.red }]}>
-            VERIFICADO
-          </Text>
+
+          <View style={styles.statusRow}>
+            <Ionicons
+              color={profile.emailVerified ? '#56C985' : colors.red}
+              name={
+                profile.emailVerified
+                  ? 'checkmark-circle-outline'
+                  : 'mail-unread-outline'
+              }
+              size={18}
+            />
+            <Text
+              style={[
+                styles.verified,
+                { color: profile.emailVerified ? '#56C985' : colors.red },
+              ]}
+            >
+              {profile.emailVerified ? 'VERIFICADO' : 'PENDIENTE DE VERIFICAR'}
+            </Text>
+          </View>
         </View>
 
+        {message ? (
+          <Text style={[styles.message, { color: '#56C985' }]}>{message}</Text>
+        ) : null}
+
+        {error ? (
+          <Text style={[styles.message, { color: colors.red }]}>{error}</Text>
+        ) : null}
+
         <View style={styles.actions}>
+          {!profile.emailVerified ? (
+            <>
+              <PrimaryButton
+                disabled={working}
+                label={working ? 'Procesando…' : 'Enviar verificación'}
+                onPress={() => void verify()}
+              />
+              <PrimaryButton
+                disabled={working}
+                label="Ya verifiqué · actualizar"
+                onPress={() => void refresh()}
+                secondary
+              />
+            </>
+          ) : null}
+
           <PrimaryButton
             label="Cerrar sesión"
             onPress={() => {
-              signOut();
-              router.replace('/auth');
+              void signOut().then(() => router.replace('/auth'));
             }}
             secondary
           />
+
           <PrimaryButton
             disabled
-            label="Eliminar cuenta · backend pendiente"
+            label="Eliminar cuenta · próximamente"
             onPress={() => {}}
             secondary
           />
@@ -72,9 +172,7 @@ export default function AccountScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-  },
+  safe: { flex: 1 },
   content: {
     paddingHorizontal: spacing.md,
   },
@@ -105,11 +203,22 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginTop: 8,
   },
+  statusRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 10,
+  },
   verified: {
     fontFamily: fonts.bodyBold,
     fontSize: 9,
     letterSpacing: 1,
-    marginTop: 10,
+  },
+  message: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 11,
+    lineHeight: 16,
+    marginTop: 14,
   },
   actions: {
     gap: 12,

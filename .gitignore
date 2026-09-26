@@ -18,3 +18,7 @@ yarn-error.log*
 # Expo generated native projects (CNG)
 android/
 ios/
+
+# Firebase native app configuration (provided through local/EAS file secrets)
+google-services.json
+GoogleService-Info.plist

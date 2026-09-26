@@ -25,7 +25,7 @@ const rows = [
   },
   {
     title: 'Notificaciones',
-    subtitle: 'Programas, dinámicas y eventos',
+    subtitle: 'General, radio, programas y dinámicas',
   },
   {
     title: 'Privacidad y acerca de',
