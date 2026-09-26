@@ -19,7 +19,7 @@ import {
 } from '@react-native-firebase/auth';
 import { Platform } from 'react-native';
 
-let appCheckPromise: Promise<AppCheck> | null = null;
+let appCheckInstance: AppCheck | null = null;
 
 export interface FirebaseSecurityTokens {
   idToken?: string;
@@ -39,7 +39,7 @@ export async function initializeNativeAppCheck() {
     throw new Error('Firebase App Check is available only in native LA Z builds');
   }
 
-  if (!appCheckPromise) {
+  if (!appCheckInstance) {
     const provider = new ReactNativeFirebaseAppCheckProvider();
 
     provider.configure({
@@ -51,13 +51,13 @@ export async function initializeNativeAppCheck() {
       },
     });
 
-    appCheckPromise = initializeAppCheck(getApp(), {
+    appCheckInstance = initializeAppCheck(getApp(), {
       provider,
       isTokenAutoRefreshEnabled: true,
     });
   }
 
-  return appCheckPromise;
+  return appCheckInstance;
 }
 
 export async function getFirebaseSecurityTokens(
