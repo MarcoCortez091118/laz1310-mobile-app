@@ -15,6 +15,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError } from '../../../src/api/client';
 import { PrimaryButton } from '../../../src/components/PrimaryButton';
+import { useAuth } from '../../../src/features/auth/AuthProvider';
+import { getFirebaseSecurityTokens } from '../../../src/features/auth/firebase';
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import {
   DynamicCampaign,
@@ -84,6 +86,7 @@ export default function DynamicsParticipationScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { colors } = useAppTheme();
+  const { isAuthenticated } = useAuth();
   const [campaign, setCampaign] = useState<DynamicCampaign | null>(null);
   const [releaseId, setReleaseId] = useState<string | null>(null);
   const [values, setValues] = useState<Record<string, string>>({});
@@ -146,7 +149,7 @@ export default function DynamicsParticipationScreen() {
     campaign.participation.fields.every((field) => !validation[field.key]) &&
     termsAccepted &&
     privacyAccepted &&
-    !campaign.participation.requiresAuth;
+    (!campaign.participation.requiresAuth || isAuthenticated);
 
   const rotateIdempotencyIfNeeded = () => {
     if (attempted) {
@@ -177,12 +180,17 @@ export default function DynamicsParticipationScreen() {
           .filter(([, value]) => value.length > 0),
       );
 
+      const security = await getFirebaseSecurityTokens(
+        campaign.participation.requiresAuth,
+      );
+
       const receipt = await submitParticipation({
         dynamicId: campaign.id,
         releaseId,
         values: normalizedValues,
         consentVersion: campaign.consentVersion,
         idempotencyKey,
+        security,
       });
 
       router.replace({
@@ -368,9 +376,9 @@ export default function DynamicsParticipationScreen() {
               >
                 <Ionicons color={colors.red} name="lock-closed-outline" size={20} />
                 <Text style={[styles.warningText, { color: colors.muted }]}>
-                  Esta dinámica requiere una cuenta Firebase autenticada. La UI ya
-                  respeta esa regla; el token real se conectará con la integración
-                  Firebase de la app.
+                  {isAuthenticated
+                    ? 'Tu sesión Firebase está lista para esta participación.'
+                    : 'Esta dinámica requiere iniciar sesión antes de participar.'}
                 </Text>
               </View>
             ) : null}
@@ -395,8 +403,8 @@ export default function DynamicsParticipationScreen() {
 
             <Text style={[styles.securityNote, { color: colors.muted }]}>
               El servidor valida nuevamente campos, vigencia, duplicados,
-              consentimiento e idempotencia. Los formularios de staging/producción
-              requieren Firebase App Check.
+              consentimiento e idempotencia. Esta solicitud incluye Firebase App
+              Check y, cuando corresponde, tu ID token.
             </Text>
           </>
         ) : null}
