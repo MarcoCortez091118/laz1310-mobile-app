@@ -16,8 +16,10 @@ import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { ForegroundNotificationBanner } from '../src/components/ForegroundNotificationBanner';
 import { MiniPlayer } from '../src/components/MiniPlayer';
 import { AuthProvider } from '../src/features/auth/AuthProvider';
+import { NotificationsProvider } from '../src/features/notifications/NotificationsProvider';
 import { RadioProvider } from '../src/features/radio/RadioProvider';
 import { useRadio } from '../src/features/radio/useRadio';
 import { WeatherUnitProvider } from '../src/features/weather/WeatherUnitProvider';
@@ -34,7 +36,7 @@ function AppNavigator() {
     hasStarted && pathname !== '/' && pathname !== '/radio';
 
   return (
-    <View style={[styles.app, { backgroundColor: colors.black }]}> 
+    <View style={[styles.app, { backgroundColor: colors.black }]}>
       <StatusBar style={preference === 'dark' ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
@@ -44,6 +46,7 @@ function AppNavigator() {
         }}
       />
       <MiniPlayer visible={showMiniPlayer} />
+      <ForegroundNotificationBanner />
     </View>
   );
 }
@@ -74,9 +77,11 @@ export default function RootLayout() {
       <ThemeProvider>
         <WeatherUnitProvider>
           <AuthProvider>
-            <RadioProvider>
-              <AppNavigator />
-            </RadioProvider>
+            <NotificationsProvider>
+              <RadioProvider>
+                <AppNavigator />
+              </RadioProvider>
+            </NotificationsProvider>
           </AuthProvider>
         </WeatherUnitProvider>
       </ThemeProvider>

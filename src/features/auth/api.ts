@@ -1,6 +1,13 @@
 import { apiRequest } from '../../api/client';
 import { FirebaseSecurityTokens } from './firebase';
 
+export type UserInterest =
+  | 'radio'
+  | 'news'
+  | 'events'
+  | 'shows'
+  | 'community';
+
 export interface LazUserProfile {
   id: string;
   firebaseUid: string;
@@ -10,6 +17,7 @@ export interface LazUserProfile {
   locale: string | null;
   timezone: string | null;
   profileCompleted: boolean;
+  interests: UserInterest[];
   createdAt: string;
   updatedAt: string;
   lastSeenAt: string | null;
@@ -19,9 +27,10 @@ export interface UpdateLazProfile {
   displayName?: string;
   locale?: string;
   timezone?: string;
+  interests?: UserInterest[];
 }
 
-function authHeaders(tokens: FirebaseSecurityTokens) {
+export function firebaseAuthHeaders(tokens: FirebaseSecurityTokens) {
   if (!tokens.idToken) {
     throw new Error('Firebase ID token is required for this LA Z API request');
   }
@@ -35,13 +44,13 @@ function authHeaders(tokens: FirebaseSecurityTokens) {
 export function createBusinessSession(tokens: FirebaseSecurityTokens) {
   return apiRequest<LazUserProfile>('/api/v1/auth/session', {
     method: 'POST',
-    headers: authHeaders(tokens),
+    headers: firebaseAuthHeaders(tokens),
   });
 }
 
 export function getBusinessProfile(tokens: FirebaseSecurityTokens) {
   return apiRequest<LazUserProfile>('/api/v1/me', {
-    headers: authHeaders(tokens),
+    headers: firebaseAuthHeaders(tokens),
   });
 }
 
@@ -51,7 +60,7 @@ export function patchBusinessProfile(
 ) {
   return apiRequest<LazUserProfile>('/api/v1/me', {
     method: 'PATCH',
-    headers: authHeaders(tokens),
+    headers: firebaseAuthHeaders(tokens),
     body: JSON.stringify(payload),
   });
 }

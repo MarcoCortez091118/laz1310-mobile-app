@@ -45,10 +45,10 @@ export default function AuthScreen() {
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && step !== 'registerName') {
       router.replace('/profile');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, step]);
 
   const copy = useMemo(() => {
     switch (step) {
@@ -102,7 +102,7 @@ export default function AuthScreen() {
 
     try {
       await registerWithEmail(email, password, name);
-      router.replace('/profile');
+      router.replace('/profile/onboarding');
     } catch (error) {
       setFormError(authErrorMessage(error));
     } finally {
