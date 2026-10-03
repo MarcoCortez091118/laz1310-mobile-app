@@ -13,21 +13,14 @@ export function safeNotificationRoute(value: unknown): string | null {
   return DYNAMIC_ROUTE.test(value) ? value : null;
 }
 
-export interface PushData {
-  schemaVersion?: string;
-  notificationId?: string;
-  category?: string;
-  targetKind?: string;
-  targetValue?: string;
-}
-
-export function parsePushData(data: Record<string, string | undefined> | undefined) {
+export function parsePushData(data: Record<string, unknown> | undefined) {
   if (
     !data ||
     data.schemaVersion !== '1' ||
     typeof data.notificationId !== 'string' ||
     data.notificationId.length === 0 ||
-    data.targetKind !== 'route'
+    data.targetKind !== 'route' ||
+    typeof data.targetValue !== 'string'
   ) {
     return null;
   }
