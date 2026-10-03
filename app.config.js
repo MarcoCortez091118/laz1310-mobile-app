@@ -14,12 +14,19 @@ module.exports = ({ config }) => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: 'com.neuromarket.laz1310',
+    entitlements: {
+      'aps-environment': 'production',
+    },
+    infoPlist: {
+      UIBackgroundModes: ['remote-notification'],
+    },
     ...(googleServiceInfoPlist
       ? { googleServicesFile: googleServiceInfoPlist }
       : {}),
   },
   android: {
     package: 'com.neuromarket.laz1310',
+    permissions: ['android.permission.POST_NOTIFICATIONS'],
     ...(googleServicesFile ? { googleServicesFile } : {}),
     adaptiveIcon: {
       foregroundImage: './assets/brand/adaptive-icon-foreground.png',
