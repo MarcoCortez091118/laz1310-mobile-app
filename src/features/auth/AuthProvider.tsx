@@ -11,6 +11,7 @@ import {
 
 import {
   LazUserProfile,
+  UserInterest,
   createBusinessSession,
   patchBusinessProfile,
 } from './api';
@@ -48,6 +49,7 @@ interface AuthContextValue {
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateDisplayName: (displayName: string) => Promise<void>;
+  updateInterests: (interests: UserInterest[]) => Promise<void>;
   refreshProfile: () => Promise<void>;
   sendVerificationEmail: () => Promise<void>;
 }
@@ -193,6 +195,27 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [firebaseUser],
   );
 
+  const updateInterests = useCallback(
+    async (interests: UserInterest[]) => {
+      if (!firebaseUser) {
+        throw new Error('Firebase authentication is required');
+      }
+
+      const uniqueInterests = Array.from(new Set(interests));
+      if (uniqueInterests.length !== interests.length || interests.length > 5) {
+        throw new Error('Selecciona hasta cinco intereses sin repetirlos.');
+      }
+
+      const tokens = await getFirebaseSecurityTokens(true);
+      const updated = await patchBusinessProfile(tokens, {
+        interests,
+      });
+
+      setProfile(updated);
+    },
+    [firebaseUser],
+  );
+
   const refreshProfile = useCallback(async () => {
     const user = await reloadCurrentFirebaseUser();
     await synchronize(user, undefined, true);
@@ -214,6 +237,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       signInWithEmail,
       signOut,
       updateDisplayName,
+      updateInterests,
       refreshProfile,
       sendVerificationEmail,
     }),
@@ -228,6 +252,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       signOut,
       status,
       updateDisplayName,
+      updateInterests,
     ],
   );
 
