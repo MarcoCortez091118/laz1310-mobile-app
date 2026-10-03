@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton } from '../../../src/components/PrimaryButton';
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { useAuth } from '../../../src/features/auth/AuthProvider';
+import { useNotifications } from '../../../src/features/notifications/NotificationsProvider';
 import { useAppTheme } from '../../../src/theme/ThemeProvider';
 import { fonts, radii, spacing } from '../../../src/theme/tokens';
 
@@ -22,16 +23,14 @@ export default function AccountScreen() {
     refreshProfile,
     sendVerificationEmail,
   } = useAuth();
+  const { unlinkCurrentDevice } = useNotifications();
   const { colors } = useAppTheme();
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const verify = async () => {
-    if (working) {
-      return;
-    }
-
+    if (working) return;
     setWorking(true);
     setMessage(null);
     setError(null);
@@ -51,10 +50,7 @@ export default function AccountScreen() {
   };
 
   const refresh = async () => {
-    if (working) {
-      return;
-    }
-
+    if (working) return;
     setWorking(true);
     setMessage(null);
     setError(null);
@@ -73,9 +69,30 @@ export default function AccountScreen() {
     }
   };
 
-  if (!profile) {
-    return null;
-  }
+  const logout = async () => {
+    if (working) return;
+    setWorking(true);
+    setMessage(null);
+    setError(null);
+
+    try {
+      // The backend requires the previous Firebase identity to unlink the
+      // installation. Only close Firebase Auth after DELETE succeeds.
+      await unlinkCurrentDevice();
+      await signOut();
+      router.replace('/auth');
+    } catch (logoutError) {
+      setError(
+        logoutError instanceof Error
+          ? `No cerramos la sesión porque no pudimos desvincular este dispositivo: ${logoutError.message}`
+          : 'No pudimos desvincular este dispositivo. La sesión sigue activa.',
+      );
+    } finally {
+      setWorking(false);
+    }
+  };
+
+  if (!profile) return null;
 
   return (
     <SafeAreaView
@@ -87,8 +104,7 @@ export default function AccountScreen() {
 
         <Text style={[styles.title, { color: colors.white }]}>Tu cuenta</Text>
         <Text style={[styles.subtitle, { color: colors.muted }]}>
-          Identidad administrada por Firebase Authentication y sincronizada con
-          LA Z API.
+          Identidad administrada por Firebase Authentication y sincronizada con LA Z API.
         </Text>
 
         <View
@@ -152,10 +168,9 @@ export default function AccountScreen() {
           ) : null}
 
           <PrimaryButton
-            label="Cerrar sesión"
-            onPress={() => {
-              void signOut().then(() => router.replace('/auth'));
-            }}
+            disabled={working}
+            label={working ? 'Procesando…' : 'Cerrar sesión'}
+            onPress={() => void logout()}
             secondary
           />
 
