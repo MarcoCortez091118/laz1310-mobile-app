@@ -10,7 +10,9 @@ import {
 } from 'react';
 
 import {
+  LazInterest,
   LazUserProfile,
+  UpdateLazProfile,
   createBusinessSession,
   patchBusinessProfile,
 } from './api';
@@ -25,6 +27,7 @@ import {
   signOutFirebase,
   updateFirebaseDisplayName,
 } from './firebase';
+import { unlinkCurrentDevice } from '../notifications/device';
 
 type AuthStatus =
   | 'initializing'
@@ -48,6 +51,8 @@ interface AuthContextValue {
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateDisplayName: (displayName: string) => Promise<void>;
+  updateProfile: (payload: UpdateLazProfile) => Promise<void>;
+  updateInterests: (interests: LazInterest[]) => Promise<void>;
   refreshProfile: () => Promise<void>;
   sendVerificationEmail: () => Promise<void>;
 }
@@ -105,7 +110,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
         if (generation === syncGeneration.current) {
           setFirebaseUser(user);
-          setProfile(businessProfile);
+          setProfile({
+            ...businessProfile,
+            interests: businessProfile.interests ?? [],
+          });
           setStatus('authenticated');
         }
 
@@ -168,11 +176,22 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const signOut = useCallback(async () => {
     syncGeneration.current += 1;
+
+    if (firebaseUser) {
+      await unlinkCurrentDevice(firebaseUser.uid);
+    }
+
     await signOutFirebase();
     setFirebaseUser(null);
     setProfile(null);
     setError(null);
     setStatus('signedOut');
+  }, [firebaseUser]);
+
+  const updateProfile = useCallback(async (payload: UpdateLazProfile) => {
+    const tokens = await getFirebaseSecurityTokens(true);
+    const updated = await patchBusinessProfile(tokens, payload);
+    setProfile({ ...updated, interests: updated.interests ?? [] });
   }, []);
 
   const updateDisplayName = useCallback(
@@ -183,14 +202,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
       const normalized = displayName.trim();
       await updateFirebaseDisplayName(normalized);
-      const tokens = await getFirebaseSecurityTokens(true);
-      const updated = await patchBusinessProfile(tokens, {
-        displayName: normalized,
-      });
-
-      setProfile(updated);
+      await updateProfile({ displayName: normalized });
     },
-    [firebaseUser],
+    [firebaseUser, updateProfile],
+  );
+
+  const updateInterests = useCallback(
+    async (interests: LazInterest[]) => {
+      await updateProfile({ interests });
+    },
+    [updateProfile],
   );
 
   const refreshProfile = useCallback(async () => {
@@ -214,6 +235,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
       signInWithEmail,
       signOut,
       updateDisplayName,
+      updateProfile,
+      updateInterests,
       refreshProfile,
       sendVerificationEmail,
     }),
@@ -228,6 +251,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
       signOut,
       status,
       updateDisplayName,
+      updateInterests,
+      updateProfile,
     ],
   );
 
