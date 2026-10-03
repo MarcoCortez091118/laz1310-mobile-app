@@ -17,7 +17,7 @@ export interface PushRouteData {
 }
 
 interface PushMessageData {
-  data?: Record<string, string | undefined>;
+  data?: Record<string, string | object | undefined>;
 }
 
 function messagingInstance() {
