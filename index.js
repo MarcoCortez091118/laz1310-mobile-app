@@ -1,8 +1,8 @@
-import {
+const {
   getMessaging,
   setBackgroundMessageHandler,
-} from '@react-native-firebase/messaging';
-import { Platform } from 'react-native';
+} = require('@react-native-firebase/messaging');
+const { Platform } = require('react-native');
 
 if (Platform.OS !== 'web') {
   setBackgroundMessageHandler(getMessaging(), async () => {
@@ -11,4 +11,4 @@ if (Platform.OS !== 'web') {
   });
 }
 
-import 'expo-router/entry';
+require('expo-router/entry');
