@@ -1,6 +1,5 @@
 import {
   AuthorizationStatus,
-  RemoteMessage,
   getInitialNotification,
   getMessaging,
   getToken,
@@ -15,6 +14,10 @@ import { PermissionsAndroid, Platform } from 'react-native';
 export interface PushRouteData {
   notificationId?: string;
   targetValue?: string;
+}
+
+interface PushMessageData {
+  data?: Record<string, string | undefined>;
 }
 
 function messagingInstance() {
@@ -47,13 +50,13 @@ export async function requestPushPermissionAndToken() {
 }
 
 export function observeForegroundMessages(
-  listener: (message: RemoteMessage) => void | Promise<void>,
+  listener: (message: PushMessageData) => void | Promise<void>,
 ) {
   return onMessage(messagingInstance(), listener);
 }
 
 export function observeNotificationOpens(
-  listener: (message: RemoteMessage) => void | Promise<void>,
+  listener: (message: PushMessageData) => void | Promise<void>,
 ) {
   return onNotificationOpenedApp(messagingInstance(), listener);
 }
@@ -66,7 +69,7 @@ export function getInitialPushNotification() {
   return getInitialNotification(messagingInstance());
 }
 
-export function pushRouteData(message: RemoteMessage): PushRouteData {
+export function pushRouteData(message: PushMessageData): PushRouteData {
   return {
     notificationId:
       typeof message.data?.notificationId === 'string'
