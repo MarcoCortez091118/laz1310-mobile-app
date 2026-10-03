@@ -1,5 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useRouter } from 'expo-router';
 import {
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,13 +16,16 @@ import { LiveRadioCard } from '../src/components/LiveRadioCard';
 import { ProgramCard } from '../src/components/ProgramCard';
 import { PromoHero } from '../src/components/PromoHero';
 import { WeatherHeaderBadge } from '../src/components/WeatherHeaderBadge';
+import { useNotifications } from '../src/features/notifications/NotificationsProvider';
 import { useAppTheme } from '../src/theme/ThemeProvider';
 import { fonts, spacing } from '../src/theme/tokens';
 
 const categories = ['Todo', 'Shows', 'Noticias', 'Eventos', 'Música'] as const;
 
 export default function HomeScreen() {
+  const router = useRouter();
   const { colors } = useAppTheme();
+  const { unreadCount } = useNotifications();
 
   return (
     <SafeAreaView
@@ -42,7 +47,10 @@ export default function HomeScreen() {
           <View style={styles.headerActions}>
             <LiveBadge compact />
             <WeatherHeaderBadge />
-            <View
+            <Pressable
+              accessibilityLabel="Abrir notificaciones"
+              accessibilityRole="button"
+              onPress={() => router.push('/notifications')}
               style={[
                 styles.bell,
                 { backgroundColor: colors.surfaceElevated },
@@ -53,7 +61,14 @@ export default function HomeScreen() {
                 name="notifications-outline"
                 size={20}
               />
-            </View>
+              {unreadCount > 0 ? (
+                <View style={[styles.badge, { backgroundColor: colors.red }]}>
+                  <Text style={styles.badgeText}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Text>
+                </View>
+              ) : null}
+            </Pressable>
           </View>
         </View>
 
@@ -153,7 +168,24 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     height: 36,
     justifyContent: 'center',
+    position: 'relative',
     width: 36,
+  },
+  badge: {
+    alignItems: 'center',
+    borderRadius: 9,
+    height: 17,
+    justifyContent: 'center',
+    minWidth: 17,
+    paddingHorizontal: 3,
+    position: 'absolute',
+    right: -3,
+    top: -3,
+  },
+  badgeText: {
+    color: '#FEFEFE',
+    fontFamily: fonts.bodyBold,
+    fontSize: 8,
   },
   categories: {
     gap: 10,
