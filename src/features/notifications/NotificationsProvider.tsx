@@ -336,7 +336,7 @@ export function NotificationsProvider({ children }: PropsWithChildren) {
   }, [activeUid, device?.id, withTokens]);
 
   const handleOpenedMessage = useCallback(
-    async (data: Record<string, string | undefined> | undefined) => {
+    async (data: Record<string, unknown> | undefined) => {
       if (!activeUid) {
         return;
       }
