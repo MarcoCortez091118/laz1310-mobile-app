@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import {
   ActivityIndicator,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -86,8 +87,13 @@ export default function NotificationsScreen() {
 
         <ScrollView
           contentContainerStyle={styles.list}
-          onRefresh={() => void refreshInbox()}
-          refreshing={loading}
+          refreshControl={
+            <RefreshControl
+              refreshing={loading}
+              onRefresh={() => void refreshInbox()}
+              tintColor={colors.red}
+            />
+          }
           showsVerticalScrollIndicator={false}
         >
           {inbox.map((item) => (
