@@ -34,8 +34,9 @@ export function ContentVersionProvider({ children }: PropsWithChildren) {
       return inFlightRefresh.current;
     }
 
-    const operation = getContentVersion()
-      .then((next) => {
+    const operation = (async (): Promise<ContentVersion | null> => {
+      try {
+        const next = await getContentVersion();
         setVersion((current) => {
           if (
             current?.revision === next.revision &&
@@ -48,20 +49,17 @@ export function ContentVersionProvider({ children }: PropsWithChildren) {
         });
         setError(null);
         return next;
-      })
-      .catch((requestError: unknown) => {
+      } catch (requestError) {
         setError(
           requestError instanceof Error
             ? requestError.message
             : 'No pudimos comprobar la versión de contenido.',
         );
         return null;
-      })
-      .finally(() => {
-        if (inFlightRefresh.current === operation) {
-          inFlightRefresh.current = null;
-        }
-      });
+      } finally {
+        inFlightRefresh.current = null;
+      }
+    })();
 
     inFlightRefresh.current = operation;
     return operation;
