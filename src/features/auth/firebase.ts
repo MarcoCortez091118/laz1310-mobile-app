@@ -1,3 +1,4 @@
+import { GoogleSignin, isSuccessResponse } from '@react-native-google-signin/google-signin';
 import { getApp } from '@react-native-firebase/app';
 import {
   AppCheck,
@@ -6,6 +7,7 @@ import {
   initializeAppCheck,
 } from '@react-native-firebase/app-check';
 import {
+  GoogleAuthProvider,
   User,
   createUserWithEmailAndPassword,
   getAuth,
@@ -13,6 +15,7 @@ import {
   onAuthStateChanged,
   reload,
   sendEmailVerification,
+  signInWithCredential,
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
@@ -20,6 +23,7 @@ import {
 import { Platform } from 'react-native';
 
 let appCheckInstance: AppCheck | null = null;
+let googleSignInConfigured = false;
 
 export interface FirebaseSecurityTokens {
   idToken?: string;
@@ -103,6 +107,61 @@ export async function signInFirebaseEmail(email: string, password: string) {
     firebaseAuth(),
     email.trim(),
     password,
+  );
+
+  return credential.user;
+}
+
+function configureGoogleSignIn() {
+  if (googleSignInConfigured) {
+    return;
+  }
+
+  const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim();
+
+  if (!webClientId) {
+    throw new Error(
+      'Google Sign-In is not configured. Missing EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID.',
+    );
+  }
+
+  GoogleSignin.configure({
+    webClientId,
+    offlineAccess: false,
+  });
+
+  googleSignInConfigured = true;
+}
+
+export async function signInFirebaseGoogle() {
+  if (Platform.OS === 'web') {
+    throw new Error('Google Sign-In is available only in native LA Z builds');
+  }
+
+  configureGoogleSignIn();
+
+  await GoogleSignin.hasPlayServices({
+    showPlayServicesUpdateDialog: true,
+  });
+
+  const response = await GoogleSignin.signIn();
+
+  if (!isSuccessResponse(response)) {
+    return null;
+  }
+
+  const googleIdToken = response.data.idToken;
+
+  if (!googleIdToken) {
+    throw new Error(
+      'Google Sign-In did not return an ID token. Verify the Web OAuth client ID.',
+    );
+  }
+
+  const googleCredential = GoogleAuthProvider.credential(googleIdToken);
+  const credential = await signInWithCredential(
+    firebaseAuth(),
+    googleCredential,
   );
 
   return credential.user;

@@ -24,6 +24,7 @@ import {
   reloadCurrentFirebaseUser,
   sendCurrentUserVerificationEmail,
   signInFirebaseEmail,
+  signInFirebaseGoogle,
   signOutFirebase,
   updateFirebaseDisplayName,
 } from './firebase';
@@ -49,6 +50,7 @@ interface AuthContextValue {
     displayName: string,
   ) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<boolean>;
   signOut: () => Promise<void>;
   updateDisplayName: (displayName: string) => Promise<void>;
   updateProfile: (payload: UpdateLazProfile) => Promise<void>;
@@ -66,6 +68,11 @@ function deviceProfileDefaults() {
     locale: resolved.locale || 'es-US',
     timezone: resolved.timeZone || 'America/Detroit',
   };
+}
+
+function synchronizationError(prefix: string, error: unknown) {
+  const detail = error instanceof Error ? error.message : 'Error desconocido';
+  return new Error(`${prefix} ${detail}`);
 }
 
 export function AuthProvider({ children }: PropsWithChildren) {
@@ -120,6 +127,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         return businessProfile;
       } catch (syncError) {
         if (generation === syncGeneration.current) {
+          setFirebaseUser(user);
           setProfile(null);
           setStatus('error');
           setError(
@@ -147,7 +155,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
       setFirebaseUser(user);
       void synchronize(user).catch(() => {
-        // The provider exposes the synchronization error to UI.
+        // Firebase authentication succeeded; UI exposes the LA Z synchronization error.
       });
     });
 
@@ -157,11 +165,19 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const registerWithEmail = useCallback(
     async (email: string, password: string, displayName: string) => {
       const user = await registerFirebaseEmail(email, password, displayName);
-      await synchronize(
-        user,
-        { displayName: displayName.trim() },
-        true,
-      );
+
+      try {
+        await synchronize(
+          user,
+          { displayName: displayName.trim() },
+          true,
+        );
+      } catch (syncError) {
+        throw synchronizationError(
+          'Tu cuenta sí fue creada en Firebase, pero LA Z no pudo completar la sincronización de sesión.',
+          syncError,
+        );
+      }
     },
     [synchronize],
   );
@@ -169,10 +185,37 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const signInWithEmail = useCallback(
     async (email: string, password: string) => {
       const user = await signInFirebaseEmail(email, password);
-      await synchronize(user);
+
+      try {
+        await synchronize(user);
+      } catch (syncError) {
+        throw synchronizationError(
+          'Firebase aceptó tus credenciales, pero LA Z no pudo completar la sincronización de sesión.',
+          syncError,
+        );
+      }
     },
     [synchronize],
   );
+
+  const signInWithGoogle = useCallback(async () => {
+    const user = await signInFirebaseGoogle();
+
+    if (!user) {
+      return false;
+    }
+
+    try {
+      await synchronize(user, undefined, true);
+    } catch (syncError) {
+      throw synchronizationError(
+        'Google autenticó tu cuenta en Firebase, pero LA Z no pudo completar la sincronización de sesión.',
+        syncError,
+      );
+    }
+
+    return true;
+  }, [synchronize]);
 
   const signOut = useCallback(async () => {
     syncGeneration.current += 1;
@@ -233,6 +276,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       error,
       registerWithEmail,
       signInWithEmail,
+      signInWithGoogle,
       signOut,
       updateDisplayName,
       updateProfile,
@@ -248,6 +292,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       registerWithEmail,
       sendVerificationEmail,
       signInWithEmail,
+      signInWithGoogle,
       signOut,
       status,
       updateDisplayName,
