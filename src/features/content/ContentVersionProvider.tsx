@@ -27,38 +27,44 @@ const ContentVersionContext = createContext<ContentVersionContextValue | null>(n
 export function ContentVersionProvider({ children }: PropsWithChildren) {
   const [version, setVersion] = useState<ContentVersion | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const refreshing = useRef(false);
+  const inFlightRefresh = useRef<Promise<ContentVersion | null> | null>(null);
 
-  const refresh = useCallback(async () => {
-    if (refreshing.current) {
-      return null;
+  const refresh = useCallback((): Promise<ContentVersion | null> => {
+    if (inFlightRefresh.current) {
+      return inFlightRefresh.current;
     }
 
-    refreshing.current = true;
-    try {
-      const next = await getContentVersion();
-      setVersion((current) => {
-        if (
-          current?.revision === next.revision &&
-          current.releaseId === next.releaseId &&
-          current.updatedAt === next.updatedAt
-        ) {
-          return current;
-        }
+    const operation = getContentVersion()
+      .then((next) => {
+        setVersion((current) => {
+          if (
+            current?.revision === next.revision &&
+            current.releaseId === next.releaseId &&
+            current.updatedAt === next.updatedAt
+          ) {
+            return current;
+          }
+          return next;
+        });
+        setError(null);
         return next;
+      })
+      .catch((requestError: unknown) => {
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : 'No pudimos comprobar la versión de contenido.',
+        );
+        return null;
+      })
+      .finally(() => {
+        if (inFlightRefresh.current === operation) {
+          inFlightRefresh.current = null;
+        }
       });
-      setError(null);
-      return next;
-    } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : 'No pudimos comprobar la versión de contenido.',
-      );
-      return null;
-    } finally {
-      refreshing.current = false;
-    }
+
+    inFlightRefresh.current = operation;
+    return operation;
   }, []);
 
   useEffect(() => {
