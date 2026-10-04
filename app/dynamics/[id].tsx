@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Linking from 'expo-linking';
-import { Link, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { Link, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ApiError } from '../../src/api/client';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
+import { useContentVersion } from '../../src/features/content/ContentVersionProvider';
 import {
   DynamicCampaign,
   getDynamic,
@@ -36,6 +37,7 @@ export default function DynamicDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { colors } = useAppTheme();
+  const { releaseId, refresh: refreshContentVersion } = useContentVersion();
   const [campaign, setCampaign] = useState<DynamicCampaign | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +53,7 @@ export default function DynamicDetailScreen() {
     setError(null);
 
     try {
-      const result = await getDynamic(id);
+      const result = await getDynamic(id, releaseId ?? undefined);
       setCampaign(result.item);
     } catch (requestError) {
       setCampaign(null);
@@ -59,11 +61,15 @@ export default function DynamicDetailScreen() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, releaseId]);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      void refreshContentVersion();
+      void load();
+      return undefined;
+    }, [load, refreshContentVersion]),
+  );
 
   const handlePrimaryAction = () => {
     if (!campaign || campaign.status !== 'active') {
@@ -130,7 +136,11 @@ export default function DynamicDetailScreen() {
                 },
               ]}
             >
-              <Image source={{ uri: campaign.imageUrl }} style={styles.heroImage} />
+              <Image
+                resizeMode="cover"
+                source={{ uri: campaign.imageUrl }}
+                style={styles.heroImage}
+              />
               <View style={styles.heroScrim} />
               <Text style={[styles.artLabel, { color: colors.red }]}>
                 {campaign.artworkLabel}
@@ -292,12 +302,13 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   hero: {
+    aspectRatio: 1,
     borderRadius: radii.lg,
     borderWidth: 1,
-    height: 300,
     marginTop: 8,
     overflow: 'hidden',
     padding: spacing.lg,
+    width: '100%',
   },
   heroImage: {
     bottom: 0,
@@ -305,8 +316,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: 0,
-    height: '100%',
-    width: '100%',
   },
   heroScrim: {
     bottom: 0,
