@@ -18,6 +18,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { MiniPlayer } from '../src/components/MiniPlayer';
 import { AuthProvider } from '../src/features/auth/AuthProvider';
+import { ContentVersionProvider } from '../src/features/content/ContentVersionProvider';
 import { PushNotificationsProvider } from '../src/features/notifications/PushNotificationsProvider';
 import { RadioProvider } from '../src/features/radio/RadioProvider';
 import { useRadio } from '../src/features/radio/useRadio';
@@ -75,11 +76,13 @@ export default function RootLayout() {
       <ThemeProvider>
         <WeatherUnitProvider>
           <AuthProvider>
-            <PushNotificationsProvider>
-              <RadioProvider>
-                <AppNavigator />
-              </RadioProvider>
-            </PushNotificationsProvider>
+            <ContentVersionProvider>
+              <PushNotificationsProvider>
+                <RadioProvider>
+                  <AppNavigator />
+                </RadioProvider>
+              </PushNotificationsProvider>
+            </ContentVersionProvider>
           </AuthProvider>
         </WeatherUnitProvider>
       </ThemeProvider>
