@@ -13,9 +13,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomNavigation } from '../../src/components/BottomNavigation';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
+import { LazInterest } from '../../src/features/auth/api';
 import { useAuth } from '../../src/features/auth/AuthProvider';
 import { useAppTheme } from '../../src/theme/ThemeProvider';
 import { fonts, radii, spacing } from '../../src/theme/tokens';
+
+const interestLabels: Record<LazInterest, string> = {
+  radio: 'Radio',
+  news: 'Noticias',
+  events: 'Eventos',
+  shows: 'Shows',
+  community: 'Comunidad',
+};
 
 function initials(name: string | null, email: string | null) {
   const source = (name || email || 'LA Z').trim();
@@ -46,9 +55,7 @@ export default function ProfileScreen() {
       >
         <View style={styles.loading}>
           <ActivityIndicator color={colors.red} />
-          <Text style={[styles.loadingText, { color: colors.muted }]}>
-            Sincronizando tu perfil…
-          </Text>
+          <Text style={[styles.loadingText, { color: colors.muted }]}>Sincronizando tu perfil…</Text>
         </View>
       </SafeAreaView>
     );
@@ -62,18 +69,12 @@ export default function ProfileScreen() {
       >
         <View style={styles.loading}>
           <Ionicons color={colors.red} name="cloud-offline-outline" size={36} />
-          <Text style={[styles.errorTitle, { color: colors.white }]}>
-            No pudimos validar tu sesión
-          </Text>
+          <Text style={[styles.errorTitle, { color: colors.white }]}>No pudimos validar tu sesión</Text>
           <Text style={[styles.errorBody, { color: colors.muted }]}>
-            {error ??
-              'Firebase está autenticado, pero LA Z API no pudo sincronizar el perfil.'}
+            {error ?? 'Firebase está autenticado, pero LA Z API no pudo sincronizar el perfil.'}
           </Text>
           <View style={styles.retry}>
-            <PrimaryButton
-              label="Reintentar"
-              onPress={() => void refreshProfile()}
-            />
+            <PrimaryButton label="Reintentar" onPress={() => void refreshProfile()} />
           </View>
         </View>
       </SafeAreaView>
@@ -94,17 +95,11 @@ export default function ProfileScreen() {
 
         <View style={styles.profileRow}>
           <View style={[styles.avatar, { backgroundColor: colors.red }]}>
-            <Text style={styles.avatarText}>
-              {initials(profile.displayName, profile.email)}
-            </Text>
+            <Text style={styles.avatarText}>{initials(profile.displayName, profile.email)}</Text>
           </View>
           <View style={styles.profileCopy}>
-            <Text style={[styles.name, { color: colors.white }]}>
-              {profile.displayName || 'Completa tu perfil'}
-            </Text>
-            <Text style={[styles.email, { color: colors.muted }]}>
-              {profile.email || 'Sin correo disponible'}
-            </Text>
+            <Text style={[styles.name, { color: colors.white }]}>{profile.displayName || 'Completa tu perfil'}</Text>
+            <Text style={[styles.email, { color: colors.muted }]}>{profile.email || 'Sin correo disponible'}</Text>
             <View style={styles.badges}>
               <View
                 style={[
@@ -119,21 +114,13 @@ export default function ProfileScreen() {
               >
                 <Ionicons
                   color={profile.emailVerified ? '#56C985' : colors.muted}
-                  name={
-                    profile.emailVerified
-                      ? 'checkmark-circle-outline'
-                      : 'mail-unread-outline'
-                  }
+                  name={profile.emailVerified ? 'checkmark-circle-outline' : 'mail-unread-outline'}
                   size={13}
                 />
                 <Text
                   style={[
                     styles.badgeText,
-                    {
-                      color: profile.emailVerified
-                        ? '#56C985'
-                        : colors.muted,
-                    },
+                    { color: profile.emailVerified ? '#56C985' : colors.muted },
                   ]}
                 >
                   {profile.emailVerified ? 'EMAIL VERIFICADO' : 'EMAIL PENDIENTE'}
@@ -144,31 +131,20 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.actions}>
-          <PrimaryButton
-            label="Editar perfil"
-            onPress={() => router.push('/profile/edit')}
-            secondary
-          />
+          <PrimaryButton label="Editar perfil" onPress={() => router.push('/profile/edit')} secondary />
         </View>
 
         <View
           style={[
             styles.accountCard,
-            {
-              backgroundColor: colors.surfaceElevated,
-              borderColor: colors.border,
-            },
+            { backgroundColor: colors.surfaceElevated, borderColor: colors.border },
           ]}
         >
           <View style={styles.accountRow}>
             <Ionicons color={colors.red} name="location-outline" size={20} />
             <View style={styles.accountCopy}>
-              <Text style={[styles.accountLabel, { color: colors.muted }]}>
-                ZONA HORARIA
-              </Text>
-              <Text style={[styles.accountValue, { color: colors.white }]}>
-                {profile.timezone || 'Pendiente'}
-              </Text>
+              <Text style={[styles.accountLabel, { color: colors.muted }]}>ZONA HORARIA</Text>
+              <Text style={[styles.accountValue, { color: colors.white }]}>{profile.timezone || 'Pendiente'}</Text>
             </View>
           </View>
 
@@ -177,37 +153,48 @@ export default function ProfileScreen() {
           <View style={styles.accountRow}>
             <Ionicons color={colors.red} name="language-outline" size={20} />
             <View style={styles.accountCopy}>
-              <Text style={[styles.accountLabel, { color: colors.muted }]}>
-                IDIOMA
-              </Text>
-              <Text style={[styles.accountValue, { color: colors.white }]}>
-                {profile.locale || 'Pendiente'}
-              </Text>
+              <Text style={[styles.accountLabel, { color: colors.muted }]}>IDIOMA</Text>
+              <Text style={[styles.accountValue, { color: colors.white }]}>{profile.locale || 'Pendiente'}</Text>
             </View>
           </View>
         </View>
 
-        <Text style={[styles.sectionTitle, { color: colors.white }]}>
-          Cuenta y aplicación
-        </Text>
+        <Text style={[styles.sectionTitle, { color: colors.white }]}>Tus intereses</Text>
+        <Text style={[styles.interestsNote, { color: colors.muted }]}>Personalizan contenido y son independientes de tus preferencias de notificaciones.</Text>
+        <View style={styles.interests}>
+          {profile.interests.length > 0 ? (
+            profile.interests.map((interest) => (
+              <View
+                key={interest}
+                style={[
+                  styles.interestChip,
+                  { backgroundColor: colors.surfaceElevated, borderColor: colors.border },
+                ]}
+              >
+                <Text style={[styles.interestText, { color: colors.white }]}>{interestLabels[interest]}</Text>
+              </View>
+            ))
+          ) : (
+            <Pressable onPress={() => router.push('/profile/edit')}>
+              <Text style={[styles.addInterests, { color: colors.red }]}>Seleccionar intereses →</Text>
+            </Pressable>
+          )}
+        </View>
+
+        <Text style={[styles.sectionTitle, { color: colors.white }]}>Cuenta y aplicación</Text>
 
         <View style={styles.rows}>
           <Pressable
             onPress={() => router.push('/profile/settings/account')}
             style={[
               styles.row,
-              {
-                backgroundColor: colors.surfaceElevated,
-                borderColor: colors.border,
-              },
+              { backgroundColor: colors.surfaceElevated, borderColor: colors.border },
             ]}
           >
             <Ionicons color={colors.red} name="person-circle-outline" size={21} />
             <View style={styles.rowCopy}>
               <Text style={[styles.rowTitle, { color: colors.white }]}>Cuenta</Text>
-              <Text style={[styles.rowSubtitle, { color: colors.muted }]}>
-                Correo, verificación y sesión
-              </Text>
+              <Text style={[styles.rowSubtitle, { color: colors.muted }]}>Correo, verificación y sesión</Text>
             </View>
             <Ionicons color={colors.gray} name="chevron-forward" size={20} />
           </Pressable>
@@ -216,29 +203,17 @@ export default function ProfileScreen() {
             onPress={() => router.push('/profile/settings')}
             style={[
               styles.row,
-              {
-                backgroundColor: colors.surfaceElevated,
-                borderColor: colors.border,
-              },
+              { backgroundColor: colors.surfaceElevated, borderColor: colors.border },
             ]}
           >
             <Ionicons color={colors.red} name="settings-outline" size={21} />
             <View style={styles.rowCopy}>
-              <Text style={[styles.rowTitle, { color: colors.white }]}>
-                Configuración
-              </Text>
-              <Text style={[styles.rowSubtitle, { color: colors.muted }]}>
-                Apariencia y preferencias disponibles
-              </Text>
+              <Text style={[styles.rowTitle, { color: colors.white }]}>Configuración</Text>
+              <Text style={[styles.rowSubtitle, { color: colors.muted }]}>Apariencia, notificaciones y preferencias</Text>
             </View>
             <Ionicons color={colors.gray} name="chevron-forward" size={20} />
           </Pressable>
         </View>
-
-        <Text style={[styles.scopeNote, { color: colors.muted }]}>
-          Favoritos, guardados e intereses se conectarán cuando sus contratos de
-          producto estén definidos.
-        </Text>
       </ScrollView>
 
       <BottomNavigation />
@@ -254,11 +229,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
   },
-  loadingText: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    marginTop: 12,
-  },
+  loadingText: { fontFamily: fonts.body, fontSize: 12, marginTop: 12 },
   errorTitle: {
     fontFamily: fonts.displayExtraBold,
     fontSize: 28,
@@ -272,24 +243,14 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
   },
-  retry: {
-    marginTop: 24,
-    width: '100%',
-  },
+  retry: { marginTop: 24, width: '100%' },
   content: {
     paddingBottom: 180,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
   },
-  title: {
-    fontFamily: fonts.displayExtraBold,
-    fontSize: 36,
-  },
-  profileRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    marginTop: 24,
-  },
+  title: { fontFamily: fonts.displayExtraBold, fontSize: 36 },
+  profileRow: { alignItems: 'center', flexDirection: 'row', marginTop: 24 },
   avatar: {
     alignItems: 'center',
     borderRadius: 48,
@@ -297,28 +258,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 96,
   },
-  avatarText: {
-    color: '#FEFEFE',
-    fontFamily: fonts.displayExtraBold,
-    fontSize: 34,
-  },
-  profileCopy: {
-    flex: 1,
-    marginLeft: spacing.md,
-  },
-  name: {
-    fontFamily: fonts.displayExtraBold,
-    fontSize: 29,
-  },
-  email: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    marginTop: 2,
-  },
-  badges: {
-    flexDirection: 'row',
-    marginTop: 9,
-  },
+  avatarText: { color: '#FEFEFE', fontFamily: fonts.displayExtraBold, fontSize: 34 },
+  profileCopy: { flex: 1, marginLeft: spacing.md },
+  name: { fontFamily: fonts.displayExtraBold, fontSize: 29 },
+  email: { fontFamily: fonts.body, fontSize: 12, marginTop: 2 },
+  badges: { flexDirection: 'row', marginTop: 9 },
   badge: {
     alignItems: 'center',
     borderRadius: 999,
@@ -328,49 +272,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 5,
   },
-  badgeText: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 7,
-    letterSpacing: 0.6,
-  },
-  actions: {
-    marginTop: 18,
-  },
+  badgeText: { fontFamily: fonts.bodyBold, fontSize: 7, letterSpacing: 0.6 },
+  actions: { marginTop: 18 },
   accountCard: {
     borderRadius: radii.md,
     borderWidth: 1,
     marginTop: 24,
     paddingHorizontal: spacing.md,
   },
-  accountRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    minHeight: 70,
-  },
-  accountCopy: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  accountLabel: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 8,
-    letterSpacing: 0.8,
-  },
-  accountValue: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 13,
-    marginTop: 3,
-  },
+  accountRow: { alignItems: 'center', flexDirection: 'row', minHeight: 70 },
+  accountCopy: { flex: 1, marginLeft: 12 },
+  accountLabel: { fontFamily: fonts.bodyBold, fontSize: 8, letterSpacing: 0.8 },
+  accountValue: { fontFamily: fonts.bodySemiBold, fontSize: 13, marginTop: 3 },
   divider: { height: 1 },
-  sectionTitle: {
-    fontFamily: fonts.displayExtraBold,
-    fontSize: 26,
-    marginTop: 26,
+  sectionTitle: { fontFamily: fonts.displayExtraBold, fontSize: 26, marginTop: 26 },
+  interestsNote: { fontFamily: fonts.body, fontSize: 9, lineHeight: 14, marginTop: 3 },
+  interests: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
+  interestChip: {
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
-  rows: {
-    gap: 10,
-    marginTop: 12,
-  },
+  interestText: { fontFamily: fonts.bodySemiBold, fontSize: 10 },
+  addInterests: { fontFamily: fonts.bodySemiBold, fontSize: 11, paddingVertical: 5 },
+  rows: { gap: 10, marginTop: 12 },
   row: {
     alignItems: 'center',
     borderRadius: radii.md,
@@ -379,24 +305,7 @@ const styles = StyleSheet.create({
     minHeight: 66,
     paddingHorizontal: spacing.md,
   },
-  rowCopy: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  rowTitle: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-  },
-  rowSubtitle: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    marginTop: 2,
-  },
-  scopeNote: {
-    fontFamily: fonts.body,
-    fontSize: 9,
-    lineHeight: 14,
-    marginTop: 22,
-    textAlign: 'center',
-  },
+  rowCopy: { flex: 1, marginLeft: 12 },
+  rowTitle: { fontFamily: fonts.bodySemiBold, fontSize: 14 },
+  rowSubtitle: { fontFamily: fonts.body, fontSize: 10, marginTop: 2 },
 });

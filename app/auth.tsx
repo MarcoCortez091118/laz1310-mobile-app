@@ -34,6 +34,7 @@ export default function AuthScreen() {
     status,
     registerWithEmail,
     signInWithEmail,
+    signInWithGoogle,
   } = useAuth();
   const { colors } = useAppTheme();
 
@@ -128,6 +129,27 @@ export default function AuthScreen() {
     }
   };
 
+  const loginWithGoogle = async () => {
+    if (submitting) {
+      return;
+    }
+
+    setSubmitting(true);
+    setFormError(null);
+
+    try {
+      const authenticated = await signInWithGoogle();
+
+      if (authenticated) {
+        router.replace('/profile');
+      }
+    } catch (error) {
+      setFormError(authErrorMessage(error));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (step === 'welcome') {
     return (
       <SafeAreaView
@@ -155,6 +177,7 @@ export default function AuthScreen() {
 
           <View style={styles.actions}>
             <PrimaryButton
+              disabled={submitting}
               label="Crear cuenta"
               onPress={() => {
                 setFormError(null);
@@ -162,6 +185,13 @@ export default function AuthScreen() {
               }}
             />
             <PrimaryButton
+              disabled={submitting}
+              label={submitting ? 'Conectando…' : 'Ingresar con Google'}
+              onPress={() => void loginWithGoogle()}
+              secondary
+            />
+            <PrimaryButton
+              disabled={submitting}
               label="Ya tengo cuenta"
               onPress={() => {
                 setFormError(null);
@@ -171,9 +201,26 @@ export default function AuthScreen() {
             />
           </View>
 
+          {formError ? (
+            <View
+              style={[
+                styles.errorCard,
+                {
+                  backgroundColor: colors.surfaceElevated,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
+              <Ionicons color={colors.red} name="alert-circle-outline" size={20} />
+              <Text style={[styles.errorText, { color: colors.white }]}>
+                {formError}
+              </Text>
+            </View>
+          ) : null}
+
           <Text style={[styles.securityNote, { color: colors.muted }]}>
-            La contraseña se procesa exclusivamente con Firebase Authentication.
-            LA Z API recibe el ID token y App Check, nunca tu contraseña.
+            Las credenciales se procesan con Firebase Authentication. LA Z API
+            recibe el ID token y App Check, nunca tu contraseña de Google o LA Z.
           </Text>
 
           {status === 'syncing' ? (

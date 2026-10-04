@@ -14,6 +14,7 @@
     "@expo-google-fonts/barlow-condensed": "^0.4.1",
     "@expo-google-fonts/outfit": "^0.4.3",
     "@expo/vector-icons": "^15.0.2",
+    "@react-native-google-signin/google-signin": "^16.1.5",
     "expo": "~57.0.24",
     "expo-asset": "~57.0.17",
     "expo-audio": "~57.0.5",
@@ -34,6 +35,7 @@
     "@react-native-firebase/app": "^26.4.0",
     "@react-native-firebase/auth": "^26.4.0",
     "@react-native-firebase/app-check": "^26.4.0",
+    "@react-native-firebase/messaging": "^26.4.0",
     "expo-build-properties": "~57.0.22"
   },
   "devDependencies": {

@@ -10,7 +10,9 @@ import {
 } from 'react';
 
 import {
+  LazInterest,
   LazUserProfile,
+  UpdateLazProfile,
   createBusinessSession,
   patchBusinessProfile,
 } from './api';
@@ -22,9 +24,11 @@ import {
   reloadCurrentFirebaseUser,
   sendCurrentUserVerificationEmail,
   signInFirebaseEmail,
+  signInFirebaseGoogle,
   signOutFirebase,
   updateFirebaseDisplayName,
 } from './firebase';
+import { unlinkCurrentDevice } from '../notifications/device';
 
 type AuthStatus =
   | 'initializing'
@@ -46,8 +50,11 @@ interface AuthContextValue {
     displayName: string,
   ) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<boolean>;
   signOut: () => Promise<void>;
   updateDisplayName: (displayName: string) => Promise<void>;
+  updateProfile: (payload: UpdateLazProfile) => Promise<void>;
+  updateInterests: (interests: LazInterest[]) => Promise<void>;
   refreshProfile: () => Promise<void>;
   sendVerificationEmail: () => Promise<void>;
 }
@@ -61,6 +68,11 @@ function deviceProfileDefaults() {
     locale: resolved.locale || 'es-US',
     timezone: resolved.timeZone || 'America/Detroit',
   };
+}
+
+function synchronizationError(prefix: string, error: unknown) {
+  const detail = error instanceof Error ? error.message : 'Error desconocido';
+  return new Error(`${prefix} ${detail}`);
 }
 
 export function AuthProvider({ children }: PropsWithChildren) {
@@ -105,13 +117,17 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
         if (generation === syncGeneration.current) {
           setFirebaseUser(user);
-          setProfile(businessProfile);
+          setProfile({
+            ...businessProfile,
+            interests: businessProfile.interests ?? [],
+          });
           setStatus('authenticated');
         }
 
         return businessProfile;
       } catch (syncError) {
         if (generation === syncGeneration.current) {
+          setFirebaseUser(user);
           setProfile(null);
           setStatus('error');
           setError(
@@ -139,7 +155,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
       setFirebaseUser(user);
       void synchronize(user).catch(() => {
-        // The provider exposes the synchronization error to UI.
+        // Firebase authentication succeeded; UI exposes the LA Z synchronization error.
       });
     });
 
@@ -149,11 +165,19 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const registerWithEmail = useCallback(
     async (email: string, password: string, displayName: string) => {
       const user = await registerFirebaseEmail(email, password, displayName);
-      await synchronize(
-        user,
-        { displayName: displayName.trim() },
-        true,
-      );
+
+      try {
+        await synchronize(
+          user,
+          { displayName: displayName.trim() },
+          true,
+        );
+      } catch (syncError) {
+        throw synchronizationError(
+          'Tu cuenta sí fue creada en Firebase, pero LA Z no pudo completar la sincronización de sesión.',
+          syncError,
+        );
+      }
     },
     [synchronize],
   );
@@ -161,18 +185,56 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const signInWithEmail = useCallback(
     async (email: string, password: string) => {
       const user = await signInFirebaseEmail(email, password);
-      await synchronize(user);
+
+      try {
+        await synchronize(user);
+      } catch (syncError) {
+        throw synchronizationError(
+          'Firebase aceptó tus credenciales, pero LA Z no pudo completar la sincronización de sesión.',
+          syncError,
+        );
+      }
     },
     [synchronize],
   );
 
+  const signInWithGoogle = useCallback(async () => {
+    const user = await signInFirebaseGoogle();
+
+    if (!user) {
+      return false;
+    }
+
+    try {
+      await synchronize(user, undefined, true);
+    } catch (syncError) {
+      throw synchronizationError(
+        'Google autenticó tu cuenta en Firebase, pero LA Z no pudo completar la sincronización de sesión.',
+        syncError,
+      );
+    }
+
+    return true;
+  }, [synchronize]);
+
   const signOut = useCallback(async () => {
     syncGeneration.current += 1;
+
+    if (firebaseUser) {
+      await unlinkCurrentDevice(firebaseUser.uid);
+    }
+
     await signOutFirebase();
     setFirebaseUser(null);
     setProfile(null);
     setError(null);
     setStatus('signedOut');
+  }, [firebaseUser]);
+
+  const updateProfile = useCallback(async (payload: UpdateLazProfile) => {
+    const tokens = await getFirebaseSecurityTokens(true);
+    const updated = await patchBusinessProfile(tokens, payload);
+    setProfile({ ...updated, interests: updated.interests ?? [] });
   }, []);
 
   const updateDisplayName = useCallback(
@@ -183,14 +245,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
       const normalized = displayName.trim();
       await updateFirebaseDisplayName(normalized);
-      const tokens = await getFirebaseSecurityTokens(true);
-      const updated = await patchBusinessProfile(tokens, {
-        displayName: normalized,
-      });
-
-      setProfile(updated);
+      await updateProfile({ displayName: normalized });
     },
-    [firebaseUser],
+    [firebaseUser, updateProfile],
+  );
+
+  const updateInterests = useCallback(
+    async (interests: LazInterest[]) => {
+      await updateProfile({ interests });
+    },
+    [updateProfile],
   );
 
   const refreshProfile = useCallback(async () => {
@@ -212,8 +276,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
       error,
       registerWithEmail,
       signInWithEmail,
+      signInWithGoogle,
       signOut,
       updateDisplayName,
+      updateProfile,
+      updateInterests,
       refreshProfile,
       sendVerificationEmail,
     }),
@@ -225,9 +292,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
       registerWithEmail,
       sendVerificationEmail,
       signInWithEmail,
+      signInWithGoogle,
       signOut,
       status,
       updateDisplayName,
+      updateInterests,
+      updateProfile,
     ],
   );
 

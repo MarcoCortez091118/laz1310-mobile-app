@@ -1,6 +1,13 @@
 import { apiRequest } from '../../api/client';
 import { FirebaseSecurityTokens } from './firebase';
 
+export type LazInterest =
+  | 'radio'
+  | 'news'
+  | 'events'
+  | 'shows'
+  | 'community';
+
 export interface LazUserProfile {
   id: string;
   firebaseUid: string;
@@ -9,6 +16,7 @@ export interface LazUserProfile {
   displayName: string | null;
   locale: string | null;
   timezone: string | null;
+  interests: LazInterest[];
   profileCompleted: boolean;
   createdAt: string;
   updatedAt: string;
@@ -19,6 +27,7 @@ export interface UpdateLazProfile {
   displayName?: string;
   locale?: string;
   timezone?: string;
+  interests?: LazInterest[];
 }
 
 function authHeaders(tokens: FirebaseSecurityTokens) {
