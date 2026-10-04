@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 
+import { useContentVersion } from '../features/content/ContentVersionProvider';
 import {
   DynamicCampaign,
   getDynamics,
@@ -19,12 +20,13 @@ import { fonts, radii, spacing } from '../theme/tokens';
 export function PromoHero() {
   const router = useRouter();
   const { colors } = useAppTheme();
+  const { releaseId } = useContentVersion();
   const [campaign, setCampaign] = useState<DynamicCampaign | null>(null);
 
   useEffect(() => {
     let active = true;
 
-    void getDynamics()
+    void getDynamics(releaseId ?? undefined)
       .then((result) => {
         if (!active) {
           return;
@@ -44,7 +46,7 @@ export function PromoHero() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [releaseId]);
 
   if (!campaign) {
     return null;
@@ -69,7 +71,11 @@ export function PromoHero() {
         },
       ]}
     >
-      <Image source={{ uri: campaign.imageUrl }} style={styles.image} />
+      <Image
+        resizeMode="cover"
+        source={{ uri: campaign.imageUrl }}
+        style={styles.image}
+      />
       <View style={styles.scrim} />
       <View style={[styles.glow, { backgroundColor: colors.red }]} />
       <Text style={[styles.eyebrow, { color: colors.red }]}>
@@ -90,11 +96,12 @@ export function PromoHero() {
 
 const styles = StyleSheet.create({
   container: {
+    aspectRatio: 1,
     borderRadius: radii.md,
     borderWidth: 1,
-    height: 224,
     overflow: 'hidden',
     padding: spacing.lg,
+    width: '100%',
   },
   image: {
     bottom: 0,
@@ -102,8 +109,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: 0,
-    height: '100%',
-    width: '100%',
   },
   scrim: {
     bottom: 0,
