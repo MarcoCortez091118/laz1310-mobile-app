@@ -42,33 +42,43 @@ export default function DynamicDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    if (!id) {
-      setError('Falta el identificador de la dinámica.');
-      setLoading(false);
-      return;
-    }
+  const load = useCallback(
+    async (requestedReleaseId?: string | null) => {
+      if (!id) {
+        setError('Falta el identificador de la dinámica.');
+        setLoading(false);
+        return;
+      }
 
-    setLoading(true);
-    setError(null);
+      setLoading(true);
+      setError(null);
 
-    try {
-      const result = await getDynamic(id, releaseId ?? undefined);
-      setCampaign(result.item);
-    } catch (requestError) {
-      setCampaign(null);
-      setError(errorCopy(requestError));
-    } finally {
-      setLoading(false);
-    }
-  }, [id, releaseId]);
+      try {
+        const result = await getDynamic(id, requestedReleaseId ?? undefined);
+        setCampaign(result.item);
+      } catch (requestError) {
+        setCampaign(null);
+        setError(errorCopy(requestError));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [id],
+  );
 
   useFocusEffect(
     useCallback(() => {
-      void refreshContentVersion();
-      void load();
-      return undefined;
-    }, [load, refreshContentVersion]),
+      let active = true;
+      void (async () => {
+        const latest = await refreshContentVersion();
+        if (active) {
+          await load(latest?.releaseId ?? releaseId);
+        }
+      })();
+      return () => {
+        active = false;
+      };
+    }, [load, refreshContentVersion, releaseId]),
   );
 
   const handlePrimaryAction = () => {
@@ -121,7 +131,11 @@ export default function DynamicDetailScreen() {
           >
             <Ionicons color={colors.red} name="alert-circle-outline" size={32} />
             <Text style={[styles.errorText, { color: colors.white }]}>{error}</Text>
-            <PrimaryButton label="Reintentar" onPress={() => void load()} secondary />
+            <PrimaryButton
+              label="Reintentar"
+              onPress={() => void load(releaseId)}
+              secondary
+            />
           </View>
         ) : null}
 
