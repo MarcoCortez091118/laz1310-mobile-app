@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -16,6 +16,7 @@ import { ApiError } from '../../src/api/client';
 import { BottomNavigation } from '../../src/components/BottomNavigation';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
+import { useContentVersion } from '../../src/features/content/ContentVersionProvider';
 import {
   DynamicCampaign,
   getDynamics,
@@ -39,16 +40,17 @@ function errorCopy(error: unknown) {
 export default function DynamicsListScreen() {
   const router = useRouter();
   const { colors } = useAppTheme();
+  const { releaseId, refresh: refreshContentVersion } = useContentVersion();
   const [items, setItems] = useState<DynamicCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (requestedReleaseId?: string | null) => {
     setLoading(true);
     setError(null);
 
     try {
-      const result = await getDynamics();
+      const result = await getDynamics(requestedReleaseId ?? undefined);
       setItems(result.items.filter((item) => item.status === 'active'));
     } catch (requestError) {
       setItems([]);
@@ -58,9 +60,20 @@ export default function DynamicsListScreen() {
     }
   }, []);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      void (async () => {
+        const latest = await refreshContentVersion();
+        if (active) {
+          await load(latest?.releaseId ?? releaseId);
+        }
+      })();
+      return () => {
+        active = false;
+      };
+    }, [load, refreshContentVersion, releaseId]),
+  );
 
   return (
     <SafeAreaView
@@ -101,7 +114,11 @@ export default function DynamicsListScreen() {
             <Text style={[styles.errorText, { color: colors.white }]}>
               {error}
             </Text>
-            <PrimaryButton label="Reintentar" onPress={() => void load()} secondary />
+            <PrimaryButton
+              label="Reintentar"
+              onPress={() => void load(releaseId)}
+              secondary
+            />
           </View>
         ) : null}
 
@@ -155,7 +172,11 @@ export default function DynamicsListScreen() {
                     },
                   ]}
                 >
-                  <Image source={{ uri: item.imageUrl }} style={styles.artImage} />
+                  <Image
+                    resizeMode="cover"
+                    source={{ uri: item.imageUrl }}
+                    style={styles.artImage}
+                  />
                   <View style={styles.artScrim} />
                   <Text style={[styles.artLabel, { color: colors.red }]}>
                     {item.artworkLabel}
@@ -267,9 +288,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   artwork: {
+    aspectRatio: 1,
     borderRadius: radii.md,
     borderWidth: 1,
-    height: 112,
     overflow: 'hidden',
     padding: 12,
     width: 112,
@@ -280,8 +301,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: 0,
-    height: '100%',
-    width: '100%',
   },
   artScrim: {
     bottom: 0,

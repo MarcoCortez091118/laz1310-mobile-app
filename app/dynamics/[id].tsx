@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Linking from 'expo-linking';
-import { Link, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { Link, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ApiError } from '../../src/api/client';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
+import { useContentVersion } from '../../src/features/content/ContentVersionProvider';
 import {
   DynamicCampaign,
   getDynamic,
@@ -36,34 +37,49 @@ export default function DynamicDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { colors } = useAppTheme();
+  const { releaseId, refresh: refreshContentVersion } = useContentVersion();
   const [campaign, setCampaign] = useState<DynamicCampaign | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    if (!id) {
-      setError('Falta el identificador de la dinámica.');
-      setLoading(false);
-      return;
-    }
+  const load = useCallback(
+    async (requestedReleaseId?: string | null) => {
+      if (!id) {
+        setError('Falta el identificador de la dinámica.');
+        setLoading(false);
+        return;
+      }
 
-    setLoading(true);
-    setError(null);
+      setLoading(true);
+      setError(null);
 
-    try {
-      const result = await getDynamic(id);
-      setCampaign(result.item);
-    } catch (requestError) {
-      setCampaign(null);
-      setError(errorCopy(requestError));
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
+      try {
+        const result = await getDynamic(id, requestedReleaseId ?? undefined);
+        setCampaign(result.item);
+      } catch (requestError) {
+        setCampaign(null);
+        setError(errorCopy(requestError));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [id],
+  );
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      void (async () => {
+        const latest = await refreshContentVersion();
+        if (active) {
+          await load(latest?.releaseId ?? releaseId);
+        }
+      })();
+      return () => {
+        active = false;
+      };
+    }, [load, refreshContentVersion, releaseId]),
+  );
 
   const handlePrimaryAction = () => {
     if (!campaign || campaign.status !== 'active') {
@@ -115,7 +131,11 @@ export default function DynamicDetailScreen() {
           >
             <Ionicons color={colors.red} name="alert-circle-outline" size={32} />
             <Text style={[styles.errorText, { color: colors.white }]}>{error}</Text>
-            <PrimaryButton label="Reintentar" onPress={() => void load()} secondary />
+            <PrimaryButton
+              label="Reintentar"
+              onPress={() => void load(releaseId)}
+              secondary
+            />
           </View>
         ) : null}
 
@@ -130,7 +150,11 @@ export default function DynamicDetailScreen() {
                 },
               ]}
             >
-              <Image source={{ uri: campaign.imageUrl }} style={styles.heroImage} />
+              <Image
+                resizeMode="cover"
+                source={{ uri: campaign.imageUrl }}
+                style={styles.heroImage}
+              />
               <View style={styles.heroScrim} />
               <Text style={[styles.artLabel, { color: colors.red }]}>
                 {campaign.artworkLabel}
@@ -292,12 +316,13 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   hero: {
+    aspectRatio: 1,
     borderRadius: radii.lg,
     borderWidth: 1,
-    height: 300,
     marginTop: 8,
     overflow: 'hidden',
     padding: spacing.lg,
+    width: '100%',
   },
   heroImage: {
     bottom: 0,
@@ -305,8 +330,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: 0,
-    height: '100%',
-    width: '100%',
   },
   heroScrim: {
     bottom: 0,

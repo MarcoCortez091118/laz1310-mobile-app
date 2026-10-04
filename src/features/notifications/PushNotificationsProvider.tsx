@@ -19,6 +19,7 @@ import {
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '../auth/AuthProvider';
+import { useContentVersion } from '../content/ContentVersionProvider';
 import { useAppTheme } from '../../theme/ThemeProvider';
 import { fonts, radii, spacing } from '../../theme/tokens';
 import {
@@ -71,6 +72,7 @@ function notificationTarget(value: unknown): Href | null {
 export function PushNotificationsProvider({ children }: PropsWithChildren) {
   const router = useRouter();
   const { isAuthenticated, profile } = useAuth();
+  const { refresh: refreshContentVersion } = useContentVersion();
   const { colors } = useAppTheme();
   const [status, setStatus] = useState<PushStatus>('idle');
   const [enabled, setEnabled] = useState(false);
@@ -146,12 +148,14 @@ export function PushNotificationsProvider({ children }: PropsWithChildren) {
     if (Platform.OS === 'web') return;
     const service = getMessaging(getApp());
 
-    const openTarget = (value: unknown) => {
+    const openTarget = async (value: unknown) => {
+      await refreshContentVersion();
       const target = notificationTarget(value);
       if (target) router.push(target);
     };
 
     const unsubscribeMessage = onMessage(service, (message) => {
+      void refreshContentVersion();
       const title = message.notification?.title ?? 'LA Z 1310';
       const body = message.notification?.body ?? '';
       setForegroundPush({
@@ -161,17 +165,17 @@ export function PushNotificationsProvider({ children }: PropsWithChildren) {
       });
     });
     const unsubscribeOpened = onNotificationOpenedApp(service, (message) => {
-      openTarget(message.data?.targetValue);
+      void openTarget(message.data?.targetValue);
     });
     void getInitialNotification(service).then((message) => {
-      if (message) openTarget(message.data?.targetValue);
+      if (message) void openTarget(message.data?.targetValue);
     });
 
     return () => {
       unsubscribeMessage();
       unsubscribeOpened();
     };
-  }, [router]);
+  }, [refreshContentVersion, router]);
 
   const enable = useCallback(async () => {
     if (!isAuthenticated || !profile) {
@@ -246,7 +250,10 @@ export function PushNotificationsProvider({ children }: PropsWithChildren) {
             onPress={() => {
               const target = foregroundPush.target;
               setForegroundPush(null);
-              if (target) router.push(target);
+              void (async () => {
+                await refreshContentVersion();
+                if (target) router.push(target);
+              })();
             }}
             style={[
               styles.banner,
