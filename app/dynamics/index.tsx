@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -16,6 +16,7 @@ import { ApiError } from '../../src/api/client';
 import { BottomNavigation } from '../../src/components/BottomNavigation';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
+import { useContentVersion } from '../../src/features/content/ContentVersionProvider';
 import {
   DynamicCampaign,
   getDynamics,
@@ -39,6 +40,7 @@ function errorCopy(error: unknown) {
 export default function DynamicsListScreen() {
   const router = useRouter();
   const { colors } = useAppTheme();
+  const { releaseId, refresh: refreshContentVersion } = useContentVersion();
   const [items, setItems] = useState<DynamicCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +50,7 @@ export default function DynamicsListScreen() {
     setError(null);
 
     try {
-      const result = await getDynamics();
+      const result = await getDynamics(releaseId ?? undefined);
       setItems(result.items.filter((item) => item.status === 'active'));
     } catch (requestError) {
       setItems([]);
@@ -56,11 +58,15 @@ export default function DynamicsListScreen() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [releaseId]);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      void refreshContentVersion();
+      void load();
+      return undefined;
+    }, [load, refreshContentVersion]),
+  );
 
   return (
     <SafeAreaView
@@ -155,7 +161,11 @@ export default function DynamicsListScreen() {
                     },
                   ]}
                 >
-                  <Image source={{ uri: item.imageUrl }} style={styles.artImage} />
+                  <Image
+                    resizeMode="cover"
+                    source={{ uri: item.imageUrl }}
+                    style={styles.artImage}
+                  />
                   <View style={styles.artScrim} />
                   <Text style={[styles.artLabel, { color: colors.red }]}>
                     {item.artworkLabel}
@@ -267,9 +277,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   artwork: {
+    aspectRatio: 1,
     borderRadius: radii.md,
     borderWidth: 1,
-    height: 112,
     overflow: 'hidden',
     padding: 12,
     width: 112,
@@ -280,8 +290,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: 0,
-    height: '100%',
-    width: '100%',
   },
   artScrim: {
     bottom: 0,
