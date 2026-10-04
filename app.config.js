@@ -1,5 +1,7 @@
 const googleServicesFile = process.env.GOOGLE_SERVICES_JSON;
 const googleServiceInfoPlist = process.env.GOOGLE_SERVICE_INFO_PLIST;
+const productionPush =
+  process.env.EAS_BUILD_PROFILE === 'production' || process.env.NODE_ENV === 'production';
 
 module.exports = ({ config }) => ({
   ...config,
@@ -14,12 +16,19 @@ module.exports = ({ config }) => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: 'com.neuromarket.laz1310',
+    entitlements: {
+      'aps-environment': productionPush ? 'production' : 'development',
+    },
+    infoPlist: {
+      UIBackgroundModes: ['remote-notification'],
+    },
     ...(googleServiceInfoPlist
       ? { googleServicesFile: googleServiceInfoPlist }
       : {}),
   },
   android: {
     package: 'com.neuromarket.laz1310',
+    permissions: ['android.permission.POST_NOTIFICATIONS'],
     ...(googleServicesFile ? { googleServicesFile } : {}),
     adaptiveIcon: {
       foregroundImage: './assets/brand/adaptive-icon-foreground.png',
@@ -31,6 +40,7 @@ module.exports = ({ config }) => ({
     '@react-native-firebase/app',
     '@react-native-firebase/auth',
     '@react-native-firebase/app-check',
+    '@react-native-firebase/messaging',
     [
       'expo-build-properties',
       {

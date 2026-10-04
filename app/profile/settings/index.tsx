@@ -25,7 +25,8 @@ const rows = [
   },
   {
     title: 'Notificaciones',
-    subtitle: 'General, radio, programas y dinámicas',
+    subtitle: 'Push, general, radio, programas y dinámicas',
+    route: '/profile/settings/notifications' as const,
   },
   {
     title: 'Privacidad y acerca de',
@@ -56,14 +57,12 @@ export default function SettingsScreen() {
           {rows.map((row) => (
             <Pressable
               key={row.title}
-              disabled={!row.route}
-              onPress={() => row.route && router.push(row.route)}
+              onPress={() => router.push(row.route)}
               style={[
                 styles.row,
                 {
                   backgroundColor: colors.surfaceElevated,
                   borderColor: colors.border,
-                  opacity: row.route ? 1 : 0.58,
                 },
               ]}
             >
