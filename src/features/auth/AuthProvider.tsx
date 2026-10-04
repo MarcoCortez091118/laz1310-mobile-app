@@ -24,6 +24,7 @@ import {
   reloadCurrentFirebaseUser,
   sendCurrentUserVerificationEmail,
   signInFirebaseEmail,
+  signInFirebaseGoogle,
   signOutFirebase,
   updateFirebaseDisplayName,
 } from './firebase';
@@ -49,6 +50,7 @@ interface AuthContextValue {
     displayName: string,
   ) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<boolean>;
   signOut: () => Promise<void>;
   updateDisplayName: (displayName: string) => Promise<void>;
   updateProfile: (payload: UpdateLazProfile) => Promise<void>;
@@ -174,6 +176,17 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [synchronize],
   );
 
+  const signInWithGoogle = useCallback(async () => {
+    const user = await signInFirebaseGoogle();
+
+    if (!user) {
+      return false;
+    }
+
+    await synchronize(user, undefined, true);
+    return true;
+  }, [synchronize]);
+
   const signOut = useCallback(async () => {
     syncGeneration.current += 1;
 
@@ -233,6 +246,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       error,
       registerWithEmail,
       signInWithEmail,
+      signInWithGoogle,
       signOut,
       updateDisplayName,
       updateProfile,
@@ -248,6 +262,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       registerWithEmail,
       sendVerificationEmail,
       signInWithEmail,
+      signInWithGoogle,
       signOut,
       status,
       updateDisplayName,
