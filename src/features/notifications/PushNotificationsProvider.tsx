@@ -19,6 +19,7 @@ import {
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '../auth/AuthProvider';
+import { useContentVersion } from '../content/ContentVersionProvider';
 import { useAppTheme } from '../../theme/ThemeProvider';
 import { fonts, radii, spacing } from '../../theme/tokens';
 import {
@@ -71,6 +72,7 @@ function notificationTarget(value: unknown): Href | null {
 export function PushNotificationsProvider({ children }: PropsWithChildren) {
   const router = useRouter();
   const { isAuthenticated, profile } = useAuth();
+  const { refresh: refreshContentVersion } = useContentVersion();
   const { colors } = useAppTheme();
   const [status, setStatus] = useState<PushStatus>('idle');
   const [enabled, setEnabled] = useState(false);
@@ -147,11 +149,13 @@ export function PushNotificationsProvider({ children }: PropsWithChildren) {
     const service = getMessaging(getApp());
 
     const openTarget = (value: unknown) => {
+      void refreshContentVersion().catch(() => undefined);
       const target = notificationTarget(value);
       if (target) router.push(target);
     };
 
     const unsubscribeMessage = onMessage(service, (message) => {
+      void refreshContentVersion().catch(() => undefined);
       const title = message.notification?.title ?? 'LA Z 1310';
       const body = message.notification?.body ?? '';
       setForegroundPush({
@@ -171,7 +175,7 @@ export function PushNotificationsProvider({ children }: PropsWithChildren) {
       unsubscribeMessage();
       unsubscribeOpened();
     };
-  }, [router]);
+  }, [refreshContentVersion, router]);
 
   const enable = useCallback(async () => {
     if (!isAuthenticated || !profile) {
@@ -246,6 +250,7 @@ export function PushNotificationsProvider({ children }: PropsWithChildren) {
             onPress={() => {
               const target = foregroundPush.target;
               setForegroundPush(null);
+              void refreshContentVersion().catch(() => undefined);
               if (target) router.push(target);
             }}
             style={[
