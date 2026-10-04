@@ -148,14 +148,14 @@ export function PushNotificationsProvider({ children }: PropsWithChildren) {
     if (Platform.OS === 'web') return;
     const service = getMessaging(getApp());
 
-    const openTarget = (value: unknown) => {
-      void refreshContentVersion().catch(() => undefined);
+    const openTarget = async (value: unknown) => {
+      await refreshContentVersion();
       const target = notificationTarget(value);
       if (target) router.push(target);
     };
 
     const unsubscribeMessage = onMessage(service, (message) => {
-      void refreshContentVersion().catch(() => undefined);
+      void refreshContentVersion();
       const title = message.notification?.title ?? 'LA Z 1310';
       const body = message.notification?.body ?? '';
       setForegroundPush({
@@ -165,10 +165,10 @@ export function PushNotificationsProvider({ children }: PropsWithChildren) {
       });
     });
     const unsubscribeOpened = onNotificationOpenedApp(service, (message) => {
-      openTarget(message.data?.targetValue);
+      void openTarget(message.data?.targetValue);
     });
     void getInitialNotification(service).then((message) => {
-      if (message) openTarget(message.data?.targetValue);
+      if (message) void openTarget(message.data?.targetValue);
     });
 
     return () => {
@@ -250,8 +250,10 @@ export function PushNotificationsProvider({ children }: PropsWithChildren) {
             onPress={() => {
               const target = foregroundPush.target;
               setForegroundPush(null);
-              void refreshContentVersion().catch(() => undefined);
-              if (target) router.push(target);
+              void (async () => {
+                await refreshContentVersion();
+                if (target) router.push(target);
+              })();
             }}
             style={[
               styles.banner,
