@@ -92,24 +92,31 @@ without creating a session or showing an authentication error.
 
 ## App Check
 
-Development native builds use the Firebase App Check debug provider.
-
-Production providers:
+Development native builds use the Firebase App Check **debug provider**.
+Production builds use real attestation providers:
 
 ```text
 Android → Play Integrity
 Apple   → App Attest with DeviceCheck fallback
 ```
 
-For a Development Build, create/register a debug token in Firebase Console and
-provide it to the EAS development build environment as:
+For an interactive Android Development Build, the debug provider creates a
+device-local debug secret. Obtain it from Android logs and register it in Firebase
+Console under **App Check → Android app → Manage debug tokens**. Example:
 
-```text
-FIREBASE_APP_CHECK_DEBUG_TOKEN
+```bash
+adb logcat -c
+adb logcat | grep -i "DebugAppCheckProvider\|AppCheck"
 ```
 
-Never commit that token and never expose it through an `EXPO_PUBLIC_*`
-variable.
+Open LA Z and trigger an authenticated action. Android should log a message asking
+you to add the debug secret to the Firebase Console allow list. Register that token
+directly in Firebase; do not paste it into source code or commit it.
+
+A variable named `FIREBASE_APP_CHECK_DEBUG_TOKEN` is not consumed automatically by
+the current mobile runtime. Do not assume that merely creating that EAS variable
+registers the device. For interactive physical-device QA, the Firebase Console
+debug-token allow list is the source of truth.
 
 ## Backend headers
 
@@ -120,9 +127,13 @@ Authorization: Bearer <Firebase ID token>
 X-Firebase-AppCheck: <App Check token>
 ```
 
-The shared mobile auth boundary obtains both tokens on demand. Firebase ID
-tokens are refreshed by the SDK; profile refresh can force an ID-token refresh
-after email verification.
+The LA Z FastAPI backend validates both independently. This means Firebase can
+successfully create/sign in a user while `/api/v1/auth/session` still fails if App
+Check is invalid or unavailable.
+
+The mobile UI therefore distinguishes Firebase authentication success from LA Z
+session synchronization failures instead of falsely reporting that the Firebase
+account was not created.
 
 ## Current V1 behavior
 
@@ -139,6 +150,7 @@ Implemented:
 - sign-out
 - App Check token acquisition
 - Dynamics participation security headers
+- explicit diagnostics when Firebase succeeds but App Check/API synchronization fails
 
 Deferred:
 
@@ -153,14 +165,14 @@ boundary.
 
 ## Physical QA
 
-1. Install a new Development Build containing the Google Sign-In native module.
-2. Confirm `Crear cuenta`, `Ingresar con Google`, and `Ya tengo cuenta` appear.
-3. Create a new email/password account and confirm Firebase + LA Z profile sync.
-4. Sign out.
-5. Choose `Ingresar con Google`, select a Google account, and confirm Firebase
+1. Install a Development Build containing the current native modules.
+2. Register the device's App Check debug token in Firebase Console.
+3. Confirm `Crear cuenta`, `Ingresar con Google`, and `Ya tengo cuenta` appear.
+4. Create a new email/password account and confirm Firebase + LA Z profile sync.
+5. Sign out.
+6. Sign back in with the same email/password account and confirm the LA Z profile loads.
+7. Choose `Ingresar con Google`, select a Google account, and confirm Firebase
    Console shows provider `google.com` for the user.
-6. Confirm Profile shows the LA Z API business profile and Google display name.
-7. Kill/reopen the app and verify the Firebase session is restored.
-8. Sign out and sign back in with Google.
-9. Confirm App Check protected API calls continue to work.
+8. Confirm Profile shows the LA Z API business profile and Google display name.
+9. Kill/reopen the app and verify the Firebase session is restored.
 10. Regression-test notification device registration and radio background playback.
