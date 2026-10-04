@@ -25,6 +25,7 @@ import {
   signOutFirebase,
   updateFirebaseDisplayName,
 } from './firebase';
+import { detachPushDeviceBeforeSignOut } from '../notifications/device';
 
 type AuthStatus =
   | 'initializing'
@@ -168,6 +169,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const signOut = useCallback(async () => {
     syncGeneration.current += 1;
+    await detachPushDeviceBeforeSignOut();
     await signOutFirebase();
     setFirebaseUser(null);
     setProfile(null);
