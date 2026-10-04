@@ -45,12 +45,12 @@ export default function DynamicsListScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (requestedReleaseId?: string | null) => {
     setLoading(true);
     setError(null);
 
     try {
-      const result = await getDynamics(releaseId ?? undefined);
+      const result = await getDynamics(requestedReleaseId ?? undefined);
       setItems(result.items.filter((item) => item.status === 'active'));
     } catch (requestError) {
       setItems([]);
@@ -58,14 +58,21 @@ export default function DynamicsListScreen() {
     } finally {
       setLoading(false);
     }
-  }, [releaseId]);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      void refreshContentVersion();
-      void load();
-      return undefined;
-    }, [load, refreshContentVersion]),
+      let active = true;
+      void (async () => {
+        const latest = await refreshContentVersion();
+        if (active) {
+          await load(latest?.releaseId ?? releaseId);
+        }
+      })();
+      return () => {
+        active = false;
+      };
+    }, [load, refreshContentVersion, releaseId]),
   );
 
   return (
@@ -107,7 +114,11 @@ export default function DynamicsListScreen() {
             <Text style={[styles.errorText, { color: colors.white }]}>
               {error}
             </Text>
-            <PrimaryButton label="Reintentar" onPress={() => void load()} secondary />
+            <PrimaryButton
+              label="Reintentar"
+              onPress={() => void load(releaseId)}
+              secondary
+            />
           </View>
         ) : null}
 
