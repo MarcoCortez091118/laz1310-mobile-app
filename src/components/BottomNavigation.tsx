@@ -36,7 +36,11 @@ function isActive(pathname: string, route?: string) {
   }
 
   if (route === '/explore') {
-    return pathname === '/explore' || pathname.startsWith('/dynamics');
+    return (
+      pathname === '/explore' ||
+      pathname.startsWith('/dynamics') ||
+      pathname.startsWith('/programs')
+    );
   }
 
   if (route === '/profile') {

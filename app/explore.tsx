@@ -33,9 +33,10 @@ const modules = [
   {
     id: 'programs',
     title: 'Programas',
-    subtitle: 'Shows, hosts y programación.',
+    subtitle: 'Shows, hosts y programación semanal publicada.',
     icon: 'mic-outline' as const,
-    available: false,
+    route: '/programs' as const,
+    available: true,
   },
   {
     id: 'events',
@@ -56,12 +57,8 @@ export default function ExploreScreen() {
       style={[styles.safe, { backgroundColor: colors.black }]}
     >
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.title, { color: colors.white }]}>
-          Explorar
-        </Text>
-        <Text style={[styles.subtitle, { color: colors.muted }]}>
-          Descubre las experiencias disponibles en LA Z.
-        </Text>
+        <Text style={[styles.title, { color: colors.white }]}>Explorar</Text>
+        <Text style={[styles.subtitle, { color: colors.muted }]}>Descubre las experiencias disponibles en LA Z.</Text>
 
         <View style={styles.grid}>
           {modules.map((item) => (
@@ -78,28 +75,17 @@ export default function ExploreScreen() {
                 },
               ]}
             >
-              <View
-                style={[
-                  styles.iconWrap,
-                  { backgroundColor: colors.surface },
-                ]}
-              >
+              <View style={[styles.iconWrap, { backgroundColor: colors.surface }]}>
                 <Ionicons
                   color={item.available ? colors.red : colors.gray}
                   name={item.icon}
                   size={28}
                 />
               </View>
-              <Text style={[styles.cardTitle, { color: colors.white }]}>
-                {item.title}
-              </Text>
-              <Text style={[styles.cardSubtitle, { color: colors.muted }]}>
-                {item.subtitle}
-              </Text>
+              <Text style={[styles.cardTitle, { color: colors.white }]}>{item.title}</Text>
+              <Text style={[styles.cardSubtitle, { color: colors.muted }]}>{item.subtitle}</Text>
               {!item.available ? (
-                <Text style={[styles.comingSoon, { color: colors.red }]}>
-                  PRÓXIMAMENTE
-                </Text>
+                <Text style={[styles.comingSoon, { color: colors.red }]}>PRÓXIMAMENTE</Text>
               ) : null}
             </Pressable>
           ))}
