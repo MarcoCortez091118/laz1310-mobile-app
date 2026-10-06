@@ -6,6 +6,7 @@ import {
   onNotificationOpenedApp,
   onTokenRefresh,
 } from '@react-native-firebase/messaging';
+import * as Notifications from 'expo-notifications';
 import { Href, useRouter } from 'expo-router';
 import {
   PropsWithChildren,
@@ -16,12 +17,11 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform } from 'react-native';
 
+import { useLanguage } from '../../i18n/LanguageProvider';
 import { useAuth } from '../auth/AuthProvider';
 import { useContentVersion } from '../content/ContentVersionProvider';
-import { useAppTheme } from '../../theme/ThemeProvider';
-import { fonts, radii, spacing } from '../../theme/tokens';
 import {
   currentPushPermission,
   disablePushForDevice,
@@ -31,12 +31,11 @@ import {
   syncPushToken,
   type PushPermissionState,
 } from './device';
-
-interface ForegroundPush {
-  title: string;
-  body: string;
-  target: Href | null;
-}
+import {
+  ensureSystemNotificationChannel,
+  presentForegroundSystemNotification,
+  systemNotificationTarget,
+} from './system';
 
 type PushStatus = 'idle' | 'syncing' | 'ready' | 'error';
 
@@ -73,15 +72,14 @@ export function PushNotificationsProvider({ children }: PropsWithChildren) {
   const router = useRouter();
   const { isAuthenticated, profile } = useAuth();
   const { refresh: refreshContentVersion } = useContentVersion();
-  const { colors } = useAppTheme();
+  const { language } = useLanguage();
+  const english = language === 'en';
   const [status, setStatus] = useState<PushStatus>('idle');
   const [enabled, setEnabled] = useState(false);
   const [permission, setPermission] =
     useState<PushPermissionState>('not-determined');
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [foregroundPush, setForegroundPush] =
-    useState<ForegroundPush | null>(null);
 
   const refresh = useCallback(async () => {
     if (!isAuthenticated || !profile || Platform.OS === 'web') {
@@ -94,6 +92,7 @@ export function PushNotificationsProvider({ children }: PropsWithChildren) {
     setStatus('syncing');
     setError(null);
     try {
+      await ensureSystemNotificationChannel();
       const device = await registerCurrentInstallation({
         locale: profile.locale,
         timezone: profile.timezone,
@@ -120,10 +119,12 @@ export function PushNotificationsProvider({ children }: PropsWithChildren) {
       setError(
         syncError instanceof Error
           ? syncError.message
-          : 'No pudimos registrar este dispositivo para notificaciones.',
+          : english
+            ? 'We could not register this device for notifications.'
+            : 'No pudimos registrar este dispositivo para notificaciones.',
       );
     }
-  }, [isAuthenticated, profile]);
+  }, [english, isAuthenticated, profile]);
 
   useEffect(() => {
     void refresh();
@@ -138,11 +139,13 @@ export function PushNotificationsProvider({ children }: PropsWithChildren) {
         setError(
           refreshError instanceof Error
             ? refreshError.message
-            : 'No pudimos renovar el token FCM.',
+            : english
+              ? 'We could not renew the FCM token.'
+              : 'No pudimos renovar el token FCM.',
         );
       });
     });
-  }, [deviceId, enabled]);
+  }, [deviceId, enabled, english]);
 
   useEffect(() => {
     if (Platform.OS === 'web') return;
@@ -158,32 +161,59 @@ export function PushNotificationsProvider({ children }: PropsWithChildren) {
       void refreshContentVersion();
       const title = message.notification?.title ?? 'LA Z 1310';
       const body = message.notification?.body ?? '';
-      setForegroundPush({
+      void presentForegroundSystemNotification({
+        id: message.messageId,
         title,
         body,
-        target: notificationTarget(message.data?.targetValue),
+        targetValue:
+          typeof message.data?.targetValue === 'string'
+            ? message.data.targetValue
+            : null,
       });
     });
+
     const unsubscribeOpened = onNotificationOpenedApp(service, (message) => {
       void openTarget(message.data?.targetValue);
     });
+
+    const expoResponseSubscription =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        void openTarget(
+          systemNotificationTarget(response.notification.request.content.data),
+        );
+      });
+
     void getInitialNotification(service).then((message) => {
       if (message) void openTarget(message.data?.targetValue);
+    });
+
+    void Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (!response) return;
+      const target = systemNotificationTarget(
+        response.notification.request.content.data,
+      );
+      if (target) void openTarget(target);
     });
 
     return () => {
       unsubscribeMessage();
       unsubscribeOpened();
+      expoResponseSubscription.remove();
     };
   }, [refreshContentVersion, router]);
 
   const enable = useCallback(async () => {
     if (!isAuthenticated || !profile) {
-      throw new Error('Inicia sesión para activar las notificaciones.');
+      throw new Error(
+        english
+          ? 'Sign in to enable notifications.'
+          : 'Inicia sesión para activar las notificaciones.',
+      );
     }
     setStatus('syncing');
     setError(null);
     try {
+      await ensureSystemNotificationChannel();
       const device = deviceId
         ? { id: deviceId }
         : await registerCurrentInstallation({
@@ -202,11 +232,13 @@ export function PushNotificationsProvider({ children }: PropsWithChildren) {
       const message =
         enableError instanceof Error
           ? enableError.message
-          : 'No pudimos activar las notificaciones.';
+          : english
+            ? 'We could not enable notifications.'
+            : 'No pudimos activar las notificaciones.';
       setError(message);
       throw enableError;
     }
-  }, [deviceId, isAuthenticated, profile]);
+  }, [deviceId, english, isAuthenticated, profile]);
 
   const disable = useCallback(async () => {
     setStatus('syncing');
@@ -221,11 +253,13 @@ export function PushNotificationsProvider({ children }: PropsWithChildren) {
       const message =
         disableError instanceof Error
           ? disableError.message
-          : 'No pudimos desactivar las notificaciones.';
+          : english
+            ? 'We could not disable notifications.'
+            : 'No pudimos desactivar las notificaciones.';
       setError(message);
       throw disableError;
     }
-  }, [deviceId]);
+  }, [deviceId, english]);
 
   const value = useMemo<PushNotificationsContextValue>(
     () => ({
@@ -243,52 +277,7 @@ export function PushNotificationsProvider({ children }: PropsWithChildren) {
 
   return (
     <PushNotificationsContext.Provider value={value}>
-      <View style={styles.root}>
-        {children}
-        {foregroundPush ? (
-          <Pressable
-            onPress={() => {
-              const target = foregroundPush.target;
-              setForegroundPush(null);
-              void (async () => {
-                await refreshContentVersion();
-                if (target) router.push(target);
-              })();
-            }}
-            style={[
-              styles.banner,
-              {
-                backgroundColor: colors.surfaceElevated,
-                borderColor: colors.border,
-              },
-            ]}
-          >
-            <View style={styles.bannerCopy}>
-              <Text style={[styles.bannerTitle, { color: colors.white }]}>
-                {foregroundPush.title}
-              </Text>
-              {foregroundPush.body ? (
-                <Text
-                  numberOfLines={2}
-                  style={[styles.bannerBody, { color: colors.muted }]}
-                >
-                  {foregroundPush.body}
-                </Text>
-              ) : null}
-            </View>
-            <Pressable
-              accessibilityLabel="Cerrar notificación"
-              hitSlop={10}
-              onPress={(event) => {
-                event.stopPropagation();
-                setForegroundPush(null);
-              }}
-            >
-              <Text style={[styles.close, { color: colors.muted }]}>×</Text>
-            </Pressable>
-          </Pressable>
-        ) : null}
-      </View>
+      {children}
     </PushNotificationsContext.Provider>
   );
 }
@@ -302,45 +291,3 @@ export function usePushNotifications() {
   }
   return value;
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-  banner: {
-    alignItems: 'flex-start',
-    borderRadius: radii.md,
-    borderWidth: 1,
-    elevation: 12,
-    flexDirection: 'row',
-    left: spacing.md,
-    padding: spacing.md,
-    position: 'absolute',
-    right: spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.28,
-    shadowRadius: 18,
-    top: 52,
-    zIndex: 1000,
-  },
-  bannerCopy: {
-    flex: 1,
-  },
-  bannerTitle: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 14,
-  },
-  bannerBody: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    lineHeight: 16,
-    marginTop: 3,
-  },
-  close: {
-    fontFamily: fonts.body,
-    fontSize: 24,
-    lineHeight: 24,
-    marginLeft: 12,
-  },
-});
