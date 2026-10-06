@@ -8,37 +8,40 @@ import {
   View,
 } from 'react-native';
 
+import { useLanguage } from '../i18n/LanguageProvider';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { fonts, spacing } from '../theme/tokens';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
+type TabRoute = '/home' | '/radio' | '/explore' | '/profile';
 
-const items: Array<{
-  label: string;
+interface TabItem {
+  id: 'home' | 'news' | 'radio' | 'explore' | 'profile';
   icon: IoniconName;
   iconActive: IoniconName;
-  route?: '/home' | '/radio' | '/explore' | '/profile';
-}> = [
-  { label: 'Inicio', icon: 'home-outline', iconActive: 'home', route: '/home' },
-  { label: 'Noticias', icon: 'newspaper-outline', iconActive: 'newspaper' },
-  { label: 'Radio', icon: 'radio-outline', iconActive: 'radio', route: '/radio' },
-  { label: 'Explorar', icon: 'compass-outline', iconActive: 'compass', route: '/explore' },
-  { label: 'Perfil', icon: 'person-outline', iconActive: 'person', route: '/profile' },
+  route?: TabRoute;
+}
+
+const items: TabItem[] = [
+  { id: 'home', icon: 'home-outline', iconActive: 'home', route: '/home' },
+  { id: 'news', icon: 'newspaper-outline', iconActive: 'newspaper' },
+  { id: 'radio', icon: 'radio-outline', iconActive: 'radio', route: '/radio' },
+  { id: 'explore', icon: 'compass-outline', iconActive: 'compass', route: '/explore' },
+  { id: 'profile', icon: 'person-outline', iconActive: 'person', route: '/profile' },
 ];
 
 function isActive(pathname: string, route?: string) {
-  if (!route) {
-    return false;
-  }
+  if (!route) return false;
 
   if (route === '/home') {
-    return pathname === '/home';
+    return pathname === '/home' || pathname.startsWith('/notifications');
   }
 
   if (route === '/explore') {
     return (
       pathname === '/explore' ||
       pathname.startsWith('/dynamics') ||
+      pathname.startsWith('/weather') ||
       pathname.startsWith('/programs')
     );
   }
@@ -54,6 +57,15 @@ export function BottomNavigation() {
   const router = useRouter();
   const pathname = usePathname();
   const { colors } = useAppTheme();
+  const { language } = useLanguage();
+  const english = language === 'en';
+  const labels: Record<TabItem['id'], string> = {
+    home: english ? 'Home' : 'Inicio',
+    news: english ? 'News' : 'Noticias',
+    radio: 'Radio',
+    explore: english ? 'Explore' : 'Explorar',
+    profile: english ? 'Profile' : 'Perfil',
+  };
 
   return (
     <View
@@ -67,12 +79,14 @@ export function BottomNavigation() {
     >
       {items.map((item) => {
         const active = isActive(pathname, item.route);
-        const isRadio = item.label === 'Radio';
+        const isRadio = item.id === 'radio';
+        const label = labels[item.id];
 
         return (
           <Pressable
+            accessibilityLabel={label}
             accessibilityRole="button"
-            key={item.label}
+            key={item.id}
             onPress={() => item.route && router.push(item.route)}
             style={({ pressed }) => [
               styles.item,
@@ -108,7 +122,7 @@ export function BottomNavigation() {
                 active && styles.activeLabel,
               ]}
             >
-              {item.label}
+              {label}
             </Text>
           </Pressable>
         );
