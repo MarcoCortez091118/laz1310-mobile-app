@@ -21,31 +21,41 @@ export function dynamicDeadline(
   }
 }
 
-export function validateDynamicField(field: DynamicFormField, value: string) {
+export function validateDynamicField(
+  field: DynamicFormField,
+  value: string,
+  language: AppLanguage = 'es',
+) {
+  const english = language === 'en';
   const normalized = value.trim();
 
   if (!normalized) {
-    return field.required ? 'Este campo es obligatorio.' : null;
+    return field.required
+      ? english
+        ? 'This field is required.'
+        : 'Este campo es obligatorio.'
+      : null;
   }
 
   if (
     field.type === 'email' &&
-    (normalized.length > 254 ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized))
+    (normalized.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized))
   ) {
-    return 'Ingresa un correo válido.';
+    return english ? 'Enter a valid email.' : 'Ingresa un correo válido.';
   }
 
   if (field.type === 'phone' && !/^\+[1-9]\d{6,14}$/.test(normalized)) {
-    return 'Usa formato internacional, por ejemplo +13135550123.';
+    return english
+      ? 'Use international format, for example +13135550123.'
+      : 'Usa formato internacional, por ejemplo +13135550123.';
   }
 
   if (field.type === 'text' && normalized.length > 200) {
-    return 'Máximo 200 caracteres.';
+    return english ? 'Maximum 200 characters.' : 'Máximo 200 caracteres.';
   }
 
   if (field.type === 'textarea' && normalized.length > 4000) {
-    return 'Máximo 4000 caracteres.';
+    return english ? 'Maximum 4000 characters.' : 'Máximo 4000 caracteres.';
   }
 
   return null;
@@ -61,12 +71,10 @@ export function createIdempotencyKey() {
   }
 
   let timestamp = Date.now();
-  let highResolution =
-    typeof performance !== 'undefined' ? performance.now() * 1000 : 0;
+  let highResolution = typeof performance !== 'undefined' ? performance.now() * 1000 : 0;
 
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
     let random = Math.random() * 16;
-
     if (timestamp > 0) {
       random = (timestamp + random) % 16;
       timestamp = Math.floor(timestamp / 16);
@@ -74,7 +82,6 @@ export function createIdempotencyKey() {
       random = (highResolution + random) % 16;
       highResolution = Math.floor(highResolution / 16);
     }
-
     const value = char === 'x' ? random : (random % 4) + 8;
     return Math.floor(value).toString(16);
   });
