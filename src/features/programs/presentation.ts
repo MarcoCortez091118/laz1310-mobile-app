@@ -1,6 +1,7 @@
+import type { AppLanguage } from '../../i18n/LanguageProvider';
 import type { PublishedProgram, PublishedScheduleEntry } from './api';
 
-export const PROGRAM_WEEKDAYS = [
+export const PROGRAM_WEEKDAYS_ES = [
   'Lunes',
   'Martes',
   'Miércoles',
@@ -10,7 +11,18 @@ export const PROGRAM_WEEKDAYS = [
   'Domingo',
 ] as const;
 
-const SHORT_WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'] as const;
+export const PROGRAM_WEEKDAYS_EN = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+] as const;
+
+const SHORT_WEEKDAYS_ES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'] as const;
+const SHORT_WEEKDAYS_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 
 export function formatProgramTime(value: string): string {
   const [rawHour = '0', rawMinute = '00'] = value.split(':');
@@ -21,11 +33,12 @@ export function formatProgramTime(value: string): string {
   return `${displayHour}:${minute} ${suffix}`;
 }
 
-function shortWeekday(day: number): string {
-  return SHORT_WEEKDAYS[day] ?? `Día ${day + 1}`;
+function shortWeekday(day: number, language: AppLanguage): string {
+  const values = language === 'en' ? SHORT_WEEKDAYS_EN : SHORT_WEEKDAYS_ES;
+  return values[day] ?? (language === 'en' ? `Day ${day + 1}` : `Día ${day + 1}`);
 }
 
-function dayRanges(days: number[]): string {
+function dayRanges(days: number[], language: AppLanguage): string {
   const unique = [...new Set(days)].sort((left, right) => left - right);
   const ranges: Array<[number, number]> = [];
 
@@ -41,14 +54,15 @@ function dayRanges(days: number[]): string {
   return ranges
     .map(([start, end]) =>
       start === end
-        ? shortWeekday(start)
-        : `${shortWeekday(start)} – ${shortWeekday(end)}`,
+        ? shortWeekday(start, language)
+        : `${shortWeekday(start, language)} – ${shortWeekday(end, language)}`,
     )
     .join(', ');
 }
 
 export function programScheduleLines(
   schedule: PublishedScheduleEntry[],
+  language: AppLanguage = 'es',
 ): string[] {
   const groups = new Map<string, PublishedScheduleEntry[]>();
 
@@ -73,15 +87,19 @@ export function programScheduleLines(
       const first = entries[0];
       if (!first) return [];
       return [
-        `${dayRanges(entries.map((entry) => entry.weekday))} · ${formatProgramTime(first.startsAt)} – ${formatProgramTime(first.endsAt)}`,
+        `${dayRanges(entries.map((entry) => entry.weekday), language)} · ${formatProgramTime(first.startsAt)} – ${formatProgramTime(first.endsAt)}`,
       ];
     });
 }
 
-export function programScheduleLabel(program: PublishedProgram): string {
-  const lines = programScheduleLines(program.schedule);
-  if (!lines.length) return 'Horario por definir';
-  const first = lines[0] ?? 'Horario por definir';
+export function programScheduleLabel(
+  program: PublishedProgram,
+  language: AppLanguage = 'es',
+): string {
+  const lines = programScheduleLines(program.schedule, language);
+  const fallback = language === 'en' ? 'Schedule TBD' : 'Horario por definir';
+  if (!lines.length) return fallback;
+  const first = lines[0] ?? fallback;
   if (lines.length === 1) return first;
   return `${first} · +${lines.length - 1}`;
 }
@@ -95,7 +113,7 @@ export interface WeeklyProgramSlot {
 }
 
 export function weeklyProgramSlots(programs: PublishedProgram[]): WeeklyProgramSlot[][] {
-  const days = PROGRAM_WEEKDAYS.map(() => [] as WeeklyProgramSlot[]);
+  const days = PROGRAM_WEEKDAYS_ES.map(() => [] as WeeklyProgramSlot[]);
 
   programs.forEach((program) => {
     program.schedule.forEach((entry) => {
