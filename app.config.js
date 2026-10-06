@@ -42,6 +42,14 @@ module.exports = ({ config }) => ({
     '@react-native-firebase/app-check',
     '@react-native-firebase/messaging',
     [
+      'expo-notifications',
+      {
+        color: '#D30A12',
+        defaultChannel: 'laz-general',
+        enableBackgroundRemoteNotifications: true,
+      },
+    ],
+    [
       'expo-build-properties',
       {
         ios: {
