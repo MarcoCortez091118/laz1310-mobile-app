@@ -1,5 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Text, View } from 'react-native';
+import {
+  Image,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from 'react-native';
 
 import { useAppTheme } from '../theme/ThemeProvider';
 import { fonts, radii, spacing } from '../theme/tokens';
@@ -7,11 +14,17 @@ import { fonts, radii, spacing } from '../theme/tokens';
 interface ProgramCardProps {
   title: string;
   schedule: string;
+  hostName?: string | null;
+  imageUrl?: string | null;
+  style?: StyleProp<ViewStyle>;
 }
 
 export function ProgramCard({
   title,
   schedule,
+  hostName,
+  imageUrl,
+  style,
 }: ProgramCardProps) {
   const { colors } = useAppTheme();
 
@@ -23,18 +36,39 @@ export function ProgramCard({
           backgroundColor: colors.burgundy,
           borderColor: colors.border,
         },
+        style,
       ]}
     >
       <View style={[styles.artwork, { backgroundColor: colors.surface }]}>
-        <View style={[styles.glow, { backgroundColor: colors.red }]} />
-        <View style={[styles.diagonal, { backgroundColor: colors.red }]} />
-        <Ionicons
-          color={colors.white}
-          name="mic"
-          size={30}
-          style={styles.mic}
-        />
-        <Text style={[styles.mark, { color: colors.white }]}>LA Z</Text>
+        {imageUrl ? (
+          <>
+            <Image
+              accessibilityIgnoresInvertColors
+              resizeMode="cover"
+              source={{ uri: imageUrl }}
+              style={StyleSheet.absoluteFill}
+            />
+            <View style={styles.imageScrim} />
+            <View style={styles.artworkLabel}>
+              <Ionicons color="#FEFEFE" name="mic" size={15} />
+              <Text numberOfLines={1} style={styles.artworkLabelText}>
+                {hostName || 'LA Z 1310'}
+              </Text>
+            </View>
+          </>
+        ) : (
+          <>
+            <View style={[styles.glow, { backgroundColor: colors.red }]} />
+            <View style={[styles.diagonal, { backgroundColor: colors.red }]} />
+            <Ionicons
+              color={colors.white}
+              name="mic"
+              size={30}
+              style={styles.mic}
+            />
+            <Text style={[styles.mark, { color: colors.white }]}>LA Z</Text>
+          </>
+        )}
       </View>
       <View style={styles.copy}>
         <Text
@@ -43,6 +77,11 @@ export function ProgramCard({
         >
           {title}
         </Text>
+        {hostName ? (
+          <Text numberOfLines={1} style={[styles.host, { color: colors.muted }]}>
+            {hostName}
+          </Text>
+        ) : null}
         <Text
           numberOfLines={2}
           style={[styles.schedule, { color: colors.red }]}
@@ -58,7 +97,6 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: radii.md,
     borderWidth: 1,
-    flex: 1,
     minHeight: 230,
     overflow: 'hidden',
   },
@@ -67,6 +105,28 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     overflow: 'hidden',
     padding: spacing.md,
+  },
+  imageScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(5,1,1,0.18)',
+  },
+  artworkLabel: {
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(5,1,1,0.76)',
+    borderRadius: 999,
+    flexDirection: 'row',
+    gap: 6,
+    maxWidth: '92%',
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+  },
+  artworkLabelText: {
+    color: '#FEFEFE',
+    flexShrink: 1,
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 9,
+    letterSpacing: 0.3,
   },
   glow: {
     borderRadius: 90,
@@ -103,6 +163,10 @@ const styles = StyleSheet.create({
     fontSize: 17,
     lineHeight: 18,
     minHeight: 38,
+  },
+  host: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 9,
   },
   schedule: {
     fontFamily: fonts.body,
