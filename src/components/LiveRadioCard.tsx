@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 
 import { useRadio } from '../features/radio/useRadio';
+import { useLanguage } from '../i18n/LanguageProvider';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { fonts, radii, spacing } from '../theme/tokens';
 import { LiveBadge } from './LiveBadge';
@@ -17,6 +18,8 @@ export function LiveRadioCard() {
   const router = useRouter();
   const { state, play, pause, retry } = useRadio();
   const { colors } = useAppTheme();
+  const { language } = useLanguage();
+  const english = language === 'en';
 
   const loading = state === 'connecting' || state === 'reconnecting';
   const error = state === 'error';
@@ -26,28 +29,18 @@ export function LiveRadioCard() {
       retry();
       return;
     }
-
     if (state === 'playing') {
       pause();
       return;
     }
-
     play();
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: colors.burgundy,
-          borderColor: colors.border,
-        },
-      ]}
-    >
+    <View style={[styles.container, { backgroundColor: colors.burgundy, borderColor: colors.border }]}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Abrir radio en vivo"
+        accessibilityLabel={english ? 'Open live radio' : 'Abrir radio en vivo'}
         onPress={() => router.push('/radio')}
         style={styles.content}
       >
@@ -57,10 +50,14 @@ export function LiveRadioCard() {
         <View style={styles.copy}>
           <LiveBadge compact live={!error} />
           <Text style={[styles.title, { color: colors.white }]}>
-            {error ? 'RADIO NO DISPONIBLE' : 'ESCUCHA EN VIVO'}
+            {error
+              ? english ? 'RADIO UNAVAILABLE' : 'RADIO NO DISPONIBLE'
+              : english ? 'LISTEN LIVE' : 'ESCUCHA EN VIVO'}
           </Text>
           <Text style={[styles.subtitle, { color: colors.muted }]}>
-            {error ? 'Toca para reintentar' : 'LA Z 1310 · Detroit'}
+            {error
+              ? english ? 'Tap to retry' : 'Toca para reintentar'
+              : 'LA Z 1310 · Detroit'}
           </Text>
         </View>
       </Pressable>
@@ -75,38 +72,10 @@ export function LiveRadioCard() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    borderRadius: radii.md,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: spacing.sm,
-    minHeight: 96,
-    padding: spacing.md,
-  },
-  content: {
-    alignItems: 'center',
-    flex: 1,
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  accent: {
-    borderRadius: radii.round,
-    height: 64,
-    width: 4,
-  },
-  copy: {
-    flex: 1,
-    gap: 3,
-  },
-  title: {
-    fontFamily: fonts.displayExtraBold,
-    fontSize: 21,
-    lineHeight: 22,
-    marginTop: 2,
-  },
-  subtitle: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-  },
+  container: { alignItems: 'center', borderRadius: radii.md, borderWidth: 1, flexDirection: 'row', gap: spacing.sm, minHeight: 96, padding: spacing.md },
+  content: { alignItems: 'center', flex: 1, flexDirection: 'row', gap: spacing.sm },
+  accent: { borderRadius: radii.round, height: 64, width: 4 },
+  copy: { flex: 1, gap: 3 },
+  title: { fontFamily: fonts.displayExtraBold, fontSize: 21, lineHeight: 22, marginTop: 2 },
+  subtitle: { fontFamily: fonts.body, fontSize: 11 },
 });
