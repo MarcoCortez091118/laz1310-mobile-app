@@ -34,7 +34,11 @@ export default function ProgramsScreen() {
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
-          <RefreshControl refreshing={loading && programs.length > 0} onRefresh={() => void refresh()} tintColor={colors.red} />
+          <RefreshControl
+            refreshing={loading && programs.length > 0}
+            onRefresh={() => void refresh()}
+            tintColor={colors.red}
+          />
         }
         showsVerticalScrollIndicator={false}
       >
@@ -96,34 +100,37 @@ export default function ProgramsScreen() {
             </View>
 
             <View style={styles.week}>
-              {schedule.map((slots, weekday) => (
-                <View
-                  key={PROGRAM_WEEKDAYS[weekday]}
-                  style={[styles.dayCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
-                >
-                  <Text style={[styles.dayName, { color: colors.white }]}>{PROGRAM_WEEKDAYS[weekday]}</Text>
-                  {slots.length ? (
-                    <View style={styles.daySlots}>
-                      {slots.map((slot) => (
-                        <View key={`${slot.program.stationId}:${slot.id}`} style={styles.slot}>
-                          <View style={[styles.slotRail, { backgroundColor: colors.red }]} />
-                          <View style={styles.slotCopy}>
-                            <Text style={[styles.slotTime, { color: colors.red }]}>
-                              {formatProgramTime(slot.startsAt)} – {formatProgramTime(slot.endsAt)}
-                            </Text>
-                            <Text style={[styles.slotTitle, { color: colors.white }]}>{slot.program.name}</Text>
-                            {slot.program.hostName ? (
-                              <Text style={[styles.slotHost, { color: colors.muted }]}>{slot.program.hostName}</Text>
-                            ) : null}
+              {schedule.map((slots, weekday) => {
+                const dayName = PROGRAM_WEEKDAYS[weekday] ?? `Día ${weekday + 1}`;
+                return (
+                  <View
+                    key={dayName}
+                    style={[styles.dayCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
+                  >
+                    <Text style={[styles.dayName, { color: colors.white }]}>{dayName}</Text>
+                    {slots.length ? (
+                      <View style={styles.daySlots}>
+                        {slots.map((slot) => (
+                          <View key={`${slot.program.stationId}:${slot.id}`} style={styles.slot}>
+                            <View style={[styles.slotRail, { backgroundColor: colors.red }]} />
+                            <View style={styles.slotCopy}>
+                              <Text style={[styles.slotTime, { color: colors.red }]}>
+                                {formatProgramTime(slot.startsAt)} – {formatProgramTime(slot.endsAt)}
+                              </Text>
+                              <Text style={[styles.slotTitle, { color: colors.white }]}>{slot.program.name}</Text>
+                              {slot.program.hostName ? (
+                                <Text style={[styles.slotHost, { color: colors.muted }]}>{slot.program.hostName}</Text>
+                              ) : null}
+                            </View>
                           </View>
-                        </View>
-                      ))}
-                    </View>
-                  ) : (
-                    <Text style={[styles.emptyDay, { color: colors.gray }]}>Sin programación publicada</Text>
-                  )}
-                </View>
-              ))}
+                        ))}
+                      </View>
+                    ) : (
+                      <Text style={[styles.emptyDay, { color: colors.gray }]}>Sin programación publicada</Text>
+                    )}
+                  </View>
+                );
+              })}
             </View>
           </>
         ) : (
