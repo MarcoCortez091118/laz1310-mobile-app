@@ -1,0 +1,107 @@
+import type { PublishedProgram, PublishedScheduleEntry } from './api';
+
+export const PROGRAM_WEEKDAYS = [
+  'Lunes',
+  'Martes',
+  'Miércoles',
+  'Jueves',
+  'Viernes',
+  'Sábado',
+  'Domingo',
+] as const;
+
+const SHORT_WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'] as const;
+
+export function formatProgramTime(value: string): string {
+  const [rawHour = '0', rawMinute = '00'] = value.split(':');
+  const hour = Number(rawHour);
+  const minute = rawMinute.padStart(2, '0').slice(0, 2);
+  const suffix = hour >= 12 ? 'pm' : 'am';
+  const displayHour = hour % 12 || 12;
+  return `${displayHour}:${minute} ${suffix}`;
+}
+
+function dayRanges(days: number[]): string {
+  const unique = [...new Set(days)].sort((left, right) => left - right);
+  const ranges: Array<[number, number]> = [];
+
+  unique.forEach((day) => {
+    const last = ranges[ranges.length - 1];
+    if (last && day === last[1] + 1) {
+      last[1] = day;
+    } else {
+      ranges.push([day, day]);
+    }
+  });
+
+  return ranges
+    .map(([start, end]) =>
+      start === end
+        ? SHORT_WEEKDAYS[start]
+        : `${SHORT_WEEKDAYS[start]} – ${SHORT_WEEKDAYS[end]}`,
+    )
+    .join(', ');
+}
+
+export function programScheduleLines(
+  schedule: PublishedScheduleEntry[],
+): string[] {
+  const groups = new Map<string, PublishedScheduleEntry[]>();
+
+  schedule.forEach((entry) => {
+    const key = `${entry.startsAt}|${entry.endsAt}`;
+    const current = groups.get(key) ?? [];
+    current.push(entry);
+    groups.set(key, current);
+  });
+
+  return [...groups.values()]
+    .sort((left, right) => {
+      const leftDay = Math.min(...left.map((entry) => entry.weekday));
+      const rightDay = Math.min(...right.map((entry) => entry.weekday));
+      if (leftDay !== rightDay) return leftDay - rightDay;
+      return left[0].startsAt.localeCompare(right[0].startsAt);
+    })
+    .map((entries) => {
+      const first = entries[0];
+      return `${dayRanges(entries.map((entry) => entry.weekday))} · ${formatProgramTime(first.startsAt)} – ${formatProgramTime(first.endsAt)}`;
+    });
+}
+
+export function programScheduleLabel(program: PublishedProgram): string {
+  const lines = programScheduleLines(program.schedule);
+  if (!lines.length) return 'Horario por definir';
+  if (lines.length === 1) return lines[0];
+  return `${lines[0]} · +${lines.length - 1}`;
+}
+
+export interface WeeklyProgramSlot {
+  id: string;
+  weekday: number;
+  startsAt: string;
+  endsAt: string;
+  program: PublishedProgram;
+}
+
+export function weeklyProgramSlots(programs: PublishedProgram[]): WeeklyProgramSlot[][] {
+  const days = PROGRAM_WEEKDAYS.map(() => [] as WeeklyProgramSlot[]);
+
+  programs.forEach((program) => {
+    program.schedule.forEach((entry) => {
+      if (entry.weekday < 0 || entry.weekday > 6) return;
+      days[entry.weekday].push({
+        id: entry.id,
+        weekday: entry.weekday,
+        startsAt: entry.startsAt,
+        endsAt: entry.endsAt,
+        program,
+      });
+    });
+  });
+
+  days.forEach((slots) =>
+    slots.sort((left, right) => left.startsAt.localeCompare(right.startsAt)),
+  );
+
+  return days;
+}
