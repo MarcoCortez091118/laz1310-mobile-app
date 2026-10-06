@@ -35,11 +35,19 @@ export interface PublishedProgram extends PublishedShow {
   schedule: PublishedScheduleEntry[];
 }
 
-async function stationPrograms(station: PublishedStation): Promise<PublishedProgram[]> {
+function releaseQuery(releaseId: string | null): string {
+  return releaseId ? `?releaseId=${encodeURIComponent(releaseId)}` : '';
+}
+
+async function stationPrograms(
+  station: PublishedStation,
+  releaseId: string | null,
+): Promise<PublishedProgram[]> {
   const stationId = encodeURIComponent(station.id);
+  const query = releaseQuery(releaseId);
   const [shows, schedule] = await Promise.all([
-    apiRequest<PublishedShow[]>(`/api/v1/stations/${stationId}/shows`),
-    apiRequest<PublishedScheduleEntry[]>(`/api/v1/stations/${stationId}/schedule`),
+    apiRequest<PublishedShow[]>(`/api/v1/stations/${stationId}/shows${query}`),
+    apiRequest<PublishedScheduleEntry[]>(`/api/v1/stations/${stationId}/schedule${query}`),
   ]);
 
   return shows.map((show) => ({
@@ -58,9 +66,14 @@ async function stationPrograms(station: PublishedStation): Promise<PublishedProg
   }));
 }
 
-export async function getPublishedPrograms(): Promise<PublishedProgram[]> {
-  const stations = await apiRequest<PublishedStation[]>('/api/v1/stations');
-  const programs = await Promise.all(stations.map(stationPrograms));
+export async function getPublishedPrograms(
+  releaseId: string | null,
+): Promise<PublishedProgram[]> {
+  const query = releaseQuery(releaseId);
+  const stations = await apiRequest<PublishedStation[]>(`/api/v1/stations${query}`);
+  const programs = await Promise.all(
+    stations.map((station) => stationPrograms(station, releaseId)),
+  );
 
   return programs
     .flat()

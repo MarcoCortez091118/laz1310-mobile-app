@@ -28,7 +28,6 @@ export async function ensureSystemNotificationChannel() {
     enableVibrate: true,
     vibrationPattern: [0, 220, 120, 220],
     lightColor: '#D30A12',
-    sound: 'default',
   });
 }
 
@@ -43,7 +42,7 @@ export async function presentForegroundSystemNotification(input: {
   const content: Notifications.NotificationContentInput = {
     title: input.title,
     body: input.body,
-    sound: 'default',
+    sound: true,
     data: {
       [FOREGROUND_COPY_MARKER]: '1',
       ...(input.targetValue ? { targetValue: input.targetValue } : {}),

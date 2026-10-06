@@ -19,7 +19,7 @@ export function usePrograms(): ProgramsState {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const next = await getPublishedPrograms();
+      const next = await getPublishedPrograms(releaseId);
       setPrograms(next);
       setError(null);
     } catch (requestError) {
@@ -31,11 +31,11 @@ export function usePrograms(): ProgramsState {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [releaseId]);
 
   useEffect(() => {
     void refresh();
-  }, [refresh, releaseId]);
+  }, [refresh]);
 
   return { programs, loading, error, refresh };
 }
