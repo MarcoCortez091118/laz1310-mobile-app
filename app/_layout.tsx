@@ -12,7 +12,7 @@ import {
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -23,6 +23,7 @@ import { PushNotificationsProvider } from '../src/features/notifications/PushNot
 import { RadioProvider } from '../src/features/radio/RadioProvider';
 import { useRadio } from '../src/features/radio/useRadio';
 import { WeatherUnitProvider } from '../src/features/weather/WeatherUnitProvider';
+import { LanguageProvider } from '../src/i18n/LanguageProvider';
 import { ThemeProvider, useAppTheme } from '../src/theme/ThemeProvider';
 
 void SplashScreen.preventAutoHideAsync();
@@ -31,12 +32,22 @@ function AppNavigator() {
   const pathname = usePathname();
   const { hasStarted } = useRadio();
   const { colors, preference } = useAppTheme();
+  const [miniPlayerDismissed, setMiniPlayerDismissed] = useState(false);
+
+  useEffect(() => {
+    if (!hasStarted || pathname === '/radio') {
+      setMiniPlayerDismissed(false);
+    }
+  }, [hasStarted, pathname]);
 
   const showMiniPlayer =
-    hasStarted && pathname !== '/' && pathname !== '/radio';
+    hasStarted &&
+    !miniPlayerDismissed &&
+    pathname !== '/' &&
+    pathname !== '/radio';
 
   return (
-    <View style={[styles.app, { backgroundColor: colors.black }]}> 
+    <View style={[styles.app, { backgroundColor: colors.black }]}>
       <StatusBar style={preference === 'dark' ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
@@ -45,7 +56,10 @@ function AppNavigator() {
           headerShown: false,
         }}
       />
-      <MiniPlayer visible={showMiniPlayer} />
+      <MiniPlayer
+        onDismiss={() => setMiniPlayerDismissed(true)}
+        visible={showMiniPlayer}
+      />
     </View>
   );
 }
@@ -74,17 +88,19 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <WeatherUnitProvider>
-          <AuthProvider>
-            <ContentVersionProvider>
-              <PushNotificationsProvider>
-                <RadioProvider>
-                  <AppNavigator />
-                </RadioProvider>
-              </PushNotificationsProvider>
-            </ContentVersionProvider>
-          </AuthProvider>
-        </WeatherUnitProvider>
+        <LanguageProvider>
+          <WeatherUnitProvider>
+            <AuthProvider>
+              <ContentVersionProvider>
+                <PushNotificationsProvider>
+                  <RadioProvider>
+                    <AppNavigator />
+                  </RadioProvider>
+                </PushNotificationsProvider>
+              </ContentVersionProvider>
+            </AuthProvider>
+          </WeatherUnitProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );
