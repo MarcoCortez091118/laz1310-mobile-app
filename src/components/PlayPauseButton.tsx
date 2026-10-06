@@ -5,6 +5,7 @@ import {
   StyleSheet,
 } from 'react-native';
 
+import { useLanguage } from '../i18n/LanguageProvider';
 import { colors } from '../theme/tokens';
 
 interface PlayPauseButtonProps {
@@ -13,11 +14,9 @@ interface PlayPauseButtonProps {
   onPress: () => void;
 }
 
-export function PlayPauseButton({
-  state,
-  size = 'large',
-  onPress,
-}: PlayPauseButtonProps) {
+export function PlayPauseButton({ state, size = 'large', onPress }: PlayPauseButtonProps) {
+  const { language } = useLanguage();
+  const english = language === 'en';
   const dimension = size === 'large' ? 72 : 44;
   const iconSize = size === 'large' ? 31 : 21;
 
@@ -25,7 +24,9 @@ export function PlayPauseButton({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={
-        state === 'pause' ? 'Pausar radio' : 'Reproducir radio'
+        state === 'pause'
+          ? english ? 'Pause radio' : 'Pausar radio'
+          : english ? 'Play radio' : 'Reproducir radio'
       }
       disabled={state === 'loading'}
       onPress={onPress}
