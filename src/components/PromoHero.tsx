@@ -184,11 +184,19 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   image: {
-    ...StyleSheet.absoluteFillObject,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
   },
   scrim: {
-    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(5,1,1,0.22)',
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
   },
   bottomShade: {
     backgroundColor: 'rgba(5,1,1,0.62)',
