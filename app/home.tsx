@@ -19,15 +19,30 @@ import { PromoHero } from '../src/components/PromoHero';
 import { WeatherHeaderBadge } from '../src/components/WeatherHeaderBadge';
 import { programScheduleLabel } from '../src/features/programs/presentation';
 import { usePrograms } from '../src/features/programs/usePrograms';
+import { useLanguage } from '../src/i18n/LanguageProvider';
 import { useAppTheme } from '../src/theme/ThemeProvider';
 import { fonts, spacing } from '../src/theme/tokens';
 
-const categories = ['Todo', 'Shows', 'Noticias', 'Eventos', 'Música'] as const;
+type HomeModuleRoute = '/dynamics' | '/weather' | '/programs' | '/notifications';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { colors } = useAppTheme();
+  const { language } = useLanguage();
+  const english = language === 'en';
   const { programs, loading: programsLoading, error: programsError } = usePrograms();
+
+  const categories: Array<{ id: string; label: string; route?: HomeModuleRoute }> = [
+    { id: 'all', label: english ? 'All' : 'Todo' },
+    { id: 'dynamics', label: english ? 'Dynamics' : 'Dinámicas', route: '/dynamics' },
+    { id: 'weather', label: english ? 'Weather' : 'Clima', route: '/weather' },
+    { id: 'programs', label: english ? 'Programs' : 'Programas', route: '/programs' },
+    {
+      id: 'notifications',
+      label: english ? 'Notifications' : 'Notificaciones',
+      route: '/notifications',
+    },
+  ];
 
   return (
     <SafeAreaView
@@ -47,9 +62,20 @@ export default function HomeScreen() {
           <View style={styles.headerActions}>
             <LiveBadge compact />
             <WeatherHeaderBadge />
-            <View style={[styles.bell, { backgroundColor: colors.surfaceElevated }]}>
+            <Pressable
+              accessibilityLabel={english ? 'Open notifications' : 'Abrir notificaciones'}
+              accessibilityRole="button"
+              onPress={() => router.push('/notifications')}
+              style={({ pressed }) => [
+                styles.bell,
+                {
+                  backgroundColor: colors.surfaceElevated,
+                  opacity: pressed ? 0.7 : 1,
+                },
+              ]}
+            >
               <Ionicons color={colors.white} name="notifications-outline" size={20} />
-            </View>
+            </Pressable>
           </View>
         </View>
 
@@ -59,12 +85,15 @@ export default function HomeScreen() {
           showsHorizontalScrollIndicator={false}
         >
           {categories.map((category, index) => (
-            <View
-              key={category}
-              style={[
+            <Pressable
+              accessibilityRole="button"
+              key={category.id}
+              onPress={() => category.route && router.push(category.route)}
+              style={({ pressed }) => [
                 styles.category,
                 {
                   backgroundColor: index === 0 ? colors.red : colors.surfaceElevated,
+                  opacity: pressed && category.route ? 0.72 : 1,
                 },
               ]}
             >
@@ -75,9 +104,9 @@ export default function HomeScreen() {
                   index === 0 && styles.categoryTextActive,
                 ]}
               >
-                {category}
+                {category.label}
               </Text>
-            </View>
+            </Pressable>
           ))}
         </ScrollView>
 
@@ -85,25 +114,35 @@ export default function HomeScreen() {
         <LiveRadioCard />
 
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.white }]}>PROGRAMAS</Text>
+          <Text style={[styles.sectionTitle, { color: colors.white }]}>
+            {english ? 'PROGRAMS' : 'PROGRAMAS'}
+          </Text>
           <Pressable
             accessibilityRole="button"
             disabled={!programs.length}
             onPress={() => router.push('/programs')}
             style={({ pressed }) => ({ opacity: pressed ? 0.7 : programs.length ? 1 : 0.45 })}
           >
-            <Text style={[styles.seeAll, { color: colors.red }]}>Ver todos →</Text>
+            <Text style={[styles.seeAll, { color: colors.red }]}>
+              {english ? 'See all →' : 'Ver todos →'}
+            </Text>
           </Pressable>
         </View>
 
         {programsLoading ? (
           <View style={styles.programState}>
             <ActivityIndicator color={colors.red} />
-            <Text style={[styles.programStateText, { color: colors.muted }]}>Cargando programación…</Text>
+            <Text style={[styles.programStateText, { color: colors.muted }]}>
+              {english ? 'Loading programs…' : 'Cargando programación…'}
+            </Text>
           </View>
         ) : programsError ? (
           <View style={styles.programState}>
-            <Text style={[styles.programStateText, { color: colors.muted }]}>La programación no está disponible en este momento.</Text>
+            <Text style={[styles.programStateText, { color: colors.muted }]}>
+              {english
+                ? 'Programs are not available right now.'
+                : 'La programación no está disponible en este momento.'}
+            </Text>
           </View>
         ) : programs.length > 2 ? (
           <ScrollView
@@ -116,7 +155,7 @@ export default function HomeScreen() {
                 key={`${program.stationId}:${program.id}`}
                 hostName={program.hostName}
                 imageUrl={program.imageUrl}
-                schedule={programScheduleLabel(program)}
+                schedule={programScheduleLabel(program, language)}
                 style={styles.programCarouselCard}
                 title={program.name}
               />
@@ -129,7 +168,7 @@ export default function HomeScreen() {
                 key={`${program.stationId}:${program.id}`}
                 hostName={program.hostName}
                 imageUrl={program.imageUrl}
-                schedule={programScheduleLabel(program)}
+                schedule={programScheduleLabel(program, language)}
                 style={styles.programPairCard}
                 title={program.name}
               />
@@ -137,7 +176,9 @@ export default function HomeScreen() {
           </View>
         ) : (
           <View style={styles.programState}>
-            <Text style={[styles.programStateText, { color: colors.muted }]}>Aún no hay programas publicados.</Text>
+            <Text style={[styles.programStateText, { color: colors.muted }]}>
+              {english ? 'No programs have been published yet.' : 'Aún no hay programas publicados.'}
+            </Text>
           </View>
         )}
       </ScrollView>
