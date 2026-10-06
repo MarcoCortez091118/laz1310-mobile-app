@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useLanguage } from '../i18n/LanguageProvider';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { fonts, radii, spacing } from '../theme/tokens';
 
@@ -8,11 +9,10 @@ interface LiveBadgeProps {
   compact?: boolean;
 }
 
-export function LiveBadge({
-  live = true,
-  compact = false,
-}: LiveBadgeProps) {
+export function LiveBadge({ live = true, compact = false }: LiveBadgeProps) {
   const { colors } = useAppTheme();
+  const { language } = useLanguage();
+  const english = language === 'en';
   const stateColor = live ? colors.red : colors.gray;
 
   return (
@@ -31,7 +31,13 @@ export function LiveBadge({
           { color: stateColor },
         ]}
       >
-        {live ? 'EN VIVO' : 'FUERA DEL AIRE'}
+        {live
+          ? english
+            ? 'LIVE'
+            : 'EN VIVO'
+          : english
+            ? 'OFF AIR'
+            : 'FUERA DEL AIRE'}
       </Text>
     </View>
   );
