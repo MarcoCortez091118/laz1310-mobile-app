@@ -1,20 +1,23 @@
+import type { AppLanguage } from '../../i18n/LanguageProvider';
 import { DynamicFormField } from './api';
 
-export function dynamicDeadline(endsAt: string, timezone: string) {
+export function dynamicDeadline(
+  endsAt: string,
+  timezone: string,
+  language: AppLanguage = 'es',
+) {
   try {
-    return (
-      'Hasta ' +
-      new Intl.DateTimeFormat('es-US', {
-        weekday: 'short',
-        day: 'numeric',
-        month: 'short',
-        hour: 'numeric',
-        minute: '2-digit',
-        timeZone: timezone,
-      }).format(new Date(endsAt))
-    );
+    const date = new Intl.DateTimeFormat(language === 'en' ? 'en-US' : 'es-US', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: timezone,
+    }).format(new Date(endsAt));
+    return language === 'en' ? `Until ${date}` : `Hasta ${date}`;
   } catch {
-    return 'Consulta la vigencia';
+    return language === 'en' ? 'Check campaign dates' : 'Consulta la vigencia';
   }
 }
 
