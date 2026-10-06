@@ -1,5 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useRouter } from 'expo-router';
 import {
+  ActivityIndicator,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,13 +17,17 @@ import { LiveRadioCard } from '../src/components/LiveRadioCard';
 import { ProgramCard } from '../src/components/ProgramCard';
 import { PromoHero } from '../src/components/PromoHero';
 import { WeatherHeaderBadge } from '../src/components/WeatherHeaderBadge';
+import { programScheduleLabel } from '../src/features/programs/presentation';
+import { usePrograms } from '../src/features/programs/usePrograms';
 import { useAppTheme } from '../src/theme/ThemeProvider';
 import { fonts, spacing } from '../src/theme/tokens';
 
 const categories = ['Todo', 'Shows', 'Noticias', 'Eventos', 'Música'] as const;
 
 export default function HomeScreen() {
+  const router = useRouter();
   const { colors } = useAppTheme();
+  const { programs, loading: programsLoading, error: programsError } = usePrograms();
 
   return (
     <SafeAreaView
@@ -34,25 +41,14 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View style={styles.brandBlock}>
             <BrandLogo width={118} />
-            <Text style={[styles.location, { color: colors.gray }]}>
-              DETROIT, MI
-            </Text>
+            <Text style={[styles.location, { color: colors.gray }]}>DETROIT, MI</Text>
           </View>
 
           <View style={styles.headerActions}>
             <LiveBadge compact />
             <WeatherHeaderBadge />
-            <View
-              style={[
-                styles.bell,
-                { backgroundColor: colors.surfaceElevated },
-              ]}
-            >
-              <Ionicons
-                color={colors.white}
-                name="notifications-outline"
-                size={20}
-              />
+            <View style={[styles.bell, { backgroundColor: colors.surfaceElevated }]}>
+              <Ionicons color={colors.white} name="notifications-outline" size={20} />
             </View>
           </View>
         </View>
@@ -68,10 +64,7 @@ export default function HomeScreen() {
               style={[
                 styles.category,
                 {
-                  backgroundColor:
-                    index === 0
-                      ? colors.red
-                      : colors.surfaceElevated,
+                  backgroundColor: index === 0 ? colors.red : colors.surfaceElevated,
                 },
               ]}
             >
@@ -92,24 +85,61 @@ export default function HomeScreen() {
         <LiveRadioCard />
 
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.white }]}>
-            PROGRAMAS
-          </Text>
-          <Text style={[styles.seeAll, { color: colors.red }]}>
-            Ver todos →
-          </Text>
+          <Text style={[styles.sectionTitle, { color: colors.white }]}>PROGRAMAS</Text>
+          <Pressable
+            accessibilityRole="button"
+            disabled={!programs.length}
+            onPress={() => router.push('/programs')}
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : programs.length ? 1 : 0.45 })}
+          >
+            <Text style={[styles.seeAll, { color: colors.red }]}>Ver todos →</Text>
+          </Pressable>
         </View>
 
-        <View style={styles.programs}>
-          <ProgramCard
-            schedule="Lun – Vie · 6:00 – 11:00 am"
-            title="EL BUENO, LA MALA Y EL FEO"
-          />
-          <ProgramCard
-            schedule="Lun – Vie · 11:00 am – 3:00 pm"
-            title="ADRIÁN ESCOBEDO"
-          />
-        </View>
+        {programsLoading ? (
+          <View style={styles.programState}>
+            <ActivityIndicator color={colors.red} />
+            <Text style={[styles.programStateText, { color: colors.muted }]}>Cargando programación…</Text>
+          </View>
+        ) : programsError ? (
+          <View style={styles.programState}>
+            <Text style={[styles.programStateText, { color: colors.muted }]}>La programación no está disponible en este momento.</Text>
+          </View>
+        ) : programs.length > 2 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.programCarousel}
+          >
+            {programs.map((program) => (
+              <ProgramCard
+                key={`${program.stationId}:${program.id}`}
+                hostName={program.hostName}
+                imageUrl={program.imageUrl}
+                schedule={programScheduleLabel(program)}
+                style={styles.programCarouselCard}
+                title={program.name}
+              />
+            ))}
+          </ScrollView>
+        ) : programs.length ? (
+          <View style={styles.programs}>
+            {programs.map((program) => (
+              <ProgramCard
+                key={`${program.stationId}:${program.id}`}
+                hostName={program.hostName}
+                imageUrl={program.imageUrl}
+                schedule={programScheduleLabel(program)}
+                style={styles.programPairCard}
+                title={program.name}
+              />
+            ))}
+          </View>
+        ) : (
+          <View style={styles.programState}>
+            <Text style={[styles.programStateText, { color: colors.muted }]}>Aún no hay programas publicados.</Text>
+          </View>
+        )}
       </ScrollView>
 
       <BottomNavigation />
@@ -189,5 +219,26 @@ const styles = StyleSheet.create({
   programs: {
     flexDirection: 'row',
     gap: 14,
+  },
+  programPairCard: {
+    flex: 1,
+  },
+  programCarousel: {
+    gap: 14,
+    paddingRight: spacing.md,
+  },
+  programCarouselCard: {
+    width: 176,
+  },
+  programState: {
+    alignItems: 'center',
+    gap: 8,
+    minHeight: 90,
+    justifyContent: 'center',
+  },
+  programStateText: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    textAlign: 'center',
   },
 });
