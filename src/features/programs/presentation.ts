@@ -21,6 +21,10 @@ export function formatProgramTime(value: string): string {
   return `${displayHour}:${minute} ${suffix}`;
 }
 
+function shortWeekday(day: number): string {
+  return SHORT_WEEKDAYS[day] ?? `Día ${day + 1}`;
+}
+
 function dayRanges(days: number[]): string {
   const unique = [...new Set(days)].sort((left, right) => left - right);
   const ranges: Array<[number, number]> = [];
@@ -37,8 +41,8 @@ function dayRanges(days: number[]): string {
   return ranges
     .map(([start, end]) =>
       start === end
-        ? SHORT_WEEKDAYS[start]
-        : `${SHORT_WEEKDAYS[start]} – ${SHORT_WEEKDAYS[end]}`,
+        ? shortWeekday(start)
+        : `${shortWeekday(start)} – ${shortWeekday(end)}`,
     )
     .join(', ');
 }
@@ -60,19 +64,26 @@ export function programScheduleLines(
       const leftDay = Math.min(...left.map((entry) => entry.weekday));
       const rightDay = Math.min(...right.map((entry) => entry.weekday));
       if (leftDay !== rightDay) return leftDay - rightDay;
-      return left[0].startsAt.localeCompare(right[0].startsAt);
+      const leftFirst = left[0];
+      const rightFirst = right[0];
+      if (!leftFirst || !rightFirst) return 0;
+      return leftFirst.startsAt.localeCompare(rightFirst.startsAt);
     })
-    .map((entries) => {
+    .flatMap((entries) => {
       const first = entries[0];
-      return `${dayRanges(entries.map((entry) => entry.weekday))} · ${formatProgramTime(first.startsAt)} – ${formatProgramTime(first.endsAt)}`;
+      if (!first) return [];
+      return [
+        `${dayRanges(entries.map((entry) => entry.weekday))} · ${formatProgramTime(first.startsAt)} – ${formatProgramTime(first.endsAt)}`,
+      ];
     });
 }
 
 export function programScheduleLabel(program: PublishedProgram): string {
   const lines = programScheduleLines(program.schedule);
   if (!lines.length) return 'Horario por definir';
-  if (lines.length === 1) return lines[0];
-  return `${lines[0]} · +${lines.length - 1}`;
+  const first = lines[0] ?? 'Horario por definir';
+  if (lines.length === 1) return first;
+  return `${first} · +${lines.length - 1}`;
 }
 
 export interface WeeklyProgramSlot {
@@ -89,7 +100,9 @@ export function weeklyProgramSlots(programs: PublishedProgram[]): WeeklyProgramS
   programs.forEach((program) => {
     program.schedule.forEach((entry) => {
       if (entry.weekday < 0 || entry.weekday > 6) return;
-      days[entry.weekday].push({
+      const day = days[entry.weekday];
+      if (!day) return;
+      day.push({
         id: entry.id,
         weekday: entry.weekday,
         startsAt: entry.startsAt,
