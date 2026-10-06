@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PrimaryButton } from '../../src/components/PrimaryButton';
+import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { useAppTheme } from '../../src/theme/ThemeProvider';
 import { fonts, spacing } from '../../src/theme/tokens';
 
@@ -15,49 +16,43 @@ export default function DynamicsConfirmationScreen() {
     submittedAt?: string;
   }>();
   const { colors } = useAppTheme();
+  const { language } = useLanguage();
+  const english = language === 'en';
 
   return (
-    <SafeAreaView
-      edges={['top', 'bottom']}
-      style={[styles.safe, { backgroundColor: colors.black }]}
-    >
+    <SafeAreaView edges={['top', 'bottom']} style={[styles.safe, { backgroundColor: colors.black }]}>
       <View style={styles.content}>
         <View style={[styles.icon, { backgroundColor: colors.red }]}>
           <Ionicons color="#FEFEFE" name="checkmark" size={42} />
         </View>
 
         <Text style={[styles.title, { color: colors.white }]}>
-          Participación recibida
+          {english ? 'Entry received' : 'Participación recibida'}
         </Text>
         <Text style={[styles.body, { color: colors.muted }]}>
           {title
-            ? 'Tu participación para “' + title + '” fue aceptada por LA Z API.'
-            : 'Tu participación fue aceptada por LA Z API.'}
+            ? english
+              ? `Your entry for “${title}” was accepted by LA Z API.`
+              : `Tu participación para “${title}” fue aceptada por LA Z API.`
+            : english
+              ? 'Your entry was accepted by LA Z API.'
+              : 'Tu participación fue aceptada por LA Z API.'}
         </Text>
         {submittedAt ? (
           <Text style={[styles.note, { color: colors.muted }]}>
-            Recibida {new Date(submittedAt).toLocaleString('es-US')}
+            {english ? 'Received ' : 'Recibida '}
+            {new Date(submittedAt).toLocaleString(english ? 'en-US' : 'es-US')}
           </Text>
         ) : null}
         {receiptId ? (
-          <Text
-            numberOfLines={1}
-            style={[styles.receipt, { color: colors.muted }]}
-          >
-            Recibo: {receiptId}
+          <Text numberOfLines={1} style={[styles.receipt, { color: colors.muted }]}>
+            {english ? 'Receipt' : 'Recibo'}: {receiptId}
           </Text>
         ) : null}
 
         <View style={styles.actions}>
-          <PrimaryButton
-            label="Volver a Dinámicas"
-            onPress={() => router.replace('/dynamics')}
-          />
-          <PrimaryButton
-            label="Volver a Inicio"
-            onPress={() => router.replace('/home')}
-            secondary
-          />
+          <PrimaryButton label={english ? 'Back to Dynamics' : 'Volver a Dinámicas'} onPress={() => router.replace('/dynamics')} />
+          <PrimaryButton label={english ? 'Back to Home' : 'Volver a Inicio'} onPress={() => router.replace('/home')} secondary />
         </View>
       </View>
     </SafeAreaView>
@@ -66,48 +61,11 @@ export default function DynamicsConfirmationScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  content: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-  },
-  icon: {
-    alignItems: 'center',
-    borderRadius: 48,
-    height: 88,
-    justifyContent: 'center',
-    width: 88,
-  },
-  title: {
-    fontFamily: fonts.displayExtraBold,
-    fontSize: 34,
-    marginTop: 28,
-    textAlign: 'center',
-  },
-  body: {
-    fontFamily: fonts.body,
-    fontSize: 14,
-    lineHeight: 20,
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  note: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    lineHeight: 15,
-    marginTop: 14,
-    textAlign: 'center',
-  },
-  receipt: {
-    fontFamily: fonts.body,
-    fontSize: 9,
-    marginTop: 6,
-    maxWidth: '90%',
-  },
-  actions: {
-    gap: 10,
-    marginTop: 34,
-    width: '100%',
-  },
+  content: { alignItems: 'center', flex: 1, justifyContent: 'center', paddingHorizontal: spacing.lg },
+  icon: { alignItems: 'center', borderRadius: 48, height: 88, justifyContent: 'center', width: 88 },
+  title: { fontFamily: fonts.displayExtraBold, fontSize: 34, marginTop: 28, textAlign: 'center' },
+  body: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, marginTop: 10, textAlign: 'center' },
+  note: { fontFamily: fonts.body, fontSize: 10, lineHeight: 15, marginTop: 14, textAlign: 'center' },
+  receipt: { fontFamily: fonts.body, fontSize: 9, marginTop: 6, maxWidth: '90%' },
+  actions: { gap: 10, marginTop: 34, width: '100%' },
 });

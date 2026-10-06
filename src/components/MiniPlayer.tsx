@@ -1,3 +1,4 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import {
   Pressable,
@@ -7,6 +8,7 @@ import {
 } from 'react-native';
 
 import { useRadio } from '../features/radio/useRadio';
+import { useLanguage } from '../i18n/LanguageProvider';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { fonts, radii, spacing } from '../theme/tokens';
 import { PlayPauseButton } from './PlayPauseButton';
@@ -14,12 +16,15 @@ import { VinylArtwork } from './VinylArtwork';
 
 interface MiniPlayerProps {
   visible: boolean;
+  onDismiss: () => void;
 }
 
-export function MiniPlayer({ visible }: MiniPlayerProps) {
+export function MiniPlayer({ visible, onDismiss }: MiniPlayerProps) {
   const router = useRouter();
   const { state, toggle } = useRadio();
   const { colors } = useAppTheme();
+  const { language } = useLanguage();
+  const english = language === 'en';
 
   if (!visible) {
     return null;
@@ -44,23 +49,27 @@ export function MiniPlayer({ visible }: MiniPlayerProps) {
     >
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Abrir reproductor de LA Z 1310"
+        accessibilityLabel={
+          english ? 'Open LA Z 1310 player' : 'Abrir reproductor de LA Z 1310'
+        }
         onPress={() => router.push('/radio')}
         style={styles.content}
       >
         <View style={[styles.accent, { backgroundColor: colors.red }]} />
         <VinylArtwork size={48} playing={state === 'playing'} />
         <View style={styles.copy}>
-          <Text style={[styles.title, { color: colors.white }]}>
-            LA Z 1310
-          </Text>
+          <Text style={[styles.title, { color: colors.white }]}>LA Z 1310</Text>
           <Text
             numberOfLines={1}
             style={[styles.subtitle, { color: colors.red }]}
           >
             {state === 'reconnecting'
-              ? 'Reconectando transmisión…'
-              : 'LA Z Detroit · EN VIVO'}
+              ? english
+                ? 'Reconnecting live stream…'
+                : 'Reconectando transmisión…'
+              : english
+                ? 'LA Z Detroit · LIVE'
+                : 'LA Z Detroit · EN VIVO'}
           </Text>
         </View>
       </Pressable>
@@ -70,6 +79,24 @@ export function MiniPlayer({ visible }: MiniPlayerProps) {
         size="compact"
         state={playbackState}
       />
+
+      <Pressable
+        accessibilityLabel={
+          english ? 'Hide floating radio player' : 'Ocultar reproductor flotante'
+        }
+        accessibilityRole="button"
+        hitSlop={8}
+        onPress={onDismiss}
+        style={({ pressed }) => [
+          styles.dismiss,
+          {
+            backgroundColor: colors.surfaceElevated,
+            opacity: pressed ? 0.68 : 1,
+          },
+        ]}
+      >
+        <Ionicons color={colors.muted} name="close" size={16} />
+      </Pressable>
     </View>
   );
 }
@@ -111,5 +138,13 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 11,
     marginTop: 2,
+  },
+  dismiss: {
+    alignItems: 'center',
+    borderRadius: 999,
+    height: 28,
+    justifyContent: 'center',
+    marginLeft: -4,
+    width: 28,
   },
 });

@@ -10,46 +10,57 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomNavigation } from '../src/components/BottomNavigation';
+import { useLanguage } from '../src/i18n/LanguageProvider';
 import { useAppTheme } from '../src/theme/ThemeProvider';
 import { fonts, radii, spacing } from '../src/theme/tokens';
-
-const modules = [
-  {
-    id: 'dynamics',
-    title: 'Dinámicas',
-    subtitle: 'Promociones, trivias, encuestas y activaciones.',
-    icon: 'sparkles-outline' as const,
-    route: '/dynamics' as const,
-    available: true,
-  },
-  {
-    id: 'weather',
-    title: 'Clima',
-    subtitle: 'Detroit y mercados destacados de LA Z.',
-    icon: 'partly-sunny-outline' as const,
-    route: '/weather' as const,
-    available: true,
-  },
-  {
-    id: 'programs',
-    title: 'Programas',
-    subtitle: 'Shows, hosts y programación semanal publicada.',
-    icon: 'mic-outline' as const,
-    route: '/programs' as const,
-    available: true,
-  },
-  {
-    id: 'events',
-    title: 'Eventos',
-    subtitle: 'Fechas y experiencias de la comunidad.',
-    icon: 'calendar-outline' as const,
-    available: false,
-  },
-];
 
 export default function ExploreScreen() {
   const router = useRouter();
   const { colors } = useAppTheme();
+  const { language } = useLanguage();
+  const english = language === 'en';
+
+  const modules = [
+    {
+      id: 'dynamics',
+      title: english ? 'Dynamics' : 'Dinámicas',
+      subtitle: english
+        ? 'Promotions, trivia, surveys and activations.'
+        : 'Promociones, trivias, encuestas y activaciones.',
+      icon: 'sparkles-outline' as const,
+      route: '/dynamics' as const,
+      available: true,
+    },
+    {
+      id: 'weather',
+      title: english ? 'Weather' : 'Clima',
+      subtitle: english
+        ? 'Detroit and featured LA Z markets.'
+        : 'Detroit y mercados destacados de LA Z.',
+      icon: 'partly-sunny-outline' as const,
+      route: '/weather' as const,
+      available: true,
+    },
+    {
+      id: 'programs',
+      title: english ? 'Programs' : 'Programas',
+      subtitle: english
+        ? 'Shows, hosts and published weekly schedule.'
+        : 'Shows, hosts y programación semanal publicada.',
+      icon: 'mic-outline' as const,
+      route: '/programs' as const,
+      available: true,
+    },
+    {
+      id: 'events',
+      title: english ? 'Events' : 'Eventos',
+      subtitle: english
+        ? 'Dates and community experiences.'
+        : 'Fechas y experiencias de la comunidad.',
+      icon: 'calendar-outline' as const,
+      available: false,
+    },
+  ];
 
   return (
     <SafeAreaView
@@ -57,8 +68,14 @@ export default function ExploreScreen() {
       style={[styles.safe, { backgroundColor: colors.black }]}
     >
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.title, { color: colors.white }]}>Explorar</Text>
-        <Text style={[styles.subtitle, { color: colors.muted }]}>Descubre las experiencias disponibles en LA Z.</Text>
+        <Text style={[styles.title, { color: colors.white }]}>
+          {english ? 'Explore' : 'Explorar'}
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.muted }]}>
+          {english
+            ? 'Discover the experiences available on LA Z.'
+            : 'Descubre las experiencias disponibles en LA Z.'}
+        </Text>
 
         <View style={styles.grid}>
           {modules.map((item) => (
@@ -85,7 +102,9 @@ export default function ExploreScreen() {
               <Text style={[styles.cardTitle, { color: colors.white }]}>{item.title}</Text>
               <Text style={[styles.cardSubtitle, { color: colors.muted }]}>{item.subtitle}</Text>
               {!item.available ? (
-                <Text style={[styles.comingSoon, { color: colors.red }]}>PRÓXIMAMENTE</Text>
+                <Text style={[styles.comingSoon, { color: colors.red }]}>
+                  {english ? 'COMING SOON' : 'PRÓXIMAMENTE'}
+                </Text>
               ) : null}
             </Pressable>
           ))}
@@ -98,9 +117,7 @@ export default function ExploreScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-  },
+  safe: { flex: 1 },
   content: {
     paddingBottom: 160,
     paddingHorizontal: spacing.md,

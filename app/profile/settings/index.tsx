@@ -9,35 +9,50 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
+import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { useAppTheme } from '../../../src/theme/ThemeProvider';
 import { fonts, radii, spacing } from '../../../src/theme/tokens';
-
-const rows = [
-  {
-    title: 'Cuenta',
-    subtitle: 'Correo, sesión y seguridad',
-    route: '/profile/settings/account' as const,
-  },
-  {
-    title: 'Apariencia',
-    subtitle: 'Selecciona tema claro u oscuro',
-    route: '/profile/settings/appearance' as const,
-  },
-  {
-    title: 'Notificaciones',
-    subtitle: 'Push, general, radio, programas y dinámicas',
-    route: '/profile/settings/notifications' as const,
-  },
-  {
-    title: 'Privacidad y acerca de',
-    subtitle: 'Legal, soporte e información',
-    route: '/profile/settings/privacy' as const,
-  },
-];
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { colors, preference } = useAppTheme();
+  const { language } = useLanguage();
+  const english = language === 'en';
+
+  const rows = [
+    {
+      id: 'account',
+      title: english ? 'Account' : 'Cuenta',
+      subtitle: english ? 'Email, session and security' : 'Correo, sesión y seguridad',
+      route: '/profile/settings/account' as const,
+    },
+    {
+      id: 'appearance',
+      title: english ? 'Appearance' : 'Apariencia',
+      subtitle: english ? 'Choose light or dark theme' : 'Selecciona tema claro u oscuro',
+      route: '/profile/settings/appearance' as const,
+    },
+    {
+      id: 'language',
+      title: english ? 'Language' : 'Idioma',
+      subtitle: english ? 'English or Spanish' : 'Español o English',
+      route: '/profile/settings/language' as const,
+    },
+    {
+      id: 'notifications',
+      title: english ? 'Notifications' : 'Notificaciones',
+      subtitle: english
+        ? 'Push, general, radio, programs and dynamics'
+        : 'Push, general, radio, programas y dinámicas',
+      route: '/profile/settings/notifications' as const,
+    },
+    {
+      id: 'privacy',
+      title: english ? 'Privacy & about' : 'Privacidad y acerca de',
+      subtitle: english ? 'Legal, support and information' : 'Legal, soporte e información',
+      route: '/profile/settings/privacy' as const,
+    },
+  ];
 
   return (
     <SafeAreaView
@@ -45,18 +60,20 @@ export default function SettingsScreen() {
       style={[styles.safe, { backgroundColor: colors.black }]}
     >
       <View style={styles.content}>
-        <ScreenHeader title="Configuración" />
+        <ScreenHeader title={english ? 'Settings' : 'Configuración'} />
         <Text style={[styles.title, { color: colors.white }]}>
-          Preferencias de la app
+          {english ? 'App preferences' : 'Preferencias de la app'}
         </Text>
         <Text style={[styles.subtitle, { color: colors.muted }]}>
-          Personaliza cómo se ve y cómo se comporta LA Z en este dispositivo.
+          {english
+            ? 'Customize how LA Z looks and behaves on this device.'
+            : 'Personaliza cómo se ve y cómo se comporta LA Z en este dispositivo.'}
         </Text>
 
         <View style={styles.rows}>
           {rows.map((row) => (
             <Pressable
-              key={row.title}
+              key={row.id}
               onPress={() => router.push(row.route)}
               style={[
                 styles.row,
@@ -74,9 +91,20 @@ export default function SettingsScreen() {
                   {row.subtitle}
                 </Text>
               </View>
-              {row.title === 'Apariencia' ? (
+              {row.id === 'appearance' ? (
                 <Text style={[styles.value, { color: colors.red }]}>
-                  {preference === 'dark' ? 'Oscuro' : 'Claro'}
+                  {preference === 'dark'
+                    ? english
+                      ? 'Dark'
+                      : 'Oscuro'
+                    : english
+                      ? 'Light'
+                      : 'Claro'}
+                </Text>
+              ) : null}
+              {row.id === 'language' ? (
+                <Text style={[styles.value, { color: colors.red }]}>
+                  {language === 'en' ? 'English' : 'Español'}
                 </Text>
               ) : null}
               <Ionicons color={colors.gray} name="chevron-forward" size={20} />

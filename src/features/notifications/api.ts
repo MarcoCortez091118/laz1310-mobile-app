@@ -38,6 +38,31 @@ export interface NotificationPreferences {
 }
 
 export type NotificationPreferencePatch = Partial<NotificationPreferences>;
+export type NotificationCategory = 'general' | 'radio' | 'programs' | 'dynamics';
+
+export interface NotificationRouteTarget {
+  kind: 'route';
+  value: string;
+}
+
+export interface NotificationInboxItem {
+  id: string;
+  type: NotificationCategory;
+  title: string;
+  body: string;
+  target: NotificationRouteTarget;
+  createdAt: string;
+  readAt: string | null;
+}
+
+export interface NotificationInboxPage {
+  items: NotificationInboxItem[];
+  nextCursor: string | null;
+}
+
+export interface ReadAllNotificationsResponse {
+  readAt: string;
+}
 
 function authHeaders(tokens: FirebaseSecurityTokens) {
   if (!tokens.idToken) {
@@ -110,4 +135,36 @@ export function patchNotificationPreferences(
       body: JSON.stringify(patch),
     },
   );
+}
+
+export function getNotificationInbox(
+  tokens: FirebaseSecurityTokens,
+  input?: { limit?: number; after?: string | null },
+) {
+  const params = new URLSearchParams();
+  params.set('limit', String(input?.limit ?? 50));
+  if (input?.after) params.set('after', input.after);
+  return apiRequest<NotificationInboxPage>(`/api/v1/notifications?${params.toString()}`, {
+    headers: authHeaders(tokens),
+  });
+}
+
+export function markNotificationRead(
+  tokens: FirebaseSecurityTokens,
+  notificationId: string,
+) {
+  return apiRequest<NotificationInboxItem>(
+    `/api/v1/notifications/${encodeURIComponent(notificationId)}/read`,
+    {
+      method: 'PATCH',
+      headers: authHeaders(tokens),
+    },
+  );
+}
+
+export function markAllNotificationsRead(tokens: FirebaseSecurityTokens) {
+  return apiRequest<ReadAllNotificationsResponse>('/api/v1/notifications/read-all', {
+    method: 'POST',
+    headers: authHeaders(tokens),
+  });
 }

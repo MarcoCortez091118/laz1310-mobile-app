@@ -18,6 +18,7 @@ import {
   getDynamics,
 } from '../features/dynamics/api';
 import { dynamicDeadline } from '../features/dynamics/presentation';
+import { useLanguage } from '../i18n/LanguageProvider';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { fonts, radii, spacing } from '../theme/tokens';
 
@@ -31,11 +32,13 @@ interface PromoCardProps {
 function PromoCard({ campaign, width }: PromoCardProps) {
   const router = useRouter();
   const { colors } = useAppTheme();
-  const label = campaign.artworkLabel.trim() || 'Promoción';
+  const { language } = useLanguage();
+  const english = language === 'en';
+  const label = campaign.artworkLabel.trim() || (english ? 'Promotion' : 'Promoción');
 
   return (
     <Pressable
-      accessibilityLabel={'Abrir dinámica ' + campaign.title}
+      accessibilityLabel={`${english ? 'Open dynamic' : 'Abrir dinámica'} ${campaign.title}`}
       accessibilityRole="button"
       onPress={() =>
         router.push({
@@ -72,10 +75,10 @@ function PromoCard({ campaign, width }: PromoCardProps) {
           {campaign.title}
         </Text>
         <Text style={styles.deadline}>
-          {dynamicDeadline(campaign.endsAt, campaign.timezone)}
+          {dynamicDeadline(campaign.endsAt, campaign.timezone, language)}
         </Text>
         <View style={[styles.cta, { backgroundColor: colors.red }]}>
-          <Text style={styles.ctaText}>PARTICIPAR</Text>
+          <Text style={styles.ctaText}>{english ? 'JOIN' : 'PARTICIPAR'}</Text>
         </View>
       </View>
     </Pressable>
@@ -171,12 +174,8 @@ export function PromoHero() {
 }
 
 const styles = StyleSheet.create({
-  carousel: {
-    marginHorizontal: 0,
-  },
-  carouselContent: {
-    gap: CARD_GAP,
-  },
+  carousel: { marginHorizontal: 0 },
+  carouselContent: { gap: CARD_GAP },
   card: {
     aspectRatio: 1,
     borderRadius: radii.md,

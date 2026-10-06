@@ -1,3 +1,4 @@
+import type { AppLanguage } from '../../i18n/LanguageProvider';
 import { WeatherConditionCode } from './api';
 
 export type WeatherUnit = 'F' | 'C';
@@ -23,7 +24,7 @@ export function displayPrecipitation(mm: number, unit: WeatherUnit) {
   return Math.round(mm * 10) / 10 + ' mm';
 }
 
-const labels: Record<WeatherConditionCode, string> = {
+const labelsEs: Record<WeatherConditionCode, string> = {
   clear: 'Despejado',
   mostly_clear: 'Mayormente despejado',
   partly_cloudy: 'Parcialmente nublado',
@@ -42,7 +43,30 @@ const labels: Record<WeatherConditionCode, string> = {
   unknown: 'Condición variable',
 };
 
-export function conditionLabel(code: WeatherConditionCode) {
+const labelsEn: Record<WeatherConditionCode, string> = {
+  clear: 'Clear',
+  mostly_clear: 'Mostly clear',
+  partly_cloudy: 'Partly cloudy',
+  cloudy: 'Cloudy',
+  fog: 'Fog',
+  drizzle: 'Drizzle',
+  freezing_drizzle: 'Freezing drizzle',
+  rain: 'Rain',
+  freezing_rain: 'Freezing rain',
+  snow: 'Snow',
+  snow_grains: 'Snow grains',
+  rain_showers: 'Rain showers',
+  snow_showers: 'Snow showers',
+  thunderstorm: 'Thunderstorm',
+  thunderstorm_hail: 'Thunderstorm with hail',
+  unknown: 'Variable conditions',
+};
+
+export function conditionLabel(
+  code: WeatherConditionCode,
+  language: AppLanguage = 'es',
+) {
+  const labels = language === 'en' ? labelsEn : labelsEs;
   return labels[code] ?? labels.unknown;
 }
 
@@ -81,9 +105,12 @@ export function conditionIcon(
   }
 }
 
-export function localTimeLabel(timezone: string) {
+export function localTimeLabel(
+  timezone: string,
+  language: AppLanguage = 'es',
+) {
   try {
-    return new Intl.DateTimeFormat('es-US', {
+    return new Intl.DateTimeFormat(language === 'en' ? 'en-US' : 'es-US', {
       hour: 'numeric',
       minute: '2-digit',
       timeZone: timezone,
@@ -93,13 +120,18 @@ export function localTimeLabel(timezone: string) {
   }
 }
 
-export function hourlyLabel(at: string, timezone: string, index: number) {
+export function hourlyLabel(
+  at: string,
+  timezone: string,
+  index: number,
+  language: AppLanguage = 'es',
+) {
   if (index === 0) {
-    return 'Próx.';
+    return language === 'en' ? 'Next' : 'Próx.';
   }
 
   try {
-    return new Intl.DateTimeFormat('es-US', {
+    return new Intl.DateTimeFormat(language === 'en' ? 'en-US' : 'es-US', {
       hour: 'numeric',
       timeZone: timezone,
     }).format(new Date(at));
@@ -108,9 +140,13 @@ export function hourlyLabel(at: string, timezone: string, index: number) {
   }
 }
 
-export function dailyLabel(date: string, index: number) {
+export function dailyLabel(
+  date: string,
+  index: number,
+  language: AppLanguage = 'es',
+) {
   if (index === 0) {
-    return 'Hoy';
+    return language === 'en' ? 'Today' : 'Hoy';
   }
 
   const parsed = new Date(date + 'T12:00:00Z');
@@ -118,7 +154,7 @@ export function dailyLabel(date: string, index: number) {
     return date;
   }
 
-  const value = new Intl.DateTimeFormat('es-US', {
+  const value = new Intl.DateTimeFormat(language === 'en' ? 'en-US' : 'es-US', {
     weekday: 'short',
     timeZone: 'UTC',
   }).format(parsed);

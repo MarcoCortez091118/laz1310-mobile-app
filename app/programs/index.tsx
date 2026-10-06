@@ -15,19 +15,24 @@ import { BottomNavigation } from '../../src/components/BottomNavigation';
 import { ProgramCard } from '../../src/components/ProgramCard';
 import {
   formatProgramTime,
-  PROGRAM_WEEKDAYS,
+  PROGRAM_WEEKDAYS_EN,
+  PROGRAM_WEEKDAYS_ES,
   programScheduleLabel,
   weeklyProgramSlots,
 } from '../../src/features/programs/presentation';
 import { usePrograms } from '../../src/features/programs/usePrograms';
+import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { useAppTheme } from '../../src/theme/ThemeProvider';
 import { fonts, radii, spacing } from '../../src/theme/tokens';
 
 export default function ProgramsScreen() {
   const router = useRouter();
   const { colors } = useAppTheme();
+  const { language } = useLanguage();
+  const english = language === 'en';
   const { programs, loading, error, refresh } = usePrograms();
   const schedule = weeklyProgramSlots(programs);
+  const weekdays = english ? PROGRAM_WEEKDAYS_EN : PROGRAM_WEEKDAYS_ES;
 
   return (
     <SafeAreaView edges={['top']} style={[styles.safe, { backgroundColor: colors.black }]}>
@@ -44,7 +49,7 @@ export default function ProgramsScreen() {
       >
         <View style={styles.header}>
           <Pressable
-            accessibilityLabel="Regresar"
+            accessibilityLabel={english ? 'Back' : 'Regresar'}
             accessibilityRole="button"
             onPress={() => router.back()}
             style={({ pressed }) => [
@@ -55,31 +60,45 @@ export default function ProgramsScreen() {
             <Ionicons color={colors.white} name="chevron-back" size={22} />
           </Pressable>
           <View style={styles.headerCopy}>
-            <Text style={[styles.eyebrow, { color: colors.red }]}>LA Z 1310 · PROGRAMACIÓN</Text>
-            <Text style={[styles.title, { color: colors.white }]}>Programas</Text>
+            <Text style={[styles.eyebrow, { color: colors.red }]}>
+              {english ? 'LA Z 1310 · SCHEDULE' : 'LA Z 1310 · PROGRAMACIÓN'}
+            </Text>
+            <Text style={[styles.title, { color: colors.white }]}>
+              {english ? 'Programs' : 'Programas'}
+            </Text>
           </View>
         </View>
 
-        <Text style={[styles.subtitle, { color: colors.muted }]}>Shows, hosts y horarios publicados desde LA Z Digital Platform.</Text>
+        <Text style={[styles.subtitle, { color: colors.muted }]}>
+          {english
+            ? 'Shows, hosts and schedules published from LA Z Digital Platform.'
+            : 'Shows, hosts y horarios publicados desde LA Z Digital Platform.'}
+        </Text>
 
         {loading && !programs.length ? (
           <View style={styles.state}>
             <ActivityIndicator color={colors.red} size="large" />
-            <Text style={[styles.stateText, { color: colors.muted }]}>Cargando programación…</Text>
+            <Text style={[styles.stateText, { color: colors.muted }]}>
+              {english ? 'Loading programs…' : 'Cargando programación…'}
+            </Text>
           </View>
         ) : error && !programs.length ? (
           <View style={[styles.errorCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Ionicons color={colors.red} name="alert-circle-outline" size={26} />
-            <Text style={[styles.errorTitle, { color: colors.white }]}>No pudimos cargar los programas</Text>
+            <Text style={[styles.errorTitle, { color: colors.white }]}>
+              {english ? 'We could not load programs' : 'No pudimos cargar los programas'}
+            </Text>
             <Text style={[styles.stateText, { color: colors.muted }]}>{error}</Text>
             <Pressable onPress={() => void refresh()} style={[styles.retry, { backgroundColor: colors.red }]}>
-              <Text style={styles.retryText}>REINTENTAR</Text>
+              <Text style={styles.retryText}>{english ? 'RETRY' : 'REINTENTAR'}</Text>
             </Pressable>
           </View>
         ) : programs.length ? (
           <>
             <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: colors.white }]}>TODOS LOS PROGRAMAS</Text>
+              <Text style={[styles.sectionTitle, { color: colors.white }]}>
+                {english ? 'ALL PROGRAMS' : 'TODOS LOS PROGRAMAS'}
+              </Text>
               <Text style={[styles.count, { color: colors.red }]}>{programs.length}</Text>
             </View>
 
@@ -89,19 +108,21 @@ export default function ProgramsScreen() {
                   key={`${program.stationId}:${program.id}`}
                   hostName={program.hostName}
                   imageUrl={program.imageUrl}
-                  schedule={programScheduleLabel(program)}
+                  schedule={programScheduleLabel(program, language)}
                   title={program.name}
                 />
               ))}
             </View>
 
             <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: colors.white }]}>HORARIO SEMANAL</Text>
+              <Text style={[styles.sectionTitle, { color: colors.white }]}>
+                {english ? 'WEEKLY SCHEDULE' : 'HORARIO SEMANAL'}
+              </Text>
             </View>
 
             <View style={styles.week}>
               {schedule.map((slots, weekday) => {
-                const dayName = PROGRAM_WEEKDAYS[weekday] ?? `Día ${weekday + 1}`;
+                const dayName = weekdays[weekday] ?? (english ? `Day ${weekday + 1}` : `Día ${weekday + 1}`);
                 return (
                   <View
                     key={dayName}
@@ -126,7 +147,9 @@ export default function ProgramsScreen() {
                         ))}
                       </View>
                     ) : (
-                      <Text style={[styles.emptyDay, { color: colors.gray }]}>Sin programación publicada</Text>
+                      <Text style={[styles.emptyDay, { color: colors.gray }]}>
+                        {english ? 'No published programming' : 'Sin programación publicada'}
+                      </Text>
                     )}
                   </View>
                 );
@@ -136,8 +159,14 @@ export default function ProgramsScreen() {
         ) : (
           <View style={styles.state}>
             <Ionicons color={colors.gray} name="mic-outline" size={34} />
-            <Text style={[styles.errorTitle, { color: colors.white }]}>Aún no hay programas publicados</Text>
-            <Text style={[styles.stateText, { color: colors.muted }]}>Cuando el equipo publique Programs desde el WebAdmin aparecerán aquí automáticamente.</Text>
+            <Text style={[styles.errorTitle, { color: colors.white }]}>
+              {english ? 'No programs have been published yet' : 'Aún no hay programas publicados'}
+            </Text>
+            <Text style={[styles.stateText, { color: colors.muted }]}>
+              {english
+                ? 'Programs published from WebAdmin will appear here automatically.'
+                : 'Cuando el equipo publique Programs desde el WebAdmin aparecerán aquí automáticamente.'}
+            </Text>
           </View>
         )}
       </ScrollView>
@@ -148,9 +177,7 @@ export default function ProgramsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-  },
+  safe: { flex: 1 },
   content: {
     paddingBottom: 180,
     paddingHorizontal: spacing.md,
@@ -168,9 +195,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 42,
   },
-  headerCopy: {
-    flex: 1,
-  },
+  headerCopy: { flex: 1 },
   eyebrow: {
     fontFamily: fonts.bodyBold,
     fontSize: 9,
@@ -241,12 +266,8 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 12,
   },
-  programList: {
-    gap: spacing.md,
-  },
-  week: {
-    gap: spacing.sm,
-  },
+  programList: { gap: spacing.md },
+  week: { gap: spacing.sm },
   dayCard: {
     borderRadius: radii.md,
     borderWidth: 1,
@@ -257,9 +278,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     marginBottom: spacing.sm,
   },
-  daySlots: {
-    gap: spacing.sm,
-  },
+  daySlots: { gap: spacing.sm },
   slot: {
     flexDirection: 'row',
     gap: spacing.sm,
