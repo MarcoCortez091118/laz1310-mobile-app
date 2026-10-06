@@ -44,8 +44,6 @@ module.exports = ({ config }) => ({
     [
       'expo-notifications',
       {
-        color: '#D30A12',
-        defaultChannel: 'laz-general',
         enableBackgroundRemoteNotifications: true,
       },
     ],
