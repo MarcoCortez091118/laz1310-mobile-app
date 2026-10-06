@@ -107,8 +107,12 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   imageScrim: {
-    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(5,1,1,0.18)',
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
   },
   artworkLabel: {
     alignItems: 'center',
