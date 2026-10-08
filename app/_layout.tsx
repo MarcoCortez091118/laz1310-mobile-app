@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { AppBackground } from '../src/components/AppBackground';
 import { MiniPlayer } from '../src/components/MiniPlayer';
 import { AuthProvider } from '../src/features/auth/AuthProvider';
 import { ContentVersionProvider } from '../src/features/content/ContentVersionProvider';
@@ -32,7 +33,7 @@ void SplashScreen.preventAutoHideAsync();
 function AppNavigator() {
   const pathname = usePathname();
   const { hasStarted } = useRadio();
-  const { colors, preference } = useAppTheme();
+  const { preference } = useAppTheme();
   const [miniPlayerDismissed, setMiniPlayerDismissed] = useState(false);
 
   useEffect(() => {
@@ -47,21 +48,25 @@ function AppNavigator() {
     pathname !== '/' &&
     pathname !== '/radio';
 
+  const weatherDetail = pathname.startsWith('/weather/');
+
   return (
-    <View style={[styles.app, { backgroundColor: colors.black }]}>
-      <StatusBar style={preference === 'dark' ? 'light' : 'dark'} />
-      <Stack
-        screenOptions={{
-          animation: 'fade',
-          contentStyle: { backgroundColor: colors.black },
-          headerShown: false,
-        }}
-      />
-      <MiniPlayer
-        onDismiss={() => setMiniPlayerDismissed(true)}
-        visible={showMiniPlayer}
-      />
-    </View>
+    <AppBackground enabled={!weatherDetail}>
+      <View style={styles.app}>
+        <StatusBar style={preference === 'dark' ? 'light' : 'dark'} />
+        <Stack
+          screenOptions={{
+            animation: 'fade',
+            contentStyle: { backgroundColor: 'transparent' },
+            headerShown: false,
+          }}
+        />
+        <MiniPlayer
+          onDismiss={() => setMiniPlayerDismissed(true)}
+          visible={showMiniPlayer}
+        />
+      </View>
+    </AppBackground>
   );
 }
 

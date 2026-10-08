@@ -103,7 +103,7 @@ export default function NotificationsScreen() {
   }, []);
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.safe, { backgroundColor: colors.black }]}>
+    <SafeAreaView edges={['top']} style={styles.safe}>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={

@@ -38,7 +38,7 @@ export default function ProfileScreen() {
 
   if (status === 'initializing' || status === 'syncing') {
     return (
-      <SafeAreaView edges={['top']} style={[styles.safe, { backgroundColor: colors.black }]}>
+      <SafeAreaView edges={['top']} style={styles.safe}>
         <View style={styles.loading}>
           <ActivityIndicator color={colors.red} />
           <Text style={[styles.loadingText, { color: colors.muted }]}>
@@ -51,7 +51,7 @@ export default function ProfileScreen() {
 
   if (status === 'error' && !isAuthenticated) {
     return (
-      <SafeAreaView edges={['top']} style={[styles.safe, { backgroundColor: colors.black }]}>
+      <SafeAreaView edges={['top']} style={styles.safe}>
         <View style={styles.loading}>
           <Ionicons color={colors.red} name="cloud-offline-outline" size={36} />
           <Text style={[styles.errorTitle, { color: colors.white }]}>
@@ -74,7 +74,7 @@ export default function ProfileScreen() {
   if (!profile) return null;
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.safe, { backgroundColor: colors.black }]}>
+    <SafeAreaView edges={['top']} style={styles.safe}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={[styles.title, { color: colors.white }]}>{english ? 'Profile' : 'Perfil'}</Text>
 

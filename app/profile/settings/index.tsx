@@ -57,7 +57,7 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView
       edges={['top']}
-      style={[styles.safe, { backgroundColor: colors.black }]}
+      style={styles.safe}
     >
       <View style={styles.content}>
         <ScreenHeader title={english ? 'Settings' : 'Configuración'} />

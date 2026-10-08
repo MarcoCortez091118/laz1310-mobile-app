@@ -20,7 +20,7 @@ export default function DynamicsConfirmationScreen() {
   const english = language === 'en';
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={[styles.safe, { backgroundColor: colors.black }]}>
+    <SafeAreaView edges={['top', 'bottom']} style={styles.safe}>
       <View style={styles.content}>
         <View style={[styles.icon, { backgroundColor: colors.red }]}>
           <Ionicons color="#FEFEFE" name="checkmark" size={42} />

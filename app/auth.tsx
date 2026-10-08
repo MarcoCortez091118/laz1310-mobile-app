@@ -115,7 +115,7 @@ export default function AuthScreen() {
 
   if (step === 'welcome') {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={[styles.safe, { backgroundColor: colors.black }]}>
+      <SafeAreaView edges={['top', 'bottom']} style={styles.safe}>
         <Pressable accessibilityLabel={english ? 'Back' : 'Volver'} accessibilityRole="button" onPress={goBack} style={styles.back}>
           <Ionicons color={colors.white} name="chevron-back" size={26} />
         </Pressable>
@@ -156,7 +156,7 @@ export default function AuthScreen() {
   const isRegister = step.startsWith('register');
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={[styles.safe, { backgroundColor: colors.black }]}>
+    <SafeAreaView edges={['top', 'bottom']} style={styles.safe}>
       <Pressable accessibilityLabel={english ? 'Back' : 'Volver'} accessibilityRole="button" onPress={goBack} style={styles.back}>
         <Ionicons color={colors.white} name="chevron-back" size={26} />
       </Pressable>

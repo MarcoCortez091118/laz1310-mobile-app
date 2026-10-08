@@ -65,7 +65,7 @@ export default function ExploreScreen() {
   return (
     <SafeAreaView
       edges={['top']}
-      style={[styles.safe, { backgroundColor: colors.black }]}
+      style={styles.safe}
     >
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={[styles.title, { color: colors.white }]}>
