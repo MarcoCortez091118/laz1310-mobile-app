@@ -458,7 +458,11 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   heroScrim: {
-    ...StyleSheet.absoluteFillObject,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
     backgroundColor: 'rgba(5,1,1,0.18)',
   },
   heroGlow: {
@@ -577,7 +581,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   scrim: {
-    ...StyleSheet.absoluteFillObject,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
     backgroundColor: 'rgba(5,1,1,0.72)',
   },
   sheet: {
