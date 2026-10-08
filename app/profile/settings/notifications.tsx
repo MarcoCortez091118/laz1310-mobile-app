@@ -19,6 +19,11 @@ import {
   type NotificationPreferences,
 } from '../../../src/features/notifications/api';
 import { usePushNotifications } from '../../../src/features/notifications/PushNotificationsProvider';
+import { getPublishedPrograms } from '../../../src/features/programs/api';
+import {
+  pauseProgramReminders,
+  syncSavedProgramReminders,
+} from '../../../src/features/programs/reminders';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { useAppTheme } from '../../../src/theme/ThemeProvider';
 import { fonts, radii, spacing } from '../../../src/theme/tokens';
@@ -110,6 +115,15 @@ export default function NotificationSettingsScreen() {
       const tokens = await getFirebaseSecurityTokens(true);
       const updated = await patchNotificationPreferences(tokens, { [key]: value });
       setPreferences(updated);
+
+      if (key === 'programs') {
+        if (value) {
+          const programs = await getPublishedPrograms(null);
+          await syncSavedProgramReminders(programs);
+        } else {
+          await pauseProgramReminders();
+        }
+      }
     } catch (error) {
       setPreferences(previous);
       setPreferenceError(error instanceof Error ? error.message : english ? 'We could not save this preference.' : 'No pudimos guardar esta preferencia.');
@@ -121,8 +135,18 @@ export default function NotificationSettingsScreen() {
   async function togglePush(value: boolean) {
     setPreferenceError(null);
     try {
-      if (value) await push.enable();
-      else await push.disable();
+      if (value) {
+        await push.enable();
+        const tokens = await getFirebaseSecurityTokens(true);
+        const nextPreferences = await getNotificationPreferences(tokens);
+        if (nextPreferences.programs) {
+          const programs = await getPublishedPrograms(null);
+          await syncSavedProgramReminders(programs);
+        }
+      } else {
+        await push.disable();
+        await pauseProgramReminders();
+      }
     } catch (error) {
       setPreferenceError(error instanceof Error ? error.message : english ? 'We could not update notifications for this device.' : 'No pudimos actualizar las notificaciones de este dispositivo.');
     }
