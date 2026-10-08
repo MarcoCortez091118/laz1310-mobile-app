@@ -79,6 +79,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       user: FirebaseUser,
       profileOverride?: { displayName?: string },
       forceTokenRefresh = false,
+      privacyPolicyVersion?: string,
     ) => {
       const generation = ++syncGeneration.current;
       setStatus('syncing');
@@ -105,6 +106,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
         if (Object.keys(patch).length > 0) {
           businessProfile = await patchBusinessProfile(tokens, patch);
+        }
+
+        if (privacyPolicyVersion) {
+          businessProfile = await acceptBusinessPrivacyPolicy(
+            tokens,
+            privacyPolicyVersion,
+          );
         }
 
         if (generation === syncGeneration.current) {
@@ -157,6 +165,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         user,
         { displayName: displayName.trim() },
         true,
+        PRIVACY_POLICY_VERSION,
       );
     },
     [synchronize],
