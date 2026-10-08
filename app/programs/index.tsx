@@ -112,7 +112,7 @@ export default function ProgramsScreen() {
   return (
     <SafeAreaView
       edges={['top']}
-      style={[styles.safe, { backgroundColor: colors.black }]}
+      style={styles.safe}
     >
       <ScrollView
         contentContainerStyle={styles.content}
