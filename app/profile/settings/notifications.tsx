@@ -165,7 +165,7 @@ export default function NotificationSettingsScreen() {
   const pushBusy = push.status === 'syncing';
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.safe, { backgroundColor: colors.black }]}>
+    <SafeAreaView edges={['top']} style={styles.safe}>
       <ScrollView contentContainerStyle={styles.content}>
         <ScreenHeader title={english ? 'Notifications' : 'Notificaciones'} />
 
