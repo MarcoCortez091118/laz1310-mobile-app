@@ -12,7 +12,7 @@ module.exports = ({ config }) => ({
   version: '0.1.0',
   orientation: 'portrait',
   userInterfaceStyle: 'dark',
-  icon: './assets/brand/La Z Icon.webp',
+  icon: './assets/brand/app-icon.png',
   ios: {
     supportsTablet: false,
     bundleIdentifier: 'com.neuromarket.laz1310',
@@ -31,7 +31,7 @@ module.exports = ({ config }) => ({
     permissions: ['android.permission.POST_NOTIFICATIONS'],
     ...(googleServicesFile ? { googleServicesFile } : {}),
     adaptiveIcon: {
-      foregroundImage: './assets/brand/La Z Icon.webp',
+      foregroundImage: './assets/brand/adaptive-icon-foreground.png',
       backgroundColor: '#050101',
     },
   },
@@ -65,7 +65,7 @@ module.exports = ({ config }) => ({
       'expo-splash-screen',
       {
         backgroundColor: '#050101',
-        image: './assets/brand/La Z-02.webp',
+        image: './assets/brand/logo-negative.png',
         imageWidth: 220,
       },
     ],
