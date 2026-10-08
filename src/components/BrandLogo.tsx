@@ -15,8 +15,8 @@ interface BrandLogoProps {
 }
 
 const sources = {
-  negative: require('../../assets/brand/logo-negative.png'),
-  positive: require('../../assets/brand/logo-positive.png'),
+  negative: require('../../assets/brand/La Z-02.webp'),
+  positive: require('../../assets/brand/La Z-01.webp'),
 };
 
 export function BrandLogo({
