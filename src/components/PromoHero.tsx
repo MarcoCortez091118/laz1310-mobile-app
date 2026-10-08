@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Image,
   NativeScrollEvent,
@@ -23,6 +23,7 @@ import { useAppTheme } from '../theme/ThemeProvider';
 import { fonts, radii, spacing } from '../theme/tokens';
 
 const CARD_GAP = 10;
+const AUTO_ADVANCE_MS = 5000;
 
 interface PromoCardProps {
   campaign: DynamicCampaign;
@@ -89,9 +90,12 @@ export function PromoHero() {
   const { width: viewportWidth } = useWindowDimensions();
   const { colors } = useAppTheme();
   const { releaseId } = useContentVersion();
+  const carouselRef = useRef<ScrollView>(null);
   const [campaigns, setCampaigns] = useState<DynamicCampaign[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isInteracting, setIsInteracting] = useState(false);
   const cardWidth = Math.max(280, viewportWidth - spacing.md * 2);
+  const snapInterval = cardWidth + CARD_GAP;
 
   useEffect(() => {
     let active = true;
@@ -119,7 +123,31 @@ export function PromoHero() {
     if (activeIndex >= campaigns.length) setActiveIndex(0);
   }, [activeIndex, campaigns.length]);
 
-  const snapInterval = cardWidth + CARD_GAP;
+  useEffect(() => {
+    if (campaigns.length > 1 || activeIndex === 0) return;
+
+    setActiveIndex(0);
+    carouselRef.current?.scrollTo({ x: 0, y: 0, animated: false });
+  }, [activeIndex, campaigns.length]);
+
+  useEffect(() => {
+    if (campaigns.length <= 1 || isInteracting) return;
+
+    const interval = setInterval(() => {
+      setActiveIndex((current) => {
+        const next = (current + 1) % campaigns.length;
+        carouselRef.current?.scrollTo({
+          x: next * snapInterval,
+          y: 0,
+          animated: true,
+        });
+        return next;
+      });
+    }, AUTO_ADVANCE_MS);
+
+    return () => clearInterval(interval);
+  }, [campaigns.length, isInteracting, snapInterval]);
+
   const indicators = useMemo(
     () => campaigns.map((campaign) => campaign.id),
     [campaigns],
@@ -137,15 +165,19 @@ export function PromoHero() {
   return (
     <View>
       <ScrollView
+        contentContainerStyle={styles.carouselContent}
         decelerationRate="fast"
         disableIntervalMomentum
         horizontal
         onMomentumScrollEnd={handleMomentumEnd}
+        onScrollBeginDrag={() => setIsInteracting(true)}
+        onScrollEndDrag={() => setIsInteracting(false)}
+        ref={carouselRef}
+        scrollEnabled={campaigns.length > 1}
         showsHorizontalScrollIndicator={false}
         snapToAlignment="start"
         snapToInterval={snapInterval}
         style={styles.carousel}
-        contentContainerStyle={styles.carouselContent}
       >
         {campaigns.map((campaign) => (
           <PromoCard campaign={campaign} key={campaign.id} width={cardWidth} />
