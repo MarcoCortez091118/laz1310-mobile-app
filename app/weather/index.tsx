@@ -93,7 +93,7 @@ export default function WeatherListScreen() {
   }, [load]);
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.safe, { backgroundColor: colors.black }]}>
+    <SafeAreaView edges={['top']} style={styles.safe}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader title={english ? 'Weather' : 'Clima'} />
 
