@@ -260,7 +260,11 @@ const styles = StyleSheet.create({
     width: 94,
   },
   artworkScrim: {
-    ...StyleSheet.absoluteFillObject,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
     backgroundColor: 'rgba(5,1,1,0.16)',
   },
   artworkGlow: {
