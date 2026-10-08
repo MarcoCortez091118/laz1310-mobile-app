@@ -54,13 +54,19 @@ const PushNotificationsContext =
   createContext<PushNotificationsContextValue | null>(null);
 
 function notificationTarget(value: unknown): Href | null {
-  if (value === '/home' || value === '/radio' || value === '/dynamics') {
+  if (
+    value === '/home' ||
+    value === '/radio' ||
+    value === '/dynamics' ||
+    value === '/programs'
+  ) {
     return value;
   }
   if (
     typeof value === 'string' &&
-    /^\/dynamics\/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(
-      value,
+    (
+      /^\/dynamics\/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(value) ||
+      /^\/programs\/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(value)
     )
   ) {
     return value as Href;
