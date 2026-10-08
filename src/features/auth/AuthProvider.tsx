@@ -11,6 +11,7 @@ import {
 
 import {
   LazUserProfile,
+  acceptBusinessPrivacyPolicy,
   createBusinessSession,
   patchBusinessProfile,
 } from './api';
@@ -26,6 +27,7 @@ import {
   updateFirebaseDisplayName,
 } from './firebase';
 import { detachPushDeviceBeforeSignOut } from '../notifications/device';
+import { PRIVACY_POLICY_VERSION } from '../privacy/policy';
 
 type AuthStatus =
   | 'initializing'
@@ -51,6 +53,7 @@ interface AuthContextValue {
   updateDisplayName: (displayName: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
   sendVerificationEmail: () => Promise<void>;
+  acceptPrivacyPolicyConsent: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -204,6 +207,19 @@ export function AuthProvider({ children }: PropsWithChildren) {
     await sendCurrentUserVerificationEmail();
   }, []);
 
+  const acceptPrivacyPolicyConsent = useCallback(async () => {
+    if (!firebaseUser) {
+      throw new Error('Firebase authentication is required');
+    }
+
+    const tokens = await getFirebaseSecurityTokens(true);
+    const updated = await acceptBusinessPrivacyPolicy(
+      tokens,
+      PRIVACY_POLICY_VERSION,
+    );
+    setProfile(updated);
+  }, [firebaseUser]);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       status,
@@ -218,6 +234,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       updateDisplayName,
       refreshProfile,
       sendVerificationEmail,
+      acceptPrivacyPolicyConsent,
     }),
     [
       error,
@@ -226,6 +243,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       refreshProfile,
       registerWithEmail,
       sendVerificationEmail,
+      acceptPrivacyPolicyConsent,
       signInWithEmail,
       signOut,
       status,
