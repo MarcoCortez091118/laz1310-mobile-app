@@ -45,7 +45,7 @@ export default function RadioScreen() {
   const buttonState = loading ? 'loading' : state === 'playing' ? 'pause' : 'play';
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={[styles.safe, { backgroundColor: colors.burgundy }]}>
+    <SafeAreaView edges={['top', 'bottom']} style={styles.safe}>
       <View style={styles.topBar}>
         <IconButton
           accessibilityLabel={english ? 'Back' : 'Volver'}
