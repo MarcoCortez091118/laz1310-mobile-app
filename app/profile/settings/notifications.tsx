@@ -117,11 +117,21 @@ export default function NotificationSettingsScreen() {
       setPreferences(updated);
 
       if (key === 'programs') {
-        if (value) {
-          const programs = await getPublishedPrograms(null);
-          await syncSavedProgramReminders(programs);
-        } else {
-          await pauseProgramReminders();
+        try {
+          if (value) {
+            const programs = await getPublishedPrograms(null);
+            await syncSavedProgramReminders(programs);
+          } else {
+            await pauseProgramReminders();
+          }
+        } catch (reminderError) {
+          setPreferenceError(
+            reminderError instanceof Error
+              ? reminderError.message
+              : english
+                ? 'The preference was saved, but local reminders could not be refreshed.'
+                : 'La preferencia se guardó, pero no pudimos actualizar los recordatorios locales.',
+          );
         }
       }
     } catch (error) {
