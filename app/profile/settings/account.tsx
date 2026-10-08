@@ -58,7 +58,7 @@ export default function AccountScreen() {
   if (!profile) return null;
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.safe, { backgroundColor: colors.black }]}>
+    <SafeAreaView edges={['top']} style={styles.safe}>
       <View style={styles.content}>
         <ScreenHeader title={english ? 'Account' : 'Cuenta'} />
 
