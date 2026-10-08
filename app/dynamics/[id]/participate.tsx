@@ -202,7 +202,7 @@ export default function DynamicsParticipationScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.safe, { backgroundColor: colors.black }]}>
+    <SafeAreaView edges={['top']} style={styles.safe}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <ScreenHeader title={english ? 'Form' : 'Formulario'} />
 
