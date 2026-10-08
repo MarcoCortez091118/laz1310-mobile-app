@@ -18,7 +18,7 @@ export default function LanguageSettingsScreen() {
   const english = language === 'en';
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.safe, { backgroundColor: colors.black }]}>
+    <SafeAreaView edges={['top']} style={styles.safe}>
       <View style={styles.content}>
         <ScreenHeader title={english ? 'Language' : 'Idioma'} />
         <Text style={[styles.title, { color: colors.white }]}>
