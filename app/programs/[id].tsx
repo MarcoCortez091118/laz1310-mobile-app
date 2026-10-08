@@ -118,7 +118,7 @@ export default function ProgramDetailScreen() {
 
   if (loading && !program) {
     return (
-      <SafeAreaView style={[styles.safe, { backgroundColor: colors.black }]}>
+      <SafeAreaView style={styles.safe}>
         <View style={styles.loading}>
           <ActivityIndicator color={colors.red} size="large" />
         </View>
@@ -128,7 +128,7 @@ export default function ProgramDetailScreen() {
 
   if (!program) {
     return (
-      <SafeAreaView style={[styles.safe, { backgroundColor: colors.black }]}>
+      <SafeAreaView style={styles.safe}>
         <View style={styles.loading}>
           <Ionicons color={colors.gray} name="alert-circle-outline" size={30} />
           <Text style={[styles.errorTitle, { color: colors.white }]}>
@@ -150,7 +150,7 @@ export default function ProgramDetailScreen() {
   return (
     <SafeAreaView
       edges={['top']}
-      style={[styles.safe, { backgroundColor: colors.black }]}
+      style={styles.safe}
     >
       <ScrollView
         contentContainerStyle={styles.content}
