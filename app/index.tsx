@@ -7,10 +7,12 @@ import {
 } from 'react-native';
 
 import { BrandLogo } from '../src/components/BrandLogo';
-import { colors, fonts } from '../src/theme/tokens';
+import { useAppTheme } from '../src/theme/ThemeProvider';
+import { fonts } from '../src/theme/tokens';
 
 export default function SplashRoute() {
   const router = useRouter();
+  const { colors } = useAppTheme();
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -22,14 +24,14 @@ export default function SplashRoute() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.ring, styles.ringLarge]} />
-      <View style={[styles.ring, styles.ringMedium]} />
-      <View style={[styles.ring, styles.ringSmall]} />
+      <View style={[styles.ring, styles.ringLarge, { backgroundColor: colors.burgundy }]} />
+      <View style={[styles.ring, styles.ringMedium, { backgroundColor: colors.burgundy }]} />
+      <View style={[styles.ring, styles.ringSmall, { backgroundColor: colors.burgundy }]} />
 
       <View style={styles.center}>
         <BrandLogo width={188} />
-        <Text style={styles.city}>DETROIT, MI</Text>
-        <Text style={styles.slogan}>MARCANDO TERRITORIO</Text>
+        <Text style={[styles.city, { color: colors.white }]}>DETROIT, MI</Text>
+        <Text style={[styles.slogan, { color: colors.red }]}>MARCANDO TERRITORIO</Text>
       </View>
     </View>
   );
@@ -38,7 +40,6 @@ export default function SplashRoute() {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    backgroundColor: colors.black,
     flex: 1,
     justifyContent: 'center',
     overflow: 'hidden',
@@ -48,7 +49,6 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   city: {
-    color: colors.white,
     fontFamily: fonts.bodySemiBold,
     fontSize: 12,
     letterSpacing: 2.6,
@@ -56,7 +56,6 @@ const styles = StyleSheet.create({
     opacity: 0.78,
   },
   slogan: {
-    color: colors.red,
     fontFamily: fonts.body,
     fontSize: 10,
     letterSpacing: 2.1,
@@ -64,7 +63,6 @@ const styles = StyleSheet.create({
     opacity: 0.72,
   },
   ring: {
-    backgroundColor: colors.burgundy,
     borderRadius: 999,
     position: 'absolute',
   },
