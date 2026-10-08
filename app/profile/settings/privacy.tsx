@@ -128,7 +128,7 @@ export default function PrivacyScreen() {
   return (
     <SafeAreaView
       edges={['top']}
-      style={[styles.safe, { backgroundColor: colors.black }]}
+      style={styles.safe}
     >
       <ScrollView
         contentContainerStyle={styles.content}
