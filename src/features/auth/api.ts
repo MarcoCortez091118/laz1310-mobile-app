@@ -13,6 +13,8 @@ export interface LazUserProfile {
   createdAt: string;
   updatedAt: string;
   lastSeenAt: string | null;
+  privacyPolicyVersion: string | null;
+  privacyPolicyAcceptedAt: string | null;
 }
 
 export interface UpdateLazProfile {
@@ -53,5 +55,17 @@ export function patchBusinessProfile(
     method: 'PATCH',
     headers: authHeaders(tokens),
     body: JSON.stringify(payload),
+  });
+}
+
+
+export function acceptBusinessPrivacyPolicy(
+  tokens: FirebaseSecurityTokens,
+  policyVersion: string,
+) {
+  return apiRequest<LazUserProfile>('/api/v1/me/privacy-consent', {
+    method: 'POST',
+    headers: authHeaders(tokens),
+    body: JSON.stringify({ policyVersion }),
   });
 }

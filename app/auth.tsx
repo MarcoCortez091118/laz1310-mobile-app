@@ -39,6 +39,7 @@ export default function AuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -195,15 +196,63 @@ export default function AuthScreen() {
         ) : null}
 
         {step === 'registerName' ? (
-          <TextInput
-            autoCapitalize="words"
-            autoComplete="name"
-            onChangeText={(value) => { setName(value); setFormError(null); }}
-            placeholder={english ? 'Your name' : 'Tu nombre'}
-            placeholderTextColor={colors.muted}
-            style={[styles.input, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, color: colors.white }]}
-            value={name}
-          />
+          <>
+            <TextInput
+              autoCapitalize="words"
+              autoComplete="name"
+              onChangeText={(value) => { setName(value); setFormError(null); }}
+              placeholder={english ? 'Your name' : 'Tu nombre'}
+              placeholderTextColor={colors.muted}
+              style={[styles.input, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, color: colors.white }]}
+              value={name}
+            />
+
+            <View
+              style={[
+                styles.consentCard,
+                {
+                  backgroundColor: colors.surfaceElevated,
+                  borderColor: privacyAccepted ? colors.red : colors.border,
+                },
+              ]}
+            >
+              <Pressable
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: privacyAccepted }}
+                onPress={() => setPrivacyAccepted((current) => !current)}
+                style={styles.consentRow}
+              >
+                <View
+                  style={[
+                    styles.checkbox,
+                    {
+                      backgroundColor: privacyAccepted ? colors.red : 'transparent',
+                      borderColor: privacyAccepted ? colors.red : colors.gray,
+                    },
+                  ]}
+                >
+                  {privacyAccepted ? (
+                    <Ionicons color="#FEFEFE" name="checkmark" size={15} />
+                  ) : null}
+                </View>
+                <Text style={[styles.consentText, { color: colors.white }]}>
+                  {english
+                    ? 'I have read and accept the Radio Online HD Privacy Policy and consent to the processing described in it.'
+                    : 'He leído y acepto la Política de Privacidad de Radio Online HD y consiento el tratamiento descrito en ella.'}
+                </Text>
+              </Pressable>
+
+              <Pressable
+                accessibilityRole="link"
+                onPress={() => router.push('/profile/settings/privacy-policy')}
+                style={styles.policyLink}
+              >
+                <Text style={[styles.policyLinkText, { color: colors.red }]}>
+                  {english ? 'READ PRIVACY POLICY →' : 'LEER POLÍTICA DE PRIVACIDAD →'}
+                </Text>
+              </Pressable>
+            </View>
+          </>
         ) : null}
 
         {formError ? (
@@ -216,7 +265,7 @@ export default function AuthScreen() {
         <View style={styles.next}>
           {step === 'registerEmail' ? <PrimaryButton disabled={!email.trim().includes('@')} label={english ? 'Next' : 'Siguiente'} onPress={() => setStep('registerPassword')} /> : null}
           {step === 'registerPassword' ? <PrimaryButton disabled={password.length < 10} label={english ? 'Next' : 'Siguiente'} onPress={() => setStep('registerName')} /> : null}
-          {step === 'registerName' ? <PrimaryButton disabled={name.trim().length < 2 || submitting} label={submitting ? (english ? 'Creating account…' : 'Creando cuenta…') : (english ? 'Create account' : 'Crear cuenta')} onPress={() => void createAccount()} /> : null}
+          {step === 'registerName' ? <PrimaryButton disabled={name.trim().length < 2 || !privacyAccepted || submitting} label={submitting ? (english ? 'Creating account…' : 'Creando cuenta…') : (english ? 'Create account' : 'Crear cuenta')} onPress={() => void createAccount()} /> : null}
           {step === 'loginEmail' ? <PrimaryButton disabled={!email.trim().includes('@')} label={english ? 'Next' : 'Siguiente'} onPress={() => setStep('loginPassword')} /> : null}
           {step === 'loginPassword' ? <PrimaryButton disabled={password.length === 0 || submitting} label={submitting ? (english ? 'Validating…' : 'Validando…') : (english ? 'Sign in' : 'Iniciar sesión')} onPress={() => void login()} /> : null}
         </View>
@@ -242,5 +291,11 @@ const styles = StyleSheet.create({
   input: { borderRadius: radii.md, borderWidth: 1, fontFamily: fonts.body, fontSize: 15, marginTop: 18, minHeight: 56, paddingHorizontal: spacing.md },
   errorCard: { alignItems: 'center', borderRadius: radii.md, borderWidth: 1, flexDirection: 'row', gap: 10, marginTop: 16, padding: spacing.md },
   errorText: { flex: 1, fontFamily: fonts.body, fontSize: 11, lineHeight: 16 },
+  consentCard: { borderRadius: radii.md, borderWidth: 1, marginTop: 16, padding: spacing.md },
+  consentRow: { alignItems: 'flex-start', flexDirection: 'row', gap: 10 },
+  checkbox: { alignItems: 'center', borderRadius: 5, borderWidth: 1, height: 22, justifyContent: 'center', marginTop: 1, width: 22 },
+  consentText: { flex: 1, fontFamily: fonts.body, fontSize: 11, lineHeight: 17 },
+  policyLink: { alignSelf: 'flex-start', marginLeft: 32, marginTop: 10, paddingVertical: 4 },
+  policyLinkText: { fontFamily: fonts.bodyBold, fontSize: 9, letterSpacing: 0.5 },
   next: { gap: 10, marginTop: 34 },
 });

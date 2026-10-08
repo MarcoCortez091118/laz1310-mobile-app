@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomNavigation } from '../../src/components/BottomNavigation';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { useAuth } from '../../src/features/auth/AuthProvider';
+import { PRIVACY_POLICY_VERSION } from '../../src/features/privacy/policy';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { useAppTheme } from '../../src/theme/ThemeProvider';
 import { fonts, radii, spacing } from '../../src/theme/tokens';
@@ -142,6 +143,23 @@ export default function ProfileScreen() {
               <Text style={[styles.rowSubtitle, { color: colors.muted }]}>{english ? 'Appearance and available preferences' : 'Apariencia y preferencias disponibles'}</Text>
             </View>
             <Ionicons color={colors.gray} name="chevron-forward" size={20} />
+          </Pressable>
+
+          <Pressable onPress={() => router.push('/profile/settings/privacy')} style={[styles.row, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+            <Ionicons color={colors.red} name="shield-checkmark-outline" size={21} />
+            <View style={styles.rowCopy}>
+              <Text style={[styles.rowTitle, { color: colors.white }]}>{english ? 'Privacy & data' : 'Privacidad y datos'}</Text>
+              <Text style={[styles.rowSubtitle, { color: colors.muted }]}>
+                {profile.privacyPolicyVersion === PRIVACY_POLICY_VERSION && profile.privacyPolicyAcceptedAt
+                  ? english ? 'Current privacy policy accepted' : 'Política de privacidad vigente aceptada'
+                  : english ? 'Review privacy policy and consent' : 'Revisa la política y el consentimiento'}
+              </Text>
+            </View>
+            <Ionicons
+              color={profile.privacyPolicyVersion === PRIVACY_POLICY_VERSION && profile.privacyPolicyAcceptedAt ? '#56C985' : colors.gray}
+              name={profile.privacyPolicyVersion === PRIVACY_POLICY_VERSION && profile.privacyPolicyAcceptedAt ? 'checkmark-circle-outline' : 'chevron-forward'}
+              size={20}
+            />
           </Pressable>
         </View>
 
