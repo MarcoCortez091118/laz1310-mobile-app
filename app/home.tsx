@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BannerCarousel } from '../src/components/BannerCarousel';
 import { BottomNavigation } from '../src/components/BottomNavigation';
 import { BrandLogo } from '../src/components/BrandLogo';
 import { LiveBadge } from '../src/components/LiveBadge';
@@ -110,6 +111,7 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
 
+        <BannerCarousel />
         <PromoHero />
         <LiveRadioCard />
 
