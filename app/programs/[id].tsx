@@ -451,11 +451,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   hero: {
+    aspectRatio: 1,
     borderRadius: 22,
-    height: 190,
     marginTop: 4,
     overflow: 'hidden',
     position: 'relative',
+    width: '100%',
   },
   heroScrim: {
     bottom: 0,
