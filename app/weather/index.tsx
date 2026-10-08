@@ -27,6 +27,7 @@ import {
   localTimeLabel,
 } from '../../src/features/weather/presentation';
 import { useWeatherUnit } from '../../src/features/weather/WeatherUnitProvider';
+import { weatherVisualTheme } from '../../src/features/weather/visuals';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { useAppTheme } from '../../src/theme/ThemeProvider';
 import { fonts, radii, spacing } from '../../src/theme/tokens';
@@ -145,6 +146,13 @@ export default function WeatherListScreen() {
               const icon = current
                 ? conditionIcon(current.conditionCode, current.isDay)
                 : 'cloud-offline-outline';
+              const visual = current
+                ? weatherVisualTheme({
+                    conditionCode: current.conditionCode,
+                    isDay: current.isDay,
+                    precipitationMm: current.precipitationMm,
+                  })
+                : null;
 
               return (
                 <Pressable
@@ -157,16 +165,46 @@ export default function WeatherListScreen() {
                   style={({ pressed }) => [
                     styles.card,
                     {
-                      backgroundColor:
-                        current?.isDay && current.conditionCode === 'clear'
-                          ? '#153B5A'
-                          : colors.surfaceElevated,
+                      backgroundColor: visual?.cardColor ?? colors.surfaceElevated,
                       borderColor: colors.border,
                       opacity: pressed ? 0.82 : 1,
                     },
                   ]}
                 >
-                  <View style={styles.cardGlow} />
+                  <View
+                    style={[
+                      styles.cardGlow,
+                      {
+                        backgroundColor:
+                          visual?.celestialColor ?? 'rgba(255,255,255,0.08)',
+                        opacity: visual?.showCelestialBody ? 0.16 : 0.08,
+                      },
+                    ]}
+                  />
+                  {visual && visual.cloudOpacity > 0 ? (
+                    <>
+                      <View
+                        style={[
+                          styles.cardCloud,
+                          styles.cardCloudBack,
+                          {
+                            backgroundColor: visual.cloudColor,
+                            opacity: visual.cloudOpacity * 0.26,
+                          },
+                        ]}
+                      />
+                      <View
+                        style={[
+                          styles.cardCloud,
+                          styles.cardCloudFront,
+                          {
+                            backgroundColor: visual.cloudColor,
+                            opacity: visual.cloudOpacity * 0.34,
+                          },
+                        ]}
+                      />
+                    </>
+                  ) : null}
                   <View style={styles.cityCopy}>
                     <View style={styles.cityTitleRow}>
                       <Text style={styles.cityTitle}>{location.city}</Text>
@@ -250,7 +288,10 @@ const styles = StyleSheet.create({
   errorText: { fontFamily: fonts.body, fontSize: 13, lineHeight: 20 },
   list: { gap: 14, marginTop: spacing.lg },
   card: { borderRadius: radii.lg, borderWidth: 1, flexDirection: 'row', minHeight: 134, overflow: 'hidden', padding: spacing.md },
-  cardGlow: { backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 120, height: 180, position: 'absolute', right: -32, top: -82, width: 180 },
+  cardGlow: { borderRadius: 120, height: 180, position: 'absolute', right: -32, top: -82, width: 180 },
+  cardCloud: { borderRadius: 999, position: 'absolute' },
+  cardCloudBack: { height: 62, right: 28, top: 48, width: 150 },
+  cardCloudFront: { height: 48, right: -8, top: 76, width: 132 },
   cityCopy: { flex: 1, justifyContent: 'space-between', paddingRight: 110 },
   cityTitleRow: { alignItems: 'center', flexDirection: 'row', gap: 8 },
   cityTitle: { color: '#FEFEFE', fontFamily: fonts.displayExtraBold, fontSize: 26 },

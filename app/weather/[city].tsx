@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ApiError } from '../../src/api/client';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
+import { WeatherScene } from '../../src/components/weather/WeatherScene';
 import {
   getWeatherDetail,
   WeatherResponse,
@@ -35,7 +36,7 @@ import { fonts, radii, spacing } from '../../src/theme/tokens';
 
 export default function WeatherDetailScreen() {
   const { city: cityParam } = useLocalSearchParams<{ city?: string }>();
-  const { colors, preference } = useAppTheme();
+  const { colors } = useAppTheme();
   const { language } = useLanguage();
   const english = language === 'en';
   const { unit } = useWeatherUnit();
@@ -83,22 +84,29 @@ export default function WeatherDetailScreen() {
     void load();
   }, [load]);
 
-  const background =
-    preference === 'dark'
-      ? weather?.current.isDay && weather.current.conditionCode === 'clear'
-        ? '#09243B'
-        : '#111820'
-      : colors.black;
+  const sceneCondition = weather?.current.conditionCode ?? 'unknown';
+  const sceneIsDay = weather?.current.isDay ?? true;
+  const glassBackground = sceneIsDay
+    ? 'rgba(9,20,29,0.52)'
+    : 'rgba(5,8,13,0.62)';
+  const glassBorder = 'rgba(254,254,254,0.14)';
+  const sceneMuted = 'rgba(254,254,254,0.72)';
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.safe, { backgroundColor: background }]}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <WeatherScene
+      conditionCode={sceneCondition}
+      isDay={sceneIsDay}
+      precipitationMm={weather?.current.precipitationMm}
+      windKph={weather?.current.windKph}
+    >
+      <SafeAreaView edges={['top']} style={styles.safe}>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader title={english ? 'Weather' : 'Clima'} />
 
         {loading ? (
           <View style={styles.state}>
             <ActivityIndicator color={colors.red} />
-            <Text style={[styles.stateText, { color: colors.muted }]}>
+            <Text style={[styles.stateText, { color: sceneMuted }]}>
               {english ? 'Updating forecast…' : 'Actualizando pronóstico…'}
             </Text>
           </View>
@@ -107,7 +115,7 @@ export default function WeatherDetailScreen() {
         {!loading && error ? (
           <View style={[styles.errorCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
             <Ionicons color={colors.red} name="cloud-offline-outline" size={32} />
-            <Text style={[styles.errorText, { color: colors.white }]}>{error}</Text>
+            <Text style={[styles.errorText, { color: '#FEFEFE' }]}>{error}</Text>
             <PrimaryButton label={english ? 'Retry' : 'Reintentar'} onPress={() => void load()} secondary />
           </View>
         ) : null}
@@ -116,14 +124,14 @@ export default function WeatherDetailScreen() {
           <>
             <View style={styles.hero}>
               <Text style={[styles.market, { color: colors.red }]}>LA Z WEATHER</Text>
-              <Text style={[styles.city, { color: colors.white }]}>{weather.location.city}</Text>
-              <Text style={[styles.temperature, { color: colors.white }]}>
+              <Text style={[styles.city, { color: '#FEFEFE' }]}>{weather.location.city}</Text>
+              <Text style={[styles.temperature, { color: '#FEFEFE' }]}>
                 {displayTemperature(weather.current.temperatureC, unit)}°
               </Text>
-              <Text style={[styles.condition, { color: colors.white }]}>
+              <Text style={[styles.condition, { color: '#FEFEFE' }]}>
                 {conditionLabel(weather.current.conditionCode, language)}
               </Text>
-              <Text style={[styles.highLow, { color: colors.white }]}>
+              <Text style={[styles.highLow, { color: '#FEFEFE' }]}>
                 H:{displayTemperature(weather.current.highC, unit)}°  L:{displayTemperature(weather.current.lowC, unit)}°
               </Text>
               {weather.stale ? (
@@ -135,29 +143,29 @@ export default function WeatherDetailScreen() {
               ) : null}
             </View>
 
-            <View style={[styles.glassCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-              <Text style={[styles.summary, { color: colors.white }]}>{weather.current.conditionText}</Text>
-              <Text style={[styles.observed, { color: colors.muted }]}>
+            <View style={[styles.glassCard, { backgroundColor: glassBackground, borderColor: glassBorder }]}>
+              <Text style={[styles.summary, { color: '#FEFEFE' }]}>{weather.current.conditionText}</Text>
+              <Text style={[styles.observed, { color: sceneMuted }]}>
                 {english ? 'Observed ' : 'Observado '}
                 {new Date(weather.observedAt).toLocaleString(english ? 'en-US' : 'es-US')}
               </Text>
             </View>
 
-            <View style={[styles.glassCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-              <Text style={[styles.eyebrow, { color: colors.muted }]}>
+            <View style={[styles.glassCard, { backgroundColor: glassBackground, borderColor: glassBorder }]}>
+              <Text style={[styles.eyebrow, { color: sceneMuted }]}>
                 {english ? 'NEXT 24 HOURS' : 'PRÓXIMAS 24 HORAS'}
               </Text>
               <ScrollView horizontal contentContainerStyle={styles.hourly} showsHorizontalScrollIndicator={false}>
                 {weather.hourly.map((hour, index) => (
                   <View key={hour.at} style={styles.hour}>
-                    <Text style={[styles.hourLabel, { color: colors.white }]}>
+                    <Text style={[styles.hourLabel, { color: '#FEFEFE' }]}>
                       {hourlyLabel(hour.at, weather.location.timezone, index, language)}
                     </Text>
                     <Ionicons color={hour.isDay ? colors.red : colors.white} name={conditionIcon(hour.conditionCode, hour.isDay)} size={28} />
-                    <Text style={[styles.hourTemp, { color: colors.white }]}>
+                    <Text style={[styles.hourTemp, { color: '#FEFEFE' }]}>
                       {displayTemperature(hour.temperatureC, unit)}°
                     </Text>
-                    <Text style={[styles.hourRain, { color: colors.muted }]}>
+                    <Text style={[styles.hourRain, { color: sceneMuted }]}>
                       {Math.round(hour.precipitationProbabilityPercent)}%
                     </Text>
                   </View>
@@ -165,22 +173,22 @@ export default function WeatherDetailScreen() {
               </ScrollView>
             </View>
 
-            <View style={[styles.glassCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-              <Text style={[styles.eyebrow, { color: colors.muted }]}>
+            <View style={[styles.glassCard, { backgroundColor: glassBackground, borderColor: glassBorder }]}>
+              <Text style={[styles.eyebrow, { color: sceneMuted }]}>
                 {english ? 'FORECAST · 5 DAYS' : 'PRONÓSTICO · 5 DÍAS'}
               </Text>
               {weather.daily.map((day, index) => (
                 <View key={day.date} style={[styles.dayRow, { borderBottomColor: colors.border }]}>
-                  <Text style={[styles.day, { color: colors.white }]}>{dailyLabel(day.date, index, language)}</Text>
+                  <Text style={[styles.day, { color: '#FEFEFE' }]}>{dailyLabel(day.date, index, language)}</Text>
                   <Ionicons color={colors.white} name={conditionIcon(day.conditionCode)} size={26} />
-                  <Text style={[styles.low, { color: colors.muted }]}>{displayTemperature(day.lowC, unit)}°</Text>
+                  <Text style={[styles.low, { color: sceneMuted }]}>{displayTemperature(day.lowC, unit)}°</Text>
                   <View style={styles.range}><View style={[styles.rangeFill, { backgroundColor: colors.red }]} /></View>
-                  <Text style={[styles.high, { color: colors.white }]}>{displayTemperature(day.highC, unit)}°</Text>
+                  <Text style={[styles.high, { color: '#FEFEFE' }]}>{displayTemperature(day.highC, unit)}°</Text>
                 </View>
               ))}
             </View>
 
-            <Text style={[styles.sectionTitle, { color: colors.white }]}>
+            <Text style={[styles.sectionTitle, { color: '#FEFEFE' }]}>
               {english ? 'Conditions' : 'Condiciones'}
             </Text>
 
@@ -190,22 +198,23 @@ export default function WeatherDetailScreen() {
                 [english ? 'WIND' : 'VIENTO', displayWind(weather.current.windKph, unit)],
                 [english ? 'PRECIP.' : 'PRECIP.', displayPrecipitation(weather.current.precipitationMm, unit)],
               ].map(([label, value]) => (
-                <View key={label} style={[styles.metric, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-                  <Text style={[styles.metricLabel, { color: colors.muted }]}>{label}</Text>
-                  <Text style={[styles.metricValue, { color: colors.white }]}>{value}</Text>
+                <View key={label} style={[styles.metric, { backgroundColor: glassBackground, borderColor: glassBorder }]}>
+                  <Text style={[styles.metricLabel, { color: sceneMuted }]}>{label}</Text>
+                  <Text style={[styles.metricValue, { color: '#FEFEFE' }]}>{value}</Text>
                 </View>
               ))}
             </View>
 
             {weather.attribution.map((item) => (
               <Pressable key={item.url} onPress={() => void Linking.openURL(item.url)} style={styles.attribution}>
-                <Text style={[styles.attributionText, { color: colors.muted }]}>{item.text}</Text>
+                <Text style={[styles.attributionText, { color: sceneMuted }]}>{item.text}</Text>
               </Pressable>
             ))}
           </>
         ) : null}
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+    </WeatherScene>
   );
 }
 
