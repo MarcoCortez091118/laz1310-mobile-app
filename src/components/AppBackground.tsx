@@ -45,6 +45,14 @@ export function AppBackground({
     };
   }, [releaseId]);
 
+  const source = useMemo(
+    () =>
+      remoteImageUrl && !remoteFailed
+        ? { uri: remoteImageUrl }
+        : require('../../assets/brand/Back.png'),
+    [remoteFailed, remoteImageUrl],
+  );
+
   if (!enabled || !remoteEnabled) {
     return (
       <View style={[styles.root, { backgroundColor: colors.black }]}>
@@ -58,14 +66,6 @@ export function AppBackground({
     preference === 'dark'
       ? 'rgba(5,1,1,0.30)'
       : 'rgba(254,254,254,0.68)';
-
-  const source = useMemo(
-    () =>
-      remoteImageUrl && !remoteFailed
-        ? { uri: remoteImageUrl }
-        : require('../../assets/brand/Back.png'),
-    [remoteFailed, remoteImageUrl],
-  );
 
   return (
     <ImageBackground
