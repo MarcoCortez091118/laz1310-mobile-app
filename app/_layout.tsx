@@ -20,6 +20,7 @@ import { MiniPlayer } from '../src/components/MiniPlayer';
 import { AuthProvider } from '../src/features/auth/AuthProvider';
 import { ContentVersionProvider } from '../src/features/content/ContentVersionProvider';
 import { PushNotificationsProvider } from '../src/features/notifications/PushNotificationsProvider';
+import { ProgramRemindersProvider } from '../src/features/programs/ProgramRemindersProvider';
 import { RadioProvider } from '../src/features/radio/RadioProvider';
 import { useRadio } from '../src/features/radio/useRadio';
 import { WeatherUnitProvider } from '../src/features/weather/WeatherUnitProvider';
@@ -93,9 +94,11 @@ export default function RootLayout() {
             <AuthProvider>
               <ContentVersionProvider>
                 <PushNotificationsProvider>
-                  <RadioProvider>
-                    <AppNavigator />
-                  </RadioProvider>
+                  <ProgramRemindersProvider>
+                    <RadioProvider>
+                      <AppNavigator />
+                    </RadioProvider>
+                  </ProgramRemindersProvider>
                 </PushNotificationsProvider>
               </ContentVersionProvider>
             </AuthProvider>
