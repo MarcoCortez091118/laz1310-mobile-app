@@ -35,7 +35,7 @@ export function AppBackground({
     <ImageBackground
       imageStyle={{ opacity: imageOpacity }}
       resizeMode="cover"
-      source={require('../../assets/brand/Detroit-BG.webp')}
+      source={require('../../assets/brand/Back.png')}
       style={[styles.root, { backgroundColor: colors.black }]}
     >
       <View
