@@ -2,18 +2,21 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 export const PUSH_CHANNEL_ID = 'laz-general';
+export const PROGRAM_REMINDER_MARKER = 'lazProgramReminder';
 const FOREGROUND_COPY_MARKER = 'lazForegroundCopy';
 
 Notifications.setNotificationHandler({
   handleNotification: async (notification) => {
-    const isForegroundCopy =
-      notification.request.content.data?.[FOREGROUND_COPY_MARKER] === '1';
+    const data = notification.request.content.data;
+    const isForegroundCopy = data?.[FOREGROUND_COPY_MARKER] === '1';
+    const isProgramReminder = data?.[PROGRAM_REMINDER_MARKER] === '1';
+    const shouldPresent = isForegroundCopy || isProgramReminder;
 
     return {
-      shouldPlaySound: isForegroundCopy,
+      shouldPlaySound: shouldPresent,
       shouldSetBadge: false,
-      shouldShowBanner: isForegroundCopy,
-      shouldShowList: isForegroundCopy,
+      shouldShowBanner: shouldPresent,
+      shouldShowList: shouldPresent,
     };
   },
 });
@@ -64,7 +67,9 @@ export async function presentForegroundSystemNotification(input: {
   await Notifications.scheduleNotificationAsync({ content, trigger: null });
 }
 
-export function systemNotificationTarget(data: Record<string, unknown> | null | undefined) {
+export function systemNotificationTarget(
+  data: Record<string, unknown> | null | undefined,
+) {
   const value = data?.targetValue;
   return typeof value === 'string' ? value : null;
 }
