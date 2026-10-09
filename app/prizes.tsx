@@ -143,7 +143,7 @@ export default function PrizesScreen() {
 
 const styles = StyleSheet.create({
   banner: { minHeight: 150, borderRadius: 17, overflow: 'hidden', backgroundColor: '#185083', justifyContent: 'flex-end', marginBottom: 16 },
-  bannerArtwork: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' },
+  bannerArtwork: { top: 0, bottom: 0, left: 0, right: 0, width: '100%', height: '100%' },
   bannerShade: { padding: 20, minHeight: 144, backgroundColor: 'rgba(0,0,0,0.31)', justifyContent: 'center' },
   bannerTitle: { color: '#FFB14C', fontFamily: fonts.displayBlack, fontSize: 34, lineHeight: 35, letterSpacing: 1 },
   bannerSubtitle: { color: v3.white, fontFamily: fonts.displayBlack, fontSize: 24, lineHeight: 26 },
