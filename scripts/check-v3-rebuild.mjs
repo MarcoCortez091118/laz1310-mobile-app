@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 const read = (path) => readFileSync(path, 'utf8');
 
 const shell = read('src/components/v3/V3Layout.tsx');
@@ -17,6 +17,17 @@ for (const route of ['/radio', '/prizes', '/advertise', '/privacy']) {
 for (const text of ['Compartir', 'Premios', 'Anúnciate', 'Privacidad']) {
   assert.ok(shell.includes(text), `Missing PDF V3 tab: ${text}`);
 }
+for (const image of [
+  'assets/brand/v3-splash-cover.webp',
+  'assets/brand/v3-tigers-giveaway.webp',
+  'assets/brand/v3-detroit-skyline-full.webp',
+]) {
+  assert.ok(statSync(image).size > 0, `Missing or empty uploaded artwork: ${image}`);
+}
+assert.match(landing, /v3-splash-cover\.webp/);
+assert.match(landing, /resizeMode="cover"/);
+assert.match(prizes, /v3-tigers-giveaway\.webp/);
+assert.match(shell, /v3-detroit-skyline-full\.webp/);
 assert.match(landing, /router\.replace\('\/radio'\)/);
 assert.match(radio, /useRadio/);
 assert.match(radio, /VinylArtwork/);
