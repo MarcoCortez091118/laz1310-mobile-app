@@ -52,6 +52,9 @@ jobs:
       - name: Expo Doctor
         run: npx expo-doctor
 
+      - name: Validate EAS Android Firebase file configuration
+        run: npm run check:eas-native-config
+
       - name: TypeScript
         run: npm run typecheck
 
