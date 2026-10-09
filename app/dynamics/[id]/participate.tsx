@@ -21,7 +21,9 @@ import { getFirebaseSecurityTokens } from '../../../src/features/auth/firebase';
 import {
   DynamicCampaign,
   DynamicFormField,
+  ParticipationStatusResponse,
   getDynamic,
+  getParticipationStatus,
   submitParticipation,
 } from '../../../src/features/dynamics/api';
 import {
@@ -44,6 +46,10 @@ function placeholder(field: DynamicFormField, english: boolean) {
   return field.label;
 }
 
+function isAccountBackedField(field: DynamicFormField) {
+  return field.key === 'name' || field.key === 'email';
+}
+
 function submissionError(error: unknown, english: boolean) {
   if (!(error instanceof ApiError)) {
     return english
@@ -54,20 +60,20 @@ function submissionError(error: unknown, english: boolean) {
   switch (error.status) {
     case 401:
       return english
-        ? 'This installation does not yet have valid Firebase/App Check verification for participation.'
-        : 'Esta instalación todavía no tiene una verificación Firebase/App Check válida para participar.';
+        ? 'Sign in to your LA Z account before participating.'
+        : 'Inicia sesión con tu cuenta LA Z antes de participar.';
     case 404:
       return english
         ? 'This dynamic is no longer available. Go back and refresh the list.'
         : 'La dinámica ya no está disponible. Regresa y actualiza la lista.';
     case 409:
       return english
-        ? 'The dynamic changed, closed, or an entry already exists with these data. Refresh before trying again.'
-        : 'La dinámica cambió, cerró o ya existe una participación con estos datos. Actualiza antes de volver a intentar.';
+        ? 'This dynamic changed, closed, or your account already has an entry.'
+        : 'Esta dinámica cambió, cerró o tu cuenta ya tiene una participación registrada.';
     case 422:
       return english
-        ? 'Review the fields and consent. The server rejected one or more values.'
-        : 'Revisa los campos y el consentimiento. El servidor rechazó alguno de los valores.';
+        ? 'Review the additional fields and consent.'
+        : 'Revisa los campos adicionales y el consentimiento.';
     case 429:
       return error.retryAfterSeconds
         ? english
@@ -78,8 +84,8 @@ function submissionError(error: unknown, english: boolean) {
           : 'Demasiados intentos. Espera un momento antes de volver a enviar.';
     case 503:
       return english
-        ? 'Participation is temporarily disabled or the service is unavailable.'
-        : 'Las participaciones están temporalmente deshabilitadas o el servicio no está disponible.';
+        ? 'Participation is temporarily disabled or unavailable.'
+        : 'Las participaciones están temporalmente deshabilitadas o no disponibles.';
     default:
       return english
         ? 'We could not register your participation.'
@@ -93,10 +99,12 @@ export default function DynamicsParticipationScreen() {
   const { colors } = useAppTheme();
   const { language } = useLanguage();
   const english = language === 'en';
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, profile } = useAuth();
   const [campaign, setCampaign] = useState<DynamicCampaign | null>(null);
   const [releaseId, setReleaseId] = useState<string | null>(null);
   const [values, setValues] = useState<Record<string, string>>({});
+  const [participationStatus, setParticipationStatus] =
+    useState<ParticipationStatusResponse | null>(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [idempotencyKey, setIdempotencyKey] = useState(createIdempotencyKey);
@@ -106,9 +114,33 @@ export default function DynamicsParticipationScreen() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const loadAccountStatus = useCallback(
+    async (dynamicId: string) => {
+      if (!isAuthenticated) {
+        setParticipationStatus(null);
+        return null;
+      }
+
+      try {
+        const security = await getFirebaseSecurityTokens(true);
+        const status = await getParticipationStatus(dynamicId, security);
+        setParticipationStatus(status);
+        return status;
+      } catch {
+        setParticipationStatus(null);
+        return null;
+      }
+    },
+    [isAuthenticated],
+  );
+
   const load = useCallback(async () => {
     if (!id) {
-      setLoadError(english ? 'The dynamic identifier is missing.' : 'Falta el identificador de la dinámica.');
+      setLoadError(
+        english
+          ? 'The dynamic identifier is missing.'
+          : 'Falta el identificador de la dinámica.',
+      );
       setLoading(false);
       return;
     }
@@ -119,19 +151,58 @@ export default function DynamicsParticipationScreen() {
       const result = await getDynamic(id);
       setCampaign(result.item);
       setReleaseId(result.releaseId);
-      setValues(Object.fromEntries(result.item.participation.fields.map((field) => [field.key, ''])));
+
+      const initialValues = Object.fromEntries(
+        result.item.participation.fields.map((field) => {
+          if (result.item.participation.requiresAuth && field.key === 'name') {
+            return [field.key, profile?.displayName ?? ''];
+          }
+          if (result.item.participation.requiresAuth && field.key === 'email') {
+            return [field.key, profile?.email ?? ''];
+          }
+          return [field.key, ''];
+        }),
+      );
+      setValues(initialValues);
+
+      if (
+        result.item.participation.type === 'form' &&
+        result.item.participation.requiresAuth &&
+        isAuthenticated
+      ) {
+        await loadAccountStatus(result.item.id);
+      } else {
+        setParticipationStatus(null);
+      }
     } catch {
       setCampaign(null);
       setReleaseId(null);
-      setLoadError(english ? 'We could not load the published form.' : 'No pudimos cargar el formulario publicado.');
+      setParticipationStatus(null);
+      setLoadError(
+        english
+          ? 'We could not load the published participation.'
+          : 'No pudimos cargar la participación publicada.',
+      );
     } finally {
       setLoading(false);
     }
-  }, [english, id]);
+  }, [english, id, isAuthenticated, loadAccountStatus, profile?.displayName, profile?.email]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const editableFields = useMemo(() => {
+    if (!campaign || campaign.participation.type !== 'form') return [];
+    return campaign.participation.fields.filter((field) => {
+      if (!campaign.participation.requiresAuth || !isAccountBackedField(field)) {
+        return true;
+      }
+      if (field.key === 'name') return !profile?.displayName;
+      if (field.key === 'email') return !profile?.email;
+      return true;
+    });
+  }, [campaign, profile?.displayName, profile?.email]);
 
   const validation = useMemo(() => {
     if (!campaign || campaign.participation.type !== 'form') return {};
@@ -150,7 +221,9 @@ export default function DynamicsParticipationScreen() {
     campaign.participation.fields.every((field) => !validation[field.key]) &&
     termsAccepted &&
     privacyAccepted &&
-    (!campaign.participation.requiresAuth || isAuthenticated);
+    (!campaign.participation.requiresAuth ||
+      (isAuthenticated && Boolean(profile))) &&
+    !participationStatus?.participated;
 
   const rotateIdempotencyIfNeeded = () => {
     if (attempted) {
@@ -171,13 +244,16 @@ export default function DynamicsParticipationScreen() {
     setSubmitting(true);
     setAttempted(true);
     setSubmitError(null);
+
     try {
       const normalizedValues = Object.fromEntries(
         campaign.participation.fields
           .map((field) => [field.key, (values[field.key] ?? '').trim()] as const)
           .filter(([, value]) => value.length > 0),
       );
-      const security = await getFirebaseSecurityTokens(campaign.participation.requiresAuth);
+      const security = await getFirebaseSecurityTokens(
+        campaign.participation.requiresAuth,
+      );
       const receipt = await submitParticipation({
         dynamicId: campaign.id,
         releaseId,
@@ -186,6 +262,7 @@ export default function DynamicsParticipationScreen() {
         idempotencyKey,
         security,
       });
+
       router.replace({
         pathname: '/dynamics/confirmation',
         params: {
@@ -195,6 +272,22 @@ export default function DynamicsParticipationScreen() {
         },
       });
     } catch (error) {
+      if (
+        error instanceof ApiError &&
+        error.status === 409 &&
+        campaign.participation.requiresAuth &&
+        isAuthenticated
+      ) {
+        try {
+          const latest = await loadAccountStatus(campaign.id);
+          if (latest?.participated) {
+            setSubmitError(null);
+            return;
+          }
+        } catch {
+          // Fall through to the original submission error.
+        }
+      }
       setSubmitError(submissionError(error, english));
     } finally {
       setSubmitting(false);
@@ -203,118 +296,402 @@ export default function DynamicsParticipationScreen() {
 
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        <ScreenHeader title={english ? 'Form' : 'Formulario'} />
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <ScreenHeader title={english ? 'Participate' : 'Participar'} />
 
         {loading ? (
           <View style={styles.state}>
             <ActivityIndicator color={colors.red} />
-            <Text style={[styles.stateText, { color: colors.muted }]}>{english ? 'Loading form…' : 'Cargando formulario…'}</Text>
+            <Text style={[styles.stateText, { color: colors.muted }]}>
+              {english ? 'Loading participation…' : 'Cargando participación…'}
+            </Text>
           </View>
         ) : null}
 
         {!loading && loadError ? (
-          <View style={[styles.errorCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-            <Text style={[styles.errorText, { color: colors.white }]}>{loadError}</Text>
-            <PrimaryButton label={english ? 'Retry' : 'Reintentar'} onPress={() => void load()} secondary />
+          <View
+            style={[
+              styles.errorCard,
+              {
+                backgroundColor: colors.surfaceElevated,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <Text style={[styles.errorText, { color: colors.white }]}>
+              {loadError}
+            </Text>
+            <PrimaryButton
+              label={english ? 'Retry' : 'Reintentar'}
+              onPress={() => void load()}
+              secondary
+            />
           </View>
         ) : null}
 
         {!loading && campaign?.participation.type === 'external_url' ? (
-          <View style={[styles.errorCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+          <View
+            style={[
+              styles.errorCard,
+              {
+                backgroundColor: colors.surfaceElevated,
+                borderColor: colors.border,
+              },
+            ]}
+          >
             <Ionicons color={colors.red} name="open-outline" size={28} />
             <Text style={[styles.errorText, { color: colors.white }]}>
-              {english ? 'This dynamic uses external participation.' : 'Esta dinámica utiliza participación externa.'}
+              {english
+                ? 'This dynamic uses external participation.'
+                : 'Esta dinámica utiliza participación externa.'}
             </Text>
             {campaign.participation.url ? (
-              <PrimaryButton label={english ? 'Open link' : 'Abrir enlace'} onPress={() => void Linking.openURL(campaign.participation.url!)} />
+              <PrimaryButton
+                label={english ? 'Open link' : 'Abrir enlace'}
+                onPress={() => void Linking.openURL(campaign.participation.url!)}
+              />
             ) : null}
           </View>
         ) : null}
 
-        {!loading && campaign?.participation.type === 'form' ? (
-          <>
-            <Text style={[styles.title, { color: colors.white }]}>{campaign.title}</Text>
-            <Text style={[styles.subtitle, { color: colors.muted }]}>
+        {!loading &&
+        campaign?.participation.type === 'form' &&
+        campaign.participation.requiresAuth &&
+        !isAuthenticated ? (
+          <View
+            style={[
+              styles.accountRequired,
+              {
+                backgroundColor: colors.surfaceElevated,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <Ionicons
+              color={colors.red}
+              name="person-circle-outline"
+              size={34}
+            />
+            <Text style={[styles.accountRequiredTitle, { color: colors.white }]}>
+              {english ? 'LA Z account required' : 'Necesitas tu cuenta LA Z'}
+            </Text>
+            <Text style={[styles.accountRequiredBody, { color: colors.muted }]}>
               {english
-                ? 'Complete only the fields requested by this dynamic.'
-                : 'Completa únicamente los campos solicitados por esta dinámica.'}
+                ? 'Sign in so your name, email and account identity can be attached securely to this entry.'
+                : 'Inicia sesión para asociar de forma segura tu nombre, correo e identidad de cuenta a esta participación.'}
+            </Text>
+            <PrimaryButton
+              label={english ? 'Sign in' : 'Iniciar sesión'}
+              onPress={() => router.push('/auth')}
+            />
+          </View>
+        ) : null}
+
+        {!loading &&
+        campaign?.participation.type === 'form' &&
+        (!campaign.participation.requiresAuth || isAuthenticated) ? (
+          <>
+            <Text style={[styles.title, { color: colors.white }]}>
+              {campaign.title}
             </Text>
 
-            {campaign.participation.fields.map((field) => (
-              <View key={field.key} style={styles.fieldGroup}>
-                <Text style={[styles.label, { color: colors.muted }]}>{field.label.toUpperCase()}{field.required ? ' *' : ''}</Text>
-                <TextInput
-                  autoCapitalize={field.type === 'email' ? 'none' : 'sentences'}
-                  autoCorrect={field.type !== 'email'}
-                  keyboardType={keyboardType(field)}
-                  multiline={field.type === 'textarea'}
-                  onChangeText={(value) => update(field.key, value)}
-                  placeholder={placeholder(field, english)}
-                  placeholderTextColor={colors.muted}
+            {participationStatus?.participated ? (
+              <View
+                style={[
+                  styles.alreadyCard,
+                  {
+                    backgroundColor: colors.surfaceElevated,
+                    borderColor: colors.border,
+                  },
+                ]}
+              >
+                <View style={[styles.acceptedIcon, { backgroundColor: colors.red }]}>
+                  <Ionicons color="#FEFEFE" name="checkmark" size={28} />
+                </View>
+                <Text style={[styles.alreadyTitle, { color: colors.white }]}>
+                  {english
+                    ? 'You are already participating'
+                    : 'Ya estás participando'}
+                </Text>
+                <Text style={[styles.alreadyBody, { color: colors.muted }]}>
+                  {english
+                    ? 'Your account already has an accepted entry for this dynamic. Keep access to your registered email and enable LA Z notifications to receive campaign updates.'
+                    : 'Tu cuenta ya tiene una participación aceptada en esta dinámica. Mantén acceso a tu correo registrado y habilita las notificaciones de LA Z para recibir avisos de la campaña.'}
+                </Text>
+                {participationStatus.receipt?.submittedAt ? (
+                  <Text style={[styles.receivedAt, { color: colors.muted }]}>
+                    {english ? 'Registered ' : 'Registrada '}
+                    {new Date(
+                      participationStatus.receipt.submittedAt,
+                    ).toLocaleString(english ? 'en-US' : 'es-MX')}
+                  </Text>
+                ) : null}
+                <PrimaryButton
+                  label={
+                    english
+                      ? 'My participations'
+                      : 'Mis participaciones'
+                  }
+                  onPress={() => router.push('/dynamics/participations')}
+                />
+              </View>
+            ) : (
+              <>
+                <Text style={[styles.subtitle, { color: colors.muted }]}>
+                  {campaign.participation.requiresAuth
+                    ? english
+                      ? 'Your LA Z account supplies your identity. Complete only any additional information requested below.'
+                      : 'Tu cuenta LA Z proporciona tu identidad. Completa únicamente la información adicional solicitada.'
+                    : english
+                      ? 'Complete the information requested by this dynamic.'
+                      : 'Completa la información solicitada por esta dinámica.'}
+                </Text>
+
+                {campaign.participation.requiresAuth && profile ? (
+                  <View
+                    style={[
+                      styles.accountCard,
+                      {
+                        backgroundColor: colors.surfaceElevated,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                  >
+                    <View style={styles.accountHeader}>
+                      <Ionicons
+                        color={colors.red}
+                        name="shield-checkmark-outline"
+                        size={22}
+                      />
+                      <Text
+                        style={[styles.accountTitle, { color: colors.white }]}
+                      >
+                        {english
+                          ? 'Participating with your LA Z account'
+                          : 'Participarás con tu cuenta LA Z'}
+                      </Text>
+                    </View>
+                    <Text style={[styles.accountName, { color: colors.white }]}>
+                      {profile.displayName ||
+                        (english ? 'Name pending' : 'Nombre pendiente')}
+                    </Text>
+                    <Text style={[styles.accountEmail, { color: colors.muted }]}>
+                      {profile.email ||
+                        (english ? 'Email unavailable' : 'Correo no disponible')}
+                    </Text>
+                    <View style={styles.verifiedRow}>
+                      <Ionicons
+                        color={profile.emailVerified ? '#56C985' : colors.red}
+                        name={
+                          profile.emailVerified
+                            ? 'checkmark-circle-outline'
+                            : 'alert-circle-outline'
+                        }
+                        size={15}
+                      />
+                      <Text
+                        style={[
+                          styles.verifiedText,
+                          {
+                            color: profile.emailVerified
+                              ? '#56C985'
+                              : colors.red,
+                          },
+                        ]}
+                      >
+                        {profile.emailVerified
+                          ? english
+                            ? 'VERIFIED EMAIL'
+                            : 'CORREO VERIFICADO'
+                          : english
+                            ? 'EMAIL NOT VERIFIED'
+                            : 'CORREO NO VERIFICADO'}
+                      </Text>
+                    </View>
+                  </View>
+                ) : null}
+
+                {editableFields.length ? (
+                  <>
+                    <Text
+                      style={[styles.additionalTitle, { color: colors.white }]}
+                    >
+                      {english
+                        ? 'Additional information'
+                        : 'Información adicional'}
+                    </Text>
+                    {editableFields.map((field) => (
+                      <View key={field.key} style={styles.fieldGroup}>
+                        <Text style={[styles.label, { color: colors.muted }]}>
+                          {field.label.toUpperCase()}
+                          {field.required ? ' *' : ''}
+                        </Text>
+                        <TextInput
+                          autoCapitalize={
+                            field.type === 'email' ? 'none' : 'sentences'
+                          }
+                          autoCorrect={field.type !== 'email'}
+                          keyboardType={keyboardType(field)}
+                          multiline={field.type === 'textarea'}
+                          onChangeText={(value) => update(field.key, value)}
+                          placeholder={placeholder(field, english)}
+                          placeholderTextColor={colors.muted}
+                          style={[
+                            styles.input,
+                            field.type === 'textarea' && styles.textarea,
+                            {
+                              backgroundColor: colors.surfaceElevated,
+                              borderColor:
+                                values[field.key] && validation[field.key]
+                                  ? colors.red
+                                  : colors.border,
+                              color: colors.white,
+                            },
+                          ]}
+                          value={values[field.key] ?? ''}
+                        />
+                        {values[field.key] && validation[field.key] ? (
+                          <Text
+                            style={[styles.fieldError, { color: colors.red }]}
+                          >
+                            {validation[field.key]}
+                          </Text>
+                        ) : null}
+                      </View>
+                    ))}
+                  </>
+                ) : (
+                  <View
+                    style={[
+                      styles.noExtraFields,
+                      {
+                        backgroundColor: colors.surfaceElevated,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      color={colors.red}
+                      name="flash-outline"
+                      size={20}
+                    />
+                    <Text
+                      style={[styles.noExtraText, { color: colors.muted }]}
+                    >
+                      {english
+                        ? 'No additional information is required for this dynamic.'
+                        : 'Esta dinámica no requiere información adicional.'}
+                    </Text>
+                  </View>
+                )}
+
+                <View
                   style={[
-                    styles.input,
-                    field.type === 'textarea' && styles.textarea,
+                    styles.consentCard,
                     {
                       backgroundColor: colors.surfaceElevated,
-                      borderColor: values[field.key] && validation[field.key] ? colors.red : colors.border,
-                      color: colors.white,
+                      borderColor: colors.border,
                     },
                   ]}
-                  value={values[field.key] ?? ''}
-                />
-                {values[field.key] && validation[field.key] ? (
-                  <Text style={[styles.fieldError, { color: colors.red }]}>{validation[field.key]}</Text>
+                >
+                  <Pressable
+                    onPress={() => {
+                      rotateIdempotencyIfNeeded();
+                      setTermsAccepted((value) => !value);
+                    }}
+                    style={styles.consentRow}
+                  >
+                    <Ionicons
+                      color={termsAccepted ? colors.red : colors.muted}
+                      name={termsAccepted ? 'checkbox' : 'square-outline'}
+                      size={22}
+                    />
+                    <Text
+                      style={[styles.consentText, { color: colors.white }]}
+                    >
+                      {english
+                        ? 'I accept the terms and conditions.'
+                        : 'Acepto las bases y condiciones.'}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => void Linking.openURL(campaign.termsUrl)}
+                  >
+                    <Text style={[styles.link, { color: colors.red }]}>
+                      {english ? 'Read terms' : 'Leer bases'}
+                    </Text>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => {
+                      rotateIdempotencyIfNeeded();
+                      setPrivacyAccepted((value) => !value);
+                    }}
+                    style={styles.consentRow}
+                  >
+                    <Ionicons
+                      color={privacyAccepted ? colors.red : colors.muted}
+                      name={privacyAccepted ? 'checkbox' : 'square-outline'}
+                      size={22}
+                    />
+                    <Text
+                      style={[styles.consentText, { color: colors.white }]}
+                    >
+                      {english
+                        ? 'I accept the privacy policy.'
+                        : 'Acepto la política de privacidad.'}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => void Linking.openURL(campaign.privacyUrl)}
+                  >
+                    <Text style={[styles.link, { color: colors.red }]}>
+                      {english
+                        ? 'Read privacy policy'
+                        : 'Leer privacidad'}
+                    </Text>
+                  </Pressable>
+                </View>
+
+                {campaign.status !== 'active' ? (
+                  <Text style={[styles.warningText, { color: colors.red }]}>
+                    {english
+                      ? 'This dynamic is not accepting entries right now.'
+                      : 'Esta dinámica no acepta participaciones en este momento.'}
+                  </Text>
                 ) : null}
-              </View>
-            ))}
 
-            <View style={[styles.consentCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-              <Pressable onPress={() => { rotateIdempotencyIfNeeded(); setTermsAccepted((value) => !value); }} style={styles.consentRow}>
-                <Ionicons color={termsAccepted ? colors.red : colors.muted} name={termsAccepted ? 'checkbox' : 'square-outline'} size={22} />
-                <Text style={[styles.consentText, { color: colors.white }]}>{english ? 'I accept the terms and conditions.' : 'Acepto las bases y condiciones.'}</Text>
-              </Pressable>
-              <Pressable onPress={() => void Linking.openURL(campaign.termsUrl)}>
-                <Text style={[styles.link, { color: colors.red }]}>{english ? 'Read terms' : 'Leer bases'}</Text>
-              </Pressable>
+                {submitError ? (
+                  <Text style={[styles.submitError, { color: colors.red }]}>
+                    {submitError}
+                  </Text>
+                ) : null}
 
-              <Pressable onPress={() => { rotateIdempotencyIfNeeded(); setPrivacyAccepted((value) => !value); }} style={styles.consentRow}>
-                <Ionicons color={privacyAccepted ? colors.red : colors.muted} name={privacyAccepted ? 'checkbox' : 'square-outline'} size={22} />
-                <Text style={[styles.consentText, { color: colors.white }]}>{english ? 'I accept the privacy policy.' : 'Acepto la política de privacidad.'}</Text>
-              </Pressable>
-              <Pressable onPress={() => void Linking.openURL(campaign.privacyUrl)}>
-                <Text style={[styles.link, { color: colors.red }]}>{english ? 'Read privacy policy' : 'Leer privacidad'}</Text>
-              </Pressable>
-            </View>
+                <PrimaryButton
+                  disabled={!formValid || submitting}
+                  label={
+                    submitting
+                      ? english
+                        ? 'Registering…'
+                        : 'Registrando…'
+                      : english
+                        ? 'Register me'
+                        : 'Registrarme'
+                  }
+                  onPress={() => void submit()}
+                />
 
-            {campaign.participation.requiresAuth ? (
-              <View style={[styles.warning, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-                <Ionicons color={colors.red} name="lock-closed-outline" size={20} />
-                <Text style={[styles.warningText, { color: colors.muted }]}>
-                  {isAuthenticated
-                    ? english ? 'Your Firebase session is ready for this participation.' : 'Tu sesión Firebase está lista para esta participación.'
-                    : english ? 'This dynamic requires signing in before participating.' : 'Esta dinámica requiere iniciar sesión antes de participar.'}
+                <Text style={[styles.securityNote, { color: colors.muted }]}>
+                  {english
+                    ? 'LA Z API validates campaign availability, account identity, duplicates, consent and any additional answers before accepting the entry.'
+                    : 'LA Z API valida vigencia, identidad de cuenta, duplicados, consentimiento y cualquier respuesta adicional antes de aceptar la participación.'}
                 </Text>
-              </View>
-            ) : null}
-
-            {campaign.status !== 'active' ? (
-              <Text style={[styles.warningText, { color: colors.red }]}>{english ? 'This dynamic is not accepting entries right now.' : 'Esta dinámica no acepta participaciones en este momento.'}</Text>
-            ) : null}
-
-            {submitError ? <Text style={[styles.submitError, { color: colors.red }]}>{submitError}</Text> : null}
-
-            <PrimaryButton
-              disabled={!formValid || submitting}
-              label={submitting ? (english ? 'Submitting…' : 'Enviando…') : (english ? 'Submit entry' : 'Enviar participación')}
-              onPress={() => void submit()}
-            />
-
-            <Text style={[styles.securityNote, { color: colors.muted }]}>
-              {english
-                ? 'The server revalidates fields, campaign dates, duplicates, consent and idempotency. This request includes Firebase App Check and, when required, your ID token.'
-                : 'El servidor valida nuevamente campos, vigencia, duplicados, consentimiento e idempotencia. Esta solicitud incluye Firebase App Check y, cuando corresponde, tu ID token.'}
-            </Text>
+              </>
+            )}
           </>
         ) : null}
       </ScrollView>
@@ -327,21 +704,191 @@ const styles = StyleSheet.create({
   content: { paddingBottom: 120, paddingHorizontal: spacing.md },
   state: { alignItems: 'center', gap: 12, paddingVertical: 100 },
   stateText: { fontFamily: fonts.body, fontSize: 12 },
-  errorCard: { borderRadius: radii.lg, borderWidth: 1, gap: 14, marginTop: spacing.lg, padding: spacing.lg },
+  errorCard: {
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    gap: 14,
+    marginTop: spacing.lg,
+    padding: spacing.lg,
+  },
   errorText: { fontFamily: fonts.body, fontSize: 13, lineHeight: 20 },
-  title: { fontFamily: fonts.displayExtraBold, fontSize: 32, marginTop: spacing.lg },
-  subtitle: { fontFamily: fonts.body, fontSize: 12, lineHeight: 18, marginBottom: spacing.lg, marginTop: 4 },
+  title: {
+    fontFamily: fonts.displayExtraBold,
+    fontSize: 32,
+    marginTop: spacing.lg,
+  },
+  subtitle: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    lineHeight: 18,
+    marginBottom: spacing.lg,
+    marginTop: 4,
+  },
+  accountRequired: {
+    alignItems: 'center',
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    gap: 12,
+    marginTop: spacing.lg,
+    padding: spacing.lg,
+  },
+  accountRequiredTitle: {
+    fontFamily: fonts.displayExtraBold,
+    fontSize: 28,
+    textAlign: 'center',
+  },
+  accountRequiredBody: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
+  alreadyCard: {
+    alignItems: 'center',
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    gap: 10,
+    marginTop: spacing.md,
+    padding: spacing.lg,
+  },
+  acceptedIcon: {
+    alignItems: 'center',
+    borderRadius: 32,
+    height: 58,
+    justifyContent: 'center',
+    width: 58,
+  },
+  alreadyTitle: {
+    fontFamily: fonts.displayExtraBold,
+    fontSize: 27,
+    textAlign: 'center',
+  },
+  alreadyBody: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
+  receivedAt: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 10,
+    marginBottom: 4,
+  },
+  accountCard: {
+    borderRadius: radii.md,
+    borderWidth: 1,
+    marginBottom: spacing.lg,
+    padding: spacing.md,
+  },
+  accountHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  accountTitle: {
+    flex: 1,
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+  },
+  accountName: {
+    fontFamily: fonts.displayExtraBold,
+    fontSize: 22,
+    marginTop: 14,
+  },
+  accountEmail: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    marginTop: 2,
+  },
+  verifiedRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 5,
+    marginTop: 10,
+  },
+  verifiedText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 8,
+    letterSpacing: 0.7,
+  },
+  additionalTitle: {
+    fontFamily: fonts.displayExtraBold,
+    fontSize: 22,
+    marginBottom: 12,
+  },
   fieldGroup: { marginBottom: 14 },
-  label: { fontFamily: fonts.bodyBold, fontSize: 9, letterSpacing: 0.8, marginBottom: 7 },
-  input: { borderRadius: radii.md, borderWidth: 1, fontFamily: fonts.body, fontSize: 14, minHeight: 56, paddingHorizontal: spacing.md },
-  textarea: { minHeight: 120, paddingTop: spacing.md, textAlignVertical: 'top' },
+  label: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 9,
+    letterSpacing: 0.8,
+    marginBottom: 7,
+  },
+  input: {
+    borderRadius: radii.md,
+    borderWidth: 1,
+    fontFamily: fonts.body,
+    fontSize: 14,
+    minHeight: 56,
+    paddingHorizontal: spacing.md,
+  },
+  textarea: {
+    minHeight: 120,
+    paddingTop: spacing.md,
+    textAlignVertical: 'top',
+  },
   fieldError: { fontFamily: fonts.body, fontSize: 10, marginTop: 5 },
-  consentCard: { borderRadius: radii.md, borderWidth: 1, gap: 8, marginBottom: 16, padding: spacing.md },
-  consentRow: { alignItems: 'center', flexDirection: 'row', gap: 10, minHeight: 36 },
+  noExtraFields: {
+    alignItems: 'center',
+    borderRadius: radii.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: spacing.lg,
+    padding: spacing.md,
+  },
+  noExtraText: {
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: 11,
+    lineHeight: 16,
+  },
+  consentCard: {
+    borderRadius: radii.md,
+    borderWidth: 1,
+    gap: 8,
+    marginBottom: 16,
+    padding: spacing.md,
+  },
+  consentRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10,
+    minHeight: 36,
+  },
   consentText: { flex: 1, fontFamily: fonts.body, fontSize: 12 },
-  link: { fontFamily: fonts.bodySemiBold, fontSize: 10, marginBottom: 4, marginLeft: 32 },
-  warning: { alignItems: 'center', borderRadius: radii.md, borderWidth: 1, flexDirection: 'row', gap: 10, marginBottom: 16, padding: spacing.md },
-  warningText: { flex: 1, fontFamily: fonts.body, fontSize: 10, lineHeight: 15 },
-  submitError: { fontFamily: fonts.bodyMedium, fontSize: 11, lineHeight: 16, marginBottom: 12 },
-  securityNote: { fontFamily: fonts.body, fontSize: 9, lineHeight: 14, marginTop: 12, textAlign: 'center' },
+  link: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 10,
+    marginBottom: 4,
+    marginLeft: 32,
+  },
+  warningText: {
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: 10,
+    lineHeight: 15,
+  },
+  submitError: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 11,
+    lineHeight: 16,
+    marginBottom: 12,
+  },
+  securityNote: {
+    fontFamily: fonts.body,
+    fontSize: 9,
+    lineHeight: 14,
+    marginTop: 12,
+    textAlign: 'center',
+  },
 });

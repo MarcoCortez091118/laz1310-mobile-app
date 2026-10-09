@@ -136,6 +136,15 @@ export default function ProfileScreen() {
             <Ionicons color={colors.gray} name="chevron-forward" size={20} />
           </Pressable>
 
+          <Pressable onPress={() => router.push('/dynamics/participations')} style={[styles.row, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+            <Ionicons color={colors.red} name="ticket-outline" size={21} />
+            <View style={styles.rowCopy}>
+              <Text style={[styles.rowTitle, { color: colors.white }]}>{english ? 'My participations' : 'Mis participaciones'}</Text>
+              <Text style={[styles.rowSubtitle, { color: colors.muted }]}>{english ? 'Dynamics registered with your LA Z account' : 'Dynamics registradas con tu cuenta LA Z'}</Text>
+            </View>
+            <Ionicons color={colors.gray} name="chevron-forward" size={20} />
+          </Pressable>
+
           <Pressable onPress={() => router.push('/profile/settings')} style={[styles.row, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
             <Ionicons color={colors.red} name="settings-outline" size={21} />
             <View style={styles.rowCopy}>

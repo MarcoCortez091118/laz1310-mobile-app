@@ -49,6 +49,20 @@ export interface ParticipationReceipt {
   submittedAt: string;
 }
 
+export interface ParticipationStatusResponse {
+  participated: boolean;
+  receipt: ParticipationReceipt | null;
+}
+
+export interface UserParticipationItem extends ParticipationReceipt {
+  dynamicTitle: string | null;
+}
+
+export interface UserParticipationPage {
+  items: UserParticipationItem[];
+  nextCursor: string | null;
+}
+
 export interface ParticipationSecurity {
   idToken?: string;
   appCheckToken?: string;
@@ -131,6 +145,56 @@ export async function submitParticipation({
             version: consentVersion,
           },
         }),
+      },
+    )
+  ).data;
+}
+
+
+function participationSecurityHeaders(
+  security: ParticipationSecurity,
+): Record<string, string> {
+  if (!security.idToken) {
+    throw new Error('Firebase ID token is required for account participation');
+  }
+
+  return {
+    Authorization: 'Bearer ' + security.idToken,
+    ...(security.appCheckToken
+      ? { 'X-Firebase-AppCheck': security.appCheckToken }
+      : {}),
+  };
+}
+
+export async function getParticipationStatus(
+  dynamicId: string,
+  security: ParticipationSecurity,
+) {
+  return (
+    await apiRequestWithMeta<ParticipationStatusResponse>(
+      '/api/v1/dynamics/' +
+        encodeURIComponent(dynamicId) +
+        '/participation-status',
+      {
+        headers: participationSecurityHeaders(security),
+      },
+    )
+  ).data;
+}
+
+export async function getMyParticipations(
+  security: ParticipationSecurity,
+  limit = 50,
+  after?: string,
+) {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (after) params.set('after', after);
+
+  return (
+    await apiRequestWithMeta<UserParticipationPage>(
+      '/api/v1/me/dynamics/participations?' + params.toString(),
+      {
+        headers: participationSecurityHeaders(security),
       },
     )
   ).data;

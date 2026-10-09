@@ -50,8 +50,15 @@ export default function DynamicsConfirmationScreen() {
           </Text>
         ) : null}
 
+        <Text style={[styles.guidance, { color: colors.muted }]}>
+          {english
+            ? 'Keep access to the email registered on your LA Z account and enable app notifications to receive campaign updates.'
+            : 'Mantén acceso al correo registrado en tu cuenta LA Z y habilita las notificaciones de la app para recibir avisos de la campaña.'}
+        </Text>
+
         <View style={styles.actions}>
-          <PrimaryButton label={english ? 'Back to Dynamics' : 'Volver a Dinámicas'} onPress={() => router.replace('/dynamics')} />
+          <PrimaryButton label={english ? 'My participations' : 'Mis participaciones'} onPress={() => router.replace('/dynamics/participations')} />
+          <PrimaryButton label={english ? 'Back to Dynamics' : 'Volver a Dinámicas'} onPress={() => router.replace('/dynamics')} secondary />
           <PrimaryButton label={english ? 'Back to Home' : 'Volver a Inicio'} onPress={() => router.replace('/home')} secondary />
         </View>
       </View>
@@ -67,5 +74,6 @@ const styles = StyleSheet.create({
   body: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, marginTop: 10, textAlign: 'center' },
   note: { fontFamily: fonts.body, fontSize: 10, lineHeight: 15, marginTop: 14, textAlign: 'center' },
   receipt: { fontFamily: fonts.body, fontSize: 9, marginTop: 6, maxWidth: '90%' },
-  actions: { gap: 10, marginTop: 34, width: '100%' },
+  guidance: { fontFamily: fonts.body, fontSize: 10, lineHeight: 16, marginTop: 18, textAlign: 'center' },
+  actions: { gap: 10, marginTop: 26, width: '100%' },
 });
