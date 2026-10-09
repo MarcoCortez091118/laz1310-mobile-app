@@ -25,21 +25,19 @@ export default function ExploreScreen() {
       id: 'dynamics',
       title: english ? 'Dynamics' : 'Dinámicas',
       subtitle: english
-        ? 'Promotions, trivia, surveys and activations.'
-        : 'Promociones, trivias, encuestas y activaciones.',
+        ? 'Join LA Z promotions and contests.'
+        : 'Participa en promociones y concursos de LA Z.',
       icon: 'sparkles-outline' as const,
       route: '/dynamics' as const,
-      available: true,
     },
     {
       id: 'weather',
       title: english ? 'Weather' : 'Clima',
       subtitle: english
-        ? 'Detroit and featured LA Z markets.'
-        : 'Detroit y mercados destacados de LA Z.',
+        ? 'Forecasts for Detroit and LA Z cities.'
+        : 'Pronóstico de Detroit y otras ciudades de LA Z.',
       icon: 'partly-sunny-outline' as const,
       route: '/weather' as const,
-      available: true,
     },
     {
       id: 'programs',
@@ -49,17 +47,8 @@ export default function ExploreScreen() {
         : 'Shows, hosts y programación semanal publicada.',
       icon: 'mic-outline' as const,
       route: '/programs' as const,
-      available: true,
     },
-    {
-      id: 'events',
-      title: english ? 'Events' : 'Eventos',
-      subtitle: english
-        ? 'Dates and community experiences.'
-        : 'Fechas y experiencias de la comunidad.',
-      icon: 'calendar-outline' as const,
-      available: false,
-    },
+
   ];
 
   return (
@@ -81,31 +70,25 @@ export default function ExploreScreen() {
           {modules.map((item) => (
             <Pressable
               key={item.id}
-              disabled={!item.available}
               onPress={() => item.route && router.push(item.route)}
               style={({ pressed }) => [
                 styles.card,
                 {
                   backgroundColor: colors.surfaceElevated,
                   borderColor: colors.border,
-                  opacity: !item.available ? 0.48 : pressed ? 0.76 : 1,
+                  opacity: pressed ? 0.76 : 1,
                 },
               ]}
             >
               <View style={[styles.iconWrap, { backgroundColor: colors.surface }]}>
                 <Ionicons
-                  color={item.available ? colors.red : colors.gray}
+                  color={colors.red}
                   name={item.icon}
                   size={28}
                 />
               </View>
               <Text style={[styles.cardTitle, { color: colors.white }]}>{item.title}</Text>
               <Text style={[styles.cardSubtitle, { color: colors.muted }]}>{item.subtitle}</Text>
-              {!item.available ? (
-                <Text style={[styles.comingSoon, { color: colors.red }]}>
-                  {english ? 'COMING SOON' : 'PRÓXIMAMENTE'}
-                </Text>
-              ) : null}
             </Pressable>
           ))}
         </View>
@@ -159,11 +142,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
     marginTop: 4,
-  },
-  comingSoon: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 9,
-    letterSpacing: 1,
-    marginTop: 12,
   },
 });
