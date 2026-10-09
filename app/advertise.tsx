@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { V3Screen, v3 } from '../src/components/v3/V3Shell';
 import { useLanguage } from '../src/i18n/LanguageProvider';
@@ -17,20 +17,13 @@ export default function AdvertiseScreen() {
         <Text style={styles.coverageTitle}>
           {english ? 'COVERAGE MAP 1310 AM & 107.9 FM' : 'COBERTURA 1310 AM Y 107.9 FM'}
         </Text>
-        <View style={styles.coverageRow}>
-          <View style={styles.coverageCard}>
-            <Text style={styles.signalLabel}>AM</Text>
-            <View style={styles.signalHalo}><View style={styles.signalCore} /></View>
-            <Text style={styles.coverageCity}>DETROIT</Text>
-            <Text style={styles.coverageDetail}>WDTW · 1310 AM</Text>
-          </View>
-          <View style={styles.coverageCard}>
-            <Text style={styles.signalLabel}>FM</Text>
-            <View style={[styles.signalHalo, styles.fmHalo]}><View style={styles.signalCore} /></View>
-            <Text style={styles.coverageCity}>DETROIT</Text>
-            <Text style={styles.coverageDetail}>107.9 FM</Text>
-          </View>
-        </View>
+        <Image
+          accessible
+          accessibilityLabel={english ? 'LA Z Detroit 1310 AM and 107.9 FM coverage illustrations' : 'Mapas de cobertura de LA Z Detroit 1310 AM y 107.9 FM'}
+          resizeMode="contain"
+          source={require('../assets/brand/v3-coverage-maps.webp')}
+          style={styles.coverageIllustration}
+        />
         <Text style={styles.coverageCaption}>
           {english
             ? 'Metro Detroit and surrounding communities'
@@ -80,7 +73,7 @@ export default function AdvertiseScreen() {
 const styles = StyleSheet.create({
   coverage: { marginTop: 0, padding: 12, backgroundColor: 'rgba(247,247,247,0.93)', borderRadius: 4 },
   coverageTitle: { color: '#191919', fontFamily: fonts.displayBlack, fontSize: 22, textAlign: 'center', letterSpacing: 0.4, marginBottom: 8 },
-  coverageRow: { flexDirection: 'row', gap: 7 },
+  coverageIllustration: { width: '100%', aspectRatio: 2048 / 1144, alignSelf: 'center' },
   coverageCard: { flex: 1, backgroundColor: '#243034', minHeight: 135, borderRadius: 5, borderColor: '#676767', borderWidth: 1, justifyContent: 'center', alignItems: 'center', gap: 4, overflow: 'hidden' },
   signalLabel: { position: 'absolute', top: 4, left: 7, color: v3.red, fontFamily: fonts.displayBlack, fontSize: 24 },
   signalHalo: { width: 103, height: 58, backgroundColor: 'rgba(227,8,21,0.35)', borderWidth: 2, borderColor: 'rgba(235,4,19,0.8)', borderRadius: 80, alignItems: 'center', justifyContent: 'center' },
