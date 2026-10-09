@@ -170,8 +170,8 @@ const styles = StyleSheet.create({
   },
   location: {
     fontFamily: fonts.body,
-    fontSize: 9,
-    letterSpacing: 1.5,
+    fontSize: 11,
+    letterSpacing: 1.1,
     marginLeft: 4,
     marginTop: -8,
   },
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   },
   programStateText: {
     fontFamily: fonts.body,
-    fontSize: 11,
+    fontSize: 12,
     textAlign: 'center',
   },
 });
