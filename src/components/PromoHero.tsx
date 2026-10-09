@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  AccessibilityInfo,
   Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -94,6 +95,22 @@ export function PromoHero() {
   const [campaigns, setCampaigns] = useState<DynamicCampaign[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isInteracting, setIsInteracting] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    void AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
+      if (mounted) setReduceMotion(enabled);
+    }).catch(() => {});
+    const subscription = AccessibilityInfo.addEventListener(
+      'reduceMotionChanged',
+      setReduceMotion,
+    );
+    return () => {
+      mounted = false;
+      subscription.remove();
+    };
+  }, []);
   const cardWidth = Math.max(280, viewportWidth - spacing.md * 2);
   const snapInterval = cardWidth + CARD_GAP;
 
@@ -131,7 +148,7 @@ export function PromoHero() {
   }, [activeIndex, campaigns.length]);
 
   useEffect(() => {
-    if (campaigns.length <= 1 || isInteracting) return;
+    if (campaigns.length <= 1 || isInteracting || reduceMotion) return;
 
     const interval = setInterval(() => {
       setActiveIndex((current) => {
@@ -146,7 +163,7 @@ export function PromoHero() {
     }, AUTO_ADVANCE_MS);
 
     return () => clearInterval(interval);
-  }, [campaigns.length, isInteracting, snapInterval]);
+  }, [campaigns.length, isInteracting, reduceMotion, snapInterval]);
 
   const indicators = useMemo(
     () => campaigns.map((campaign) => campaign.id),

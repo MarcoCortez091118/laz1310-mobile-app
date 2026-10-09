@@ -52,7 +52,7 @@ export function MiniPlayer({ visible, onDismiss }: MiniPlayerProps) {
         accessibilityLabel={
           english ? 'Open LA Z 1310 player' : 'Abrir reproductor de LA Z 1310'
         }
-        onPress={() => router.push('/radio')}
+        onPress={() => router.replace('/radio')}
         style={styles.content}
       >
         <View style={[styles.accent, { backgroundColor: colors.red }]} />

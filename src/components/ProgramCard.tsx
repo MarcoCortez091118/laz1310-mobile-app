@@ -1,6 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {
   Image,
+  Pressable,
   StyleProp,
   StyleSheet,
   Text,
@@ -17,6 +18,7 @@ interface ProgramCardProps {
   hostName?: string | null;
   imageUrl?: string | null;
   style?: StyleProp<ViewStyle>;
+  onPress?: () => void;
 }
 
 export function ProgramCard({
@@ -25,18 +27,24 @@ export function ProgramCard({
   hostName,
   imageUrl,
   style,
+  onPress,
 }: ProgramCardProps) {
   const { colors } = useAppTheme();
 
   return (
-    <View
-      style={[
+    <Pressable
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLabel={onPress ? title : undefined}
+      disabled={!onPress}
+      onPress={onPress}
+      style={({ pressed }) => [
         styles.card,
         {
           backgroundColor: colors.burgundy,
           borderColor: colors.border,
         },
         style,
+        { opacity: pressed ? 0.78 : 1 },
       ]}
     >
       <View style={[styles.artwork, { backgroundColor: colors.surface }]}>
@@ -89,7 +97,7 @@ export function ProgramCard({
           {schedule}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -129,7 +137,7 @@ const styles = StyleSheet.create({
     color: '#FEFEFE',
     flexShrink: 1,
     fontFamily: fonts.bodySemiBold,
-    fontSize: 9,
+    fontSize: 11,
     letterSpacing: 0.3,
   },
   glow: {
@@ -174,7 +182,7 @@ const styles = StyleSheet.create({
   },
   schedule: {
     fontFamily: fonts.body,
-    fontSize: 10,
+    fontSize: 12,
     lineHeight: 14,
   },
 });

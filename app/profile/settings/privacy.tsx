@@ -86,16 +86,6 @@ export default function PrivacyScreen() {
           route: '/profile/settings/privacy-policy' as const,
         },
         {
-          id: 'terms',
-          title: 'Terms of use',
-          subtitle: 'Service conditions',
-        },
-        {
-          id: 'support',
-          title: 'Support',
-          subtitle: 'Help and contact',
-        },
-        {
           id: 'version',
           title: 'App version',
           subtitle: '0.1.0',
@@ -107,16 +97,6 @@ export default function PrivacyScreen() {
           title: 'Política de privacidad de Radio Online HD',
           subtitle: 'Consulta el texto oficial completo',
           route: '/profile/settings/privacy-policy' as const,
-        },
-        {
-          id: 'terms',
-          title: 'Términos de uso',
-          subtitle: 'Condiciones del servicio',
-        },
-        {
-          id: 'support',
-          title: 'Soporte',
-          subtitle: 'Ayuda y contacto',
         },
         {
           id: 'version',
@@ -222,6 +202,7 @@ export default function PrivacyScreen() {
             const interactive = 'route' in row && Boolean(row.route);
             return (
               <Pressable
+                accessibilityRole={interactive ? 'button' : 'text'}
                 disabled={!interactive}
                 key={row.id}
                 onPress={() => {

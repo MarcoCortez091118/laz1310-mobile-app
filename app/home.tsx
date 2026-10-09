@@ -13,7 +13,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BannerCarousel } from '../src/components/BannerCarousel';
 import { BottomNavigation } from '../src/components/BottomNavigation';
 import { BrandLogo } from '../src/components/BrandLogo';
-import { LiveBadge } from '../src/components/LiveBadge';
 import { LiveRadioCard } from '../src/components/LiveRadioCard';
 import { ProgramCard } from '../src/components/ProgramCard';
 import { PromoHero } from '../src/components/PromoHero';
@@ -25,8 +24,6 @@ import { useLanguage } from '../src/i18n/LanguageProvider';
 import { useAppTheme } from '../src/theme/ThemeProvider';
 import { fonts, spacing } from '../src/theme/tokens';
 
-type HomeModuleRoute = '/dynamics' | '/weather' | '/programs' | '/notifications';
-
 export default function HomeScreen() {
   const router = useRouter();
   const { colors } = useAppTheme();
@@ -34,17 +31,6 @@ export default function HomeScreen() {
   const english = language === 'en';
   const { programs, loading: programsLoading, error: programsError } = usePrograms();
 
-  const categories: Array<{ id: string; label: string; route?: HomeModuleRoute }> = [
-    { id: 'all', label: english ? 'All' : 'Todo' },
-    { id: 'dynamics', label: english ? 'Dynamics' : 'Dinámicas', route: '/dynamics' },
-    { id: 'weather', label: english ? 'Weather' : 'Clima', route: '/weather' },
-    { id: 'programs', label: english ? 'Programs' : 'Programas', route: '/programs' },
-    {
-      id: 'notifications',
-      label: english ? 'Notifications' : 'Notificaciones',
-      route: '/notifications',
-    },
-  ];
 
   return (
     <SafeAreaView
@@ -62,7 +48,6 @@ export default function HomeScreen() {
           </View>
 
           <View style={styles.headerActions}>
-            <LiveBadge compact />
             <WeatherHeaderBadge />
             <Pressable
               accessibilityLabel={english ? 'Open notifications' : 'Abrir notificaciones'}
@@ -81,40 +66,9 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <ScrollView
-          horizontal
-          contentContainerStyle={styles.categories}
-          showsHorizontalScrollIndicator={false}
-        >
-          {categories.map((category, index) => (
-            <Pressable
-              accessibilityRole="button"
-              key={category.id}
-              onPress={() => category.route && router.push(category.route)}
-              style={({ pressed }) => [
-                styles.category,
-                {
-                  backgroundColor: index === 0 ? colors.red : colors.surfaceElevated,
-                  opacity: pressed && category.route ? 0.72 : 1,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.categoryText,
-                  { color: index === 0 ? '#FEFEFE' : colors.white },
-                  index === 0 && styles.categoryTextActive,
-                ]}
-              >
-                {category.label}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-
+        <LiveRadioCard />
         <BannerCarousel />
         <PromoHero />
-        <LiveRadioCard />
 
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: colors.white }]}>
@@ -156,6 +110,7 @@ export default function HomeScreen() {
             {programs.map((program) => (
               <ProgramCard
                 key={`${program.stationId}:${program.id}`}
+                onPress={() => router.push(`/programs/${program.id}`)}
                 hostName={program.hostName}
                 imageUrl={program.imageUrl}
                 schedule={programScheduleLabel(program, language)}
@@ -169,6 +124,7 @@ export default function HomeScreen() {
             {programs.map((program) => (
               <ProgramCard
                 key={`${program.stationId}:${program.id}`}
+                onPress={() => router.push(`/programs/${program.id}`)}
                 hostName={program.hostName}
                 imageUrl={program.imageUrl}
                 schedule={programScheduleLabel(program, language)}
@@ -214,8 +170,8 @@ const styles = StyleSheet.create({
   },
   location: {
     fontFamily: fonts.body,
-    fontSize: 9,
-    letterSpacing: 1.5,
+    fontSize: 11,
+    letterSpacing: 1.1,
     marginLeft: 4,
     marginTop: -8,
   },
@@ -227,27 +183,9 @@ const styles = StyleSheet.create({
   bell: {
     alignItems: 'center',
     borderRadius: 20,
-    height: 36,
+    height: 48,
     justifyContent: 'center',
-    width: 36,
-  },
-  categories: {
-    gap: 10,
-    paddingRight: spacing.md,
-  },
-  category: {
-    borderRadius: 999,
-    minWidth: 88,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 11,
-  },
-  categoryText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  categoryTextActive: {
-    fontFamily: fonts.bodyBold,
+    width: 48,
   },
   sectionHeader: {
     alignItems: 'center',
@@ -284,7 +222,7 @@ const styles = StyleSheet.create({
   },
   programStateText: {
     fontFamily: fonts.body,
-    fontSize: 11,
+    fontSize: 12,
     textAlign: 'center',
   },
 });

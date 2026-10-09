@@ -32,7 +32,7 @@ export default function AccountScreen() {
     setError(null);
     try {
       await sendVerificationEmail();
-      setMessage(english ? 'Firebase sent a verification email.' : 'Firebase envió un correo de verificación.');
+      setMessage(english ? 'Check your inbox for a verification link.' : 'Revisa tu correo para confirmar tu cuenta.');
     } catch (verifyError) {
       setError(verifyError instanceof Error ? verifyError.message : english ? 'We could not send the email.' : 'No pudimos enviar el correo.');
     } finally {
@@ -65,8 +65,8 @@ export default function AccountScreen() {
         <Text style={[styles.title, { color: colors.white }]}>{english ? 'Your account' : 'Tu cuenta'}</Text>
         <Text style={[styles.subtitle, { color: colors.muted }]}>
           {english
-            ? 'Identity managed by Firebase Authentication and synchronized with LA Z API.'
-            : 'Identidad administrada por Firebase Authentication y sincronizada con LA Z API.'}
+            ? 'Review your email, verification status and active session.'
+            : 'Consulta tu correo, estado de verificación y sesión activa.'}
         </Text>
 
         <View style={[styles.card, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
@@ -94,7 +94,6 @@ export default function AccountScreen() {
           ) : null}
 
           <PrimaryButton label={english ? 'Sign out' : 'Cerrar sesión'} onPress={() => { void signOut().then(() => router.replace('/auth')); }} secondary />
-          <PrimaryButton disabled label={english ? 'Delete account · coming soon' : 'Eliminar cuenta · próximamente'} onPress={() => {}} secondary />
         </View>
       </View>
     </SafeAreaView>
