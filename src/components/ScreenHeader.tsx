@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 
+import { useLanguage } from '../i18n/LanguageProvider';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { fonts } from '../theme/tokens';
 
@@ -21,12 +22,13 @@ export function ScreenHeader({
 }: ScreenHeaderProps) {
   const router = useRouter();
   const { colors } = useAppTheme();
+  const { language } = useLanguage();
 
   return (
     <View style={styles.row}>
       {back ? (
         <Pressable
-          accessibilityLabel="Volver"
+          accessibilityLabel={language === 'en' ? 'Back' : 'Volver'}
           accessibilityRole="button"
           onPress={() => router.back()}
           style={styles.side}
@@ -58,6 +60,7 @@ const styles = StyleSheet.create({
   side: {
     alignItems: 'flex-start',
     justifyContent: 'center',
+    height: 48,
     width: 48,
   },
   title: {
