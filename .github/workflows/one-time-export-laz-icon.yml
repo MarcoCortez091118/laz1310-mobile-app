@@ -1,0 +1,44 @@
+# Temporary one-branch job to commit generated *binary* icons.
+# Deleted after the initial asset commit; no ongoing write permissions.
+name: Generate official LA Z icon assets (one-time)
+on:
+  push:
+    branches:
+      - chore/LAZ-MOBILE-new-launcher-icon
+
+permissions:
+  contents: write
+
+concurrency:
+  group: laz1310-icon-assets
+  cancel-in-progress: false
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate reproducible PNG assets from approved WebP
+        run: |
+          python -m pip install Pillow==11.3.0
+          python scripts/generate_launcher_icons.py
+          python scripts/generate_launcher_icons.py --check
+
+      - name: Commit PNG assets to the feature branch
+        run: |
+          git add -- assets/brand/la-z-launcher-icon.png assets/brand/la-z-adaptive-foreground.png
+          if git diff --cached --quiet; then
+            echo "Launcher assets are already current"
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "chore: export official LA Z launcher PNG assets"
+          git push origin HEAD:refs/heads/chore/LAZ-MOBILE-new-launcher-icon
