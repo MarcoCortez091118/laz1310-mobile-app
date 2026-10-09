@@ -17,7 +17,7 @@ interface PlayPauseButtonProps {
 export function PlayPauseButton({ state, size = 'large', onPress }: PlayPauseButtonProps) {
   const { language } = useLanguage();
   const english = language === 'en';
-  const dimension = size === 'large' ? 72 : 44;
+  const dimension = size === 'large' ? 72 : 48;
   const iconSize = size === 'large' ? 31 : 21;
 
   return (
