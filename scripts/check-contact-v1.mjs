@@ -6,6 +6,7 @@ const config = read('src/config/contact.ts');
 const explore = read('app/explore.tsx');
 const contact = read('app/contact.tsx');
 const advertise = read('app/advertise.tsx');
+const radio = read('app/radio.tsx');
 const actions = read('src/features/contact/links.ts');
 
 for (const address of [
@@ -22,8 +23,9 @@ assert.match(config, /Quiero promocionarme en LA Z 1310/);
 assert.match(config, /Advertising with LA Z 1310/);
 assert.match(explore, /route: '\/contact'/);
 assert.match(explore, /route: '\/advertise'/);
-assert.match(contact, /CONTACT_CHANNELS\.map/);
-assert.match(advertise, /openAdvertisingEmail\(language\)/);
+assert.match(radio, /CONTACT_CHANNELS\.find/);
+assert.match(contact, /ADVERTISING_EMAIL/);
+assert.match(advertise, /router\.push\('\/contact'\)/);
 assert.match(actions, /Linking\.openURL\(advertisingMailto\(language\)\)/);
 assert.doesNotMatch(config, /Support@neuromarket\.io/);
 assert.doesNotMatch(config, /radioonlinehd|RadioOnlineHD|com\.lazradio/i);
