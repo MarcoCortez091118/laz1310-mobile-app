@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PrimaryButton } from '../../../src/components/PrimaryButton';
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
+import { SupportContactRow } from '../../../src/components/SupportContactRow';
 import { useAuth } from '../../../src/features/auth/AuthProvider';
 import { PRIVACY_POLICY_VERSION } from '../../../src/features/privacy/policy';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
@@ -81,8 +82,8 @@ export default function PrivacyScreen() {
     ? [
         {
           id: 'policy',
-          title: 'Radio Online HD privacy policy',
-          subtitle: 'Read the full official policy text',
+          title: 'NeuroMarket privacy notice',
+          subtitle: 'Read about how LA Z handles your information',
           route: '/profile/settings/privacy-policy' as const,
         },
         {
@@ -94,8 +95,8 @@ export default function PrivacyScreen() {
     : [
         {
           id: 'policy',
-          title: 'Política de privacidad de Radio Online HD',
-          subtitle: 'Consulta el texto oficial completo',
+          title: 'Aviso de privacidad de NeuroMarket',
+          subtitle: 'Conoce cómo LA Z trata tus datos personales',
           route: '/profile/settings/privacy-policy' as const,
         },
         {
@@ -197,6 +198,11 @@ export default function PrivacyScreen() {
           <Text style={[styles.message, { color: colors.red }]}>{error}</Text>
         ) : null}
 
+        <Text style={[styles.supportHeading, { color: colors.white }]}>
+          {english ? 'Need assistance?' : '¿Necesitas ayuda?'}
+        </Text>
+        <SupportContactRow />
+
         <View style={styles.rows}>
           {rows.map((row) => {
             const interactive = 'route' in row && Boolean(row.route);
@@ -280,13 +286,13 @@ const styles = StyleSheet.create({
   },
   consentSubtitle: {
     fontFamily: fonts.body,
-    fontSize: 10,
+    fontSize: 13,
     lineHeight: 15,
     marginTop: 3,
   },
   policyVersion: {
     fontFamily: fonts.bodyBold,
-    fontSize: 8,
+    fontSize: 11,
     letterSpacing: 0.6,
     marginTop: 12,
   },
@@ -295,10 +301,11 @@ const styles = StyleSheet.create({
   },
   message: {
     fontFamily: fonts.bodyMedium,
-    fontSize: 10,
+    fontSize: 13,
     lineHeight: 15,
     marginTop: 10,
   },
+  supportHeading: { fontFamily: fonts.displayExtraBold, fontSize: 24, marginTop: spacing.lg, marginBottom: 12 },
   rows: {
     gap: 10,
     marginTop: spacing.lg,
@@ -320,7 +327,7 @@ const styles = StyleSheet.create({
   },
   rowSubtitle: {
     fontFamily: fonts.body,
-    fontSize: 10,
+    fontSize: 13,
     marginTop: 2,
   },
 });

@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BottomNavigation } from '../../src/components/BottomNavigation';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
+import { SupportContactRow } from '../../src/components/SupportContactRow';
 import { useAuth } from '../../src/features/auth/AuthProvider';
 import { PRIVACY_POLICY_VERSION } from '../../src/features/privacy/policy';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
@@ -121,6 +122,10 @@ export default function ProfileScreen() {
               </Pressable>
             ))}
           </View>
+          <Text style={[styles.sectionTitle, { color: colors.white }]}>
+            {english ? 'Support' : 'Soporte'}
+          </Text>
+          <SupportContactRow />
         </ScrollView>
         <BottomNavigation />
       </SafeAreaView>

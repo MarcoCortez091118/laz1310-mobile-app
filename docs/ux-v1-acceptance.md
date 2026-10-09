@@ -9,7 +9,7 @@ Explorar and Perfil. News and Events are out of V1 until publishing contracts
 and working journeys exist. Do not show a fake selected filter or disabled
 product controls.
 
-The native audio stream remains device -> RadioOnlineHD; mobile authentication,
+The native audio stream remains device -> the configured live-stream endpoint; mobile authentication,
 notifications, published Program/Dynamics/Weather contracts and backend release
 semantics remain unchanged.
 
@@ -39,13 +39,11 @@ semantics remain unchanged.
 - Radio Share is the native React Native `Share.share({ message })`; this
   invokes Android's Sharesheet or the system sharing UI on iOS.
 - Spanish Android text (product-provided):
-  `Estoy escuchando LA Z Detroit. Descarga la app en tu teléfono Android https://play.google.com/store/apps/details?id=com.lazradio.hdamfm`
-- The Android URL points to the **legacy RadioOnlineHD app package**. Our new
-  Expo app uses `com.neuromarket.laz1310`. Product/Play Store ownership must
-  confirm whether to migrate the existing listing or replace this URL with the
-  new public store URL before launch. Copy and destinations live in
-  `src/config/share.ts`. No fictitious iOS App Store link: iOS shares LA Z's
-  public website until its verified store page exists.
+  `Estoy escuchando LA Z Detroit. Escúchanos aquí: https://www.laz1310.com/`
+- Sharing intentionally uses the official LA Z website on Android and iOS.
+  Never link to another company's Play Store listing or claim the new app is
+  published before NeuroMarket verifies its store URL. Product copy and
+  destination live in `src/config/share.ts`.
 - Sharesheet options such as WhatsApp, Gmail and Facebook are supplied by
   the OS and installed applications, not a custom hardcoded share menu.
 
@@ -60,7 +58,8 @@ semantics remain unchanged.
   Privacy Policy without forcing authentication. Auth-dependent features stay
   behind existing token checks.
 - The UI does not expose unavailable Sleep Timer, Favorite, Volume, Events,
-  unsupported Terms or Support routes, or empty News navigation.
+  unsupported Terms routes or empty News navigation. NeuroMarket Support is
+  actionable in guest Profile, Settings and Privacy & About.
 - Account deletion is a **separate hard launch gate** in Issue #48; hiding a
   dummy disabled control is not compliance.
 
@@ -73,8 +72,8 @@ semantics remain unchanged.
    mini player does not cover an actionable button. Test light/dark appearance.
 2. Change all four tabs repeatedly: no growing back history, no unreachable
    routes, and the radio stream keeps playing.
-3. Tap Radio Share: Android system Sharesheet opens with the exact Spanish
-   link and copy; copy text; verify WhatsApp/Gmail targets when installed.
+3. Tap Radio Share: Android system Sharesheet opens with LA Z website link
+   and Spanish copy; copy text; verify WhatsApp/Gmail targets when installed.
    Canceling the share must not stop live radio.
 4. iOS: system share sheet with website fallback (no unverified App Store ID);
    same navigation and background playback invariants.
@@ -83,12 +82,15 @@ semantics remain unchanged.
 6. Open Home program card and verify it resolves an existing published Program.
 7. Confirm Dynamics auto-advance remains deliberate; banners no longer compete;
    gestures still work and first visible content remains accessible.
-8. Logged out: navigate Profile -> Appearance/Language/Privacy; sign in to
-   participate or manage the account. Logged in: Profile and Preferences work.
+8. Logged out: navigate Profile -> Appearance/Language/NeuroMarket Privacy,
+   and tap Support to open a mail composer addressed to Support@neuromarket.io.
+   Sign in to participate or manage account. Logged in: Profile, Preferences
+   and Privacy/About Support function correctly.
 9. Loading/empty/errors for Weather, Programs, Dynamics, inbox; keyboard,
    narrow-width, large text, TalkBack/VoiceOver and reduced motion.
-10. Check legal policy/current version and confirm Issue #48 is resolved before
-    production store submission.
+10. Confirm the NeuroMarket policy `neuromarket-laz1310-mobile-v1` has been
+    formally approved, the companion FastAPI version PR deployed first, and
+    account deletion Issue #48 resolved before production submission.
 
 ## Gates / rollback
 

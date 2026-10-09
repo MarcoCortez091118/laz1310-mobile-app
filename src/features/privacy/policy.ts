@@ -1,37 +1,108 @@
-export const PRIVACY_POLICY_VERSION = 'radio-online-hd-mobile-v1';
+/**
+ * LA Z 1310 — NeuroMarket privacy notice V1.
+ *
+ * Draft created for product/legal approval; do NOT distribute to app stores
+ * before controller's registered legal entity, address, retention schedule,
+ * data processors, applicable jurisdiction and external web URL are verified.
+ * The backend must accept this exact version before the mobile build ships.
+ */
+export const PRIVACY_POLICY_VERSION = 'neuromarket-laz1310-mobile-v1';
 
 export interface PrivacyPolicySection {
-  title?: string;
+  title: string;
   paragraphs: string[];
 }
 
-export const RADIO_ONLINE_HD_PRIVACY_POLICY_ES: PrivacyPolicySection[] = [
+export const NEUROMARKET_PRIVACY_POLICY_ES: PrivacyPolicySection[] = [
   {
-    title: 'Políticas de Privacidad',
+    title: 'Responsable y contacto',
     paragraphs: [
-      'En un esfuerzo para proteger la privacidad y los derechos de los usuarios de las aplicaciones móviles desarrolladas por Radio Online HD, hemos establecido una Política de Privacidad para Dispositivos Móviles que explica qué información recopilamos acerca de los usuarios finales y lo que hacemos con la información que recopilamos.',
-      'Esta Política de Privacidad para Dispositivos Móviles rige la manera en que Radio Online HD recopila, utiliza, mantiene y divulga la información recogida de cada uno de los usuarios de las aplicaciones móviles desarrolladas por Radio Online HD.',
+      'NeuroMarket opera LA Z 1310 y gestiona la información que proporcionas para utilizar las funciones de la aplicación, de acuerdo con las finalidades descritas en este aviso.',
+      'Para consultas de privacidad, solicitudes relacionadas con tus datos personales o asistencia, escribe a Support@neuromarket.io.',
     ],
   },
   {
-    title: 'Privacidad',
+    title: 'Información que tratamos',
     paragraphs: [
-      'La privacidad de los usuarios es muy importante para Radio Online HD. Estamos comprometidos con la protección de la información que los usuarios encomiendan a Radio Online HD.',
+      'Al crear una cuenta podemos tratar tu correo electrónico, nombre público, estado de verificación y preferencias de idioma y zona horaria.',
+      'Cuando habilitas notificaciones, utilizamos los identificadores y tokens técnicos necesarios para enviar avisos al dispositivo y respetar tus preferencias.',
+      'Si participas en una dinámica, tratamos la información que envías en el formulario, los consentimientos correspondientes y los datos necesarios para registrar y comprobar tu participación. Los campos concretos y las reglas se muestran antes de participar.',
+      'Para operar y proteger la aplicación pueden procesarse datos técnicos del dispositivo y de las solicitudes, como identificadores de instalación, información de funcionamiento y registros de seguridad.',
     ],
   },
   {
-    title: 'La información que recopilamos',
+    title: 'Para qué usamos esa información',
     paragraphs: [
-      'Radio Online HD recolecta a través de sus aplicaciones móviles, información básica de identificación personal de los usuarios tales como nombres, apellidos, dirección, número de teléfono, correo electrónico y nombre de su organización. También podemos recopilar información acerca de cómo los usuarios utilizan nuestras aplicaciones móviles, por ejemplo, métricas de uso de los módulos de las aplicaciones móviles, número de reproducciones de estaciones de radio online a través de las aplicaciones móviles, número de veces que el usuario comparte la aplicación en redes sociales desde los módulos de compartir en la aplicación móvil.',
-      'Radio Online HD “NO” guarda nombres, números, CVV, fecha de vencimiento de tarjetas de crédito o débito que los usuarios o clientes utilizan para hacer compras únicas o recurrentes dentro de las aplicaciones desarrolladas por Radio Online HD.',
-      'Recolectamos información de los dispositivos de los usuarios, desde donde acceden a las aplicaciones móviles de Radio Online HD, tales como la dirección IP, tipo de navegador, información de la actual red celular, la versión del sistema operativo móvil, estados de llamadas y los identificadores únicos de los dispositivos móviles.',
+      'Usamos la información para iniciar sesión, gestionar tu perfil, mostrar contenido y programación, procesar participaciones que solicites, enviarte notificaciones si las habilitas y mantener la seguridad y disponibilidad del servicio.',
+      'No necesitas crear una cuenta para escuchar la radio o consultar el contenido público disponible.',
     ],
   },
   {
-    title: 'Cómo usamos la información',
+    title: 'Servicios tecnológicos y terceros',
     paragraphs: [
-      'Radio Online HD puede utilizar la información personal obtenida a través de nuestras aplicaciones móviles para ponerse en contacto con los usuarios o clientes sobre los productos y servicios ofrecidos por los sitios web con la marca Radio Online HD y sus filiales en los países donde tenemos presencia, con el objetivo de mejorar la experiencia del usuario. En ningún momento Radio Online HD hará bases de datos de los usuarios para venderlas a cualquier entidad con el fin de listas de marketing o de correo. La información personal no será vendida o transferida a nuestros socios comerciales sin su consentimiento previo.',
-      'Radio Online HD podrá revelar la información del cliente o usuario a terceros únicamente cuando los mismos sean datos comprometedores o sean requeridos por autoridades competentes basándose en las leyes aplicables del país de origen del cliente o de los países donde Radio Online HD tenga presencia.',
+      'La aplicación utiliza servicios de autenticación, infraestructura, almacenamiento, notificaciones y transmisión de radio proporcionados por terceros. Estos proveedores pueden tratar datos técnicos cuando sea necesario para prestar dichos servicios, bajo las condiciones aplicables.',
+      'Al acceder a enlaces externos, como plataformas de música o promociones de terceros, se aplican también las políticas de esos servicios.',
+    ],
+  },
+  {
+    title: 'Preferencias, conservación y derechos',
+    paragraphs: [
+      'Puedes cambiar el idioma, la apariencia y tus preferencias de notificaciones desde la aplicación. También puedes desactivar los permisos de notificación en los ajustes del dispositivo.',
+      'Conservamos la información durante el tiempo necesario para las finalidades descritas, el funcionamiento de las participaciones y las obligaciones legales aplicables. Puedes solicitar información sobre los plazos y ejercer los derechos que te correspondan escribiendo a Support@neuromarket.io.',
+      'Puedes pedir información sobre acceso, corrección o eliminación de datos de tu cuenta mediante el contacto de soporte, sujeto a las obligaciones legales aplicables.',
+    ],
+  },
+  {
+    title: 'Cambios al aviso',
+    paragraphs: [
+      'Si cambia este aviso, la aplicación identificará la nueva versión y podrá solicitar tu aceptación cuando corresponda. La aceptación de versiones anteriores se conserva como registro histórico y no equivale a aceptar una versión nueva.',
+    ],
+  },
+];
+
+export const NEUROMARKET_PRIVACY_POLICY_EN: PrivacyPolicySection[] = [
+  {
+    title: 'Who operates the app and how to contact us',
+    paragraphs: [
+      'NeuroMarket operates LA Z 1310 and manages information you provide when using its features for the purposes described in this notice.',
+      'For privacy questions, personal-data requests or assistance, contact Support@neuromarket.io.',
+    ],
+  },
+  {
+    title: 'Information we process',
+    paragraphs: [
+      'When you register, we may process your email address, public display name, email verification status, language and time zone preferences.',
+      'If you enable notifications, we use the device identifiers and technical push tokens needed to deliver alerts in line with your preferences.',
+      'If you enter a promotion or contest, we process the information you submit, relevant consents and the details necessary to record and verify your entry. Each campaign explains its required fields and specific rules before participation.',
+      'Device and request information, such as installation identifiers, service diagnostics and security logs, may be processed to keep the app operating securely.',
+    ],
+  },
+  {
+    title: 'How we use that information',
+    paragraphs: [
+      'We use this information to sign you in, manage your profile, display content and schedules, process your requested contest entries, send opted-in notifications and maintain service security and availability.',
+      'You do not need to create an account to listen to the radio or view available public content.',
+    ],
+  },
+  {
+    title: 'Technology providers and external services',
+    paragraphs: [
+      'The app uses third-party services for authentication, infrastructure, storage, notifications and radio streaming. Those providers may process technical data as required to provide their services under applicable terms.',
+      'External links, such as music platforms or third-party promotions, are also subject to those services’ own privacy practices.',
+    ],
+  },
+  {
+    title: 'Preferences, retention and your rights',
+    paragraphs: [
+      'You can change language, appearance and notification preferences in the app, and disable notification permissions in your device settings.',
+      'We retain information as needed for the described purposes, contest operation and applicable legal obligations. To ask about retention periods or exercise applicable privacy rights, contact Support@neuromarket.io.',
+      'You can request information about accessing, correcting or deleting account information through support, subject to applicable legal obligations.',
+    ],
+  },
+  {
+    title: 'Changes to this notice',
+    paragraphs: [
+      'If this notice changes, the app will identify the new version and may request your acceptance where required. Acceptance of an earlier version remains in the audit history and does not amount to acceptance of a new version.',
     ],
   },
 ];

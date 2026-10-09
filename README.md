@@ -9,7 +9,7 @@ Official mobile application for **LA Z 1310 AM · Detroit, MI**, developed by Ne
 - Expo Router
 - `expo-audio` for direct live-stream playback
 - FastAPI on Azure for application data and metadata
-- Direct radio media plane to RadioOnlineHD
+- Direct radio media plane to the configured external streaming endpoint
 
 ### Media plane
 

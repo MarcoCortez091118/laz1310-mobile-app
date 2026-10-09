@@ -237,8 +237,8 @@ export default function AuthScreen() {
                 </View>
                 <Text style={[styles.consentText, { color: colors.white }]}>
                   {english
-                    ? 'I have read and accept the Radio Online HD Privacy Policy and consent to the processing described in it.'
-                    : 'He leído y acepto la Política de Privacidad de Radio Online HD y consiento el tratamiento descrito en ella.'}
+                    ? 'I have read and accept the NeuroMarket privacy notice for LA Z 1310.'
+                    : 'He leído y acepto el Aviso de privacidad de NeuroMarket para LA Z 1310.'}
                 </Text>
               </Pressable>
 
@@ -294,8 +294,8 @@ const styles = StyleSheet.create({
   consentCard: { borderRadius: radii.md, borderWidth: 1, marginTop: 16, padding: spacing.md },
   consentRow: { alignItems: 'flex-start', flexDirection: 'row', gap: 10 },
   checkbox: { alignItems: 'center', borderRadius: 5, borderWidth: 1, height: 22, justifyContent: 'center', marginTop: 1, width: 22 },
-  consentText: { flex: 1, fontFamily: fonts.body, fontSize: 11, lineHeight: 17 },
+  consentText: { flex: 1, fontFamily: fonts.body, fontSize: 14, lineHeight: 21 },
   policyLink: { alignSelf: 'flex-start', marginLeft: 32, marginTop: 10, paddingVertical: 4 },
-  policyLinkText: { fontFamily: fonts.bodyBold, fontSize: 9, letterSpacing: 0.5 },
+  policyLinkText: { fontFamily: fonts.bodyBold, fontSize: 12, letterSpacing: 0.3 },
   next: { gap: 10, marginTop: 34 },
 });

@@ -45,6 +45,9 @@ jobs:
       - name: TypeScript
         run: npm run typecheck
 
+      - name: Verify NeuroMarket public identity and support
+        run: npm run check:product-identity
+
       - name: Export web smoke build
         run: npx expo export --platform web --output-dir dist-ci
 
