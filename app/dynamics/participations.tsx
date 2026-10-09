@@ -30,7 +30,9 @@ export default function MyDynamicsParticipationsScreen() {
   const english = language === 'en';
   const { isAuthenticated, status } = useAuth();
   const [items, setItems] = useState<UserParticipationItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -45,10 +47,12 @@ export default function MyDynamicsParticipationsScreen() {
 
     try {
       const security = await getFirebaseSecurityTokens(true);
-      const page = await getMyParticipations(security);
+      const page = await getMyParticipations(security, 20);
       setItems(page.items);
+      setNextCursor(page.nextCursor);
     } catch (requestError) {
       setItems([]);
+      setNextCursor(null);
       setError(
         requestError instanceof Error
           ? requestError.message
@@ -60,6 +64,34 @@ export default function MyDynamicsParticipationsScreen() {
       setLoading(false);
     }
   }, [english, isAuthenticated]);
+
+  const loadMore = useCallback(async () => {
+    if (!isAuthenticated || !nextCursor || loadingMore) return;
+
+    setLoadingMore(true);
+    setError(null);
+
+    try {
+      const security = await getFirebaseSecurityTokens(true);
+      const page = await getMyParticipations(
+        security,
+        20,
+        nextCursor,
+      );
+      setItems((current) => [...current, ...page.items]);
+      setNextCursor(page.nextCursor);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : english
+            ? 'We could not load more participations.'
+            : 'No pudimos cargar más participaciones.',
+      );
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [english, isAuthenticated, loadingMore, nextCursor]);
 
   useFocusEffect(
     useCallback(() => {
@@ -214,6 +246,25 @@ export default function MyDynamicsParticipationsScreen() {
             ))}
           </View>
         ) : null}
+
+        {!loading && !error && nextCursor ? (
+          <View style={styles.loadMore}>
+            <PrimaryButton
+              disabled={loadingMore}
+              label={
+                loadingMore
+                  ? english
+                    ? 'Loading…'
+                    : 'Cargando…'
+                  : english
+                    ? 'Load more'
+                    : 'Cargar más'
+              }
+              onPress={() => void loadMore()}
+              secondary
+            />
+          </View>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -281,6 +332,9 @@ const styles = StyleSheet.create({
   },
   list: {
     gap: 10,
+    marginTop: spacing.lg,
+  },
+  loadMore: {
     marginTop: spacing.lg,
   },
   item: {
