@@ -172,8 +172,8 @@ export default function NotificationSettingsScreen() {
         <Text style={[styles.title, { color: colors.white }]}>{english ? 'Preferences' : 'Preferencias'}</Text>
         <Text style={[styles.subtitle, { color: colors.muted }]}>
           {english
-            ? 'Choose which messages you want to receive. Your preferences are validated by the API before each delivery.'
-            : 'Decide qué mensajes quieres recibir. Tus preferencias se validan en la API antes de cada envío.'}
+            ? 'Choose the LA Z updates you want to receive.'
+            : 'Elige qué novedades de LA Z quieres recibir.'}
         </Text>
 
         <View style={[styles.card, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
@@ -184,7 +184,7 @@ export default function NotificationSettingsScreen() {
             <View style={styles.copy}>
               <Text style={[styles.rowTitle, { color: colors.white }]}>{english ? 'Push on this device' : 'Push en este dispositivo'}</Text>
               <Text style={[styles.rowDescription, { color: colors.muted }]}>
-                {english ? 'Registers this phone with FCM for system alerts.' : 'Registra este teléfono con FCM para recibir alertas del sistema.'}
+                {english ? 'Receive LA Z alerts on this phone.' : 'Recibe avisos de LA Z en este teléfono.'}
               </Text>
             </View>
             {pushBusy ? (
@@ -256,8 +256,8 @@ export default function NotificationSettingsScreen() {
           <Ionicons color={colors.muted} name="shield-checkmark-outline" size={18} />
           <Text style={[styles.noteText, { color: colors.muted }]}>
             {english
-              ? 'The FCM token is registered directly with LA Z API and is never shown in your profile. Disabling push removes the active token from this device registration.'
-              : 'El token FCM se registra directamente con LA Z API y nunca se muestra en tu perfil. Desactivar push elimina el token activo del registro del dispositivo.'}
+              ? 'You control notifications for this device. Turn them off at any time.'
+              : 'Tú decides qué avisos recibes en este dispositivo. Puedes desactivarlos cuando quieras.'}
           </Text>
         </View>
       </ScrollView>
