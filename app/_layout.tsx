@@ -42,15 +42,15 @@ function AppNavigator() {
     }
   }, [hasStarted, pathname]);
 
+  const weatherDetail = pathname.startsWith('/weather/');
+  const isV3Route = ['/', '/radio', '/prizes', '/advertise', '/contact', '/privacy'].includes(pathname);
+
   const showMiniPlayer =
     hasStarted &&
     !miniPlayerDismissed &&
     pathname !== '/' &&
     pathname !== '/radio' &&
     !isV3Route;
-
-  const weatherDetail = pathname.startsWith('/weather/');
-  const isV3Route = ['/', '/radio', '/prizes', '/advertise', '/contact', '/privacy'].includes(pathname);
 
   return (
     <AppBackground enabled={!weatherDetail && !isV3Route}>
