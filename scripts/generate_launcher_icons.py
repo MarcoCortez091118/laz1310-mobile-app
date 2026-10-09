@@ -17,8 +17,8 @@ from PIL import Image, ImageChops
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "assets/brand/La Z Icon.webp"
-IOS_ICON = ROOT / "assets/brand/app-icon.png"
-ANDROID_FOREGROUND = ROOT / "assets/brand/adaptive-icon-foreground.png"
+IOS_ICON = ROOT / "assets/brand/la-z-launcher-icon.png"
+ANDROID_FOREGROUND = ROOT / "assets/brand/la-z-adaptive-foreground.png"
 SIZE = 1024
 # The full composition is inset into the Android 108dp adaptive canvas to
 # protect the central LA Z artwork against circular/squircle launcher masks.
