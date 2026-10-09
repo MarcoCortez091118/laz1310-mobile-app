@@ -64,8 +64,8 @@ export function AppBackground({
   const imageOpacity = 1;
   const overlayColor =
     preference === 'dark'
-      ? 'rgba(5,1,1,0.30)'
-      : 'rgba(254,254,254,0.68)';
+      ? 'rgba(5,1,1,0.18)'
+      : 'rgba(254,254,254,0.52)';
 
   return (
     <ImageBackground
