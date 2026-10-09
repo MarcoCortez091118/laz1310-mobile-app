@@ -139,8 +139,8 @@ const styles = StyleSheet.create({
   },
   cardSubtitle: {
     fontFamily: fonts.body,
-    fontSize: 12,
-    lineHeight: 18,
+    fontSize: 13,
+    lineHeight: 19,
     marginTop: 4,
   },
 });
