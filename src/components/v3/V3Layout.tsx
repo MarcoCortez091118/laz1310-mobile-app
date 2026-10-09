@@ -3,7 +3,7 @@ import { usePathname, useRouter } from 'expo-router';
 import type { PropsWithChildren } from 'react';
 import { useState } from 'react';
 import {
-  Alert, Image, ImageBackground, Pressable, ScrollView,
+  Alert, ImageBackground, Pressable, ScrollView,
   StyleSheet, Text, View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -162,7 +162,7 @@ export function V3Page({ title, showRadioShortcut = true, children }: V3PageProp
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: V3_COLORS.black },
-  canvas: { ...StyleSheet.absoluteFillObject, backgroundColor: V3_COLORS.black },
+  canvas: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: V3_COLORS.black },
   paintTop: { position: 'absolute', top: -45, left: 0, right: -20, height: 164, backgroundColor: '#BF0011' },
   paintStroke: { position: 'absolute', top: 113, left: -30, right: -60, height: 28, backgroundColor: '#D50513', transform: [{ rotate: '-8deg' }] },
   paintFine: { position: 'absolute', top: 140, left: -15, right: -60, height: 10, backgroundColor: 'rgba(96,0,6,0.85)', transform: [{ rotate: '-9deg' }] },
