@@ -1,6 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -31,10 +30,6 @@ export default function ProfileScreen() {
   const { colors } = useAppTheme();
   const { language } = useLanguage();
   const english = language === 'en';
-
-  useEffect(() => {
-    if (status === 'signedOut') router.replace('/auth');
-  }, [router, status]);
 
   if (status === 'initializing' || status === 'syncing') {
     return (
@@ -67,6 +62,67 @@ export default function ProfileScreen() {
             <PrimaryButton label={english ? 'Retry' : 'Reintentar'} onPress={() => void refreshProfile()} />
           </View>
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (status === 'signedOut') {
+    return (
+      <SafeAreaView edges={['top']} style={styles.safe}>
+        <ScrollView contentContainerStyle={styles.content}>
+          <Text style={[styles.title, { color: colors.white }]}>
+            {english ? 'Profile' : 'Perfil'}
+          </Text>
+          <View style={[styles.guestCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+            <Ionicons color={colors.red} name="person-circle-outline" size={52} />
+            <Text style={[styles.guestTitle, { color: colors.white }]}>
+              {english ? 'Your LA Z experience' : 'Tu experiencia LA Z'}
+            </Text>
+            <Text style={[styles.guestBody, { color: colors.muted }]}>
+              {english
+                ? 'Listen freely. Sign in only when you want to join promotions or manage your account.'
+                : 'Escucha libremente. Inicia sesión cuando quieras participar en dinámicas o administrar tu cuenta.'}
+            </Text>
+            <PrimaryButton label={english ? 'Sign in or register' : 'Iniciar sesión o registrarse'} onPress={() => router.push('/auth')} />
+          </View>
+          <Text style={[styles.sectionTitle, { color: colors.white }]}>
+            {english ? 'App preferences' : 'Preferencias de la app'}
+          </Text>
+          <View style={styles.rows}>
+            {[
+              {
+                id: 'appearance',
+                label: english ? 'Appearance' : 'Apariencia',
+                route: '/profile/settings/appearance' as const,
+                icon: 'color-palette-outline' as const,
+              },
+              {
+                id: 'language',
+                label: english ? 'Language' : 'Idioma',
+                route: '/profile/settings/language' as const,
+                icon: 'language-outline' as const,
+              },
+              {
+                id: 'privacy',
+                label: english ? 'Privacy policy' : 'Política de privacidad',
+                route: '/profile/settings/privacy-policy' as const,
+                icon: 'shield-checkmark-outline' as const,
+              },
+            ].map((item) => (
+              <Pressable
+                accessibilityRole="button"
+                key={item.id}
+                onPress={() => router.push(item.route)}
+                style={[styles.row, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
+              >
+                <Ionicons color={colors.red} name={item.icon} size={22} />
+                <Text style={[styles.guestRowLabel, { color: colors.white }]}>{item.label}</Text>
+                <Ionicons color={colors.gray} name="chevron-forward" size={20} />
+              </Pressable>
+            ))}
+          </View>
+        </ScrollView>
+        <BottomNavigation />
       </SafeAreaView>
     );
   }
@@ -174,8 +230,8 @@ export default function ProfileScreen() {
 
         <Text style={[styles.scopeNote, { color: colors.muted }]}>
           {english
-            ? 'Favorites, saved items and interests will connect when their product contracts are defined.'
-            : 'Favoritos, guardados e intereses se conectarán cuando sus contratos de producto estén definidos.'}
+            ? 'Thanks for being part of LA Z Detroit.'
+            : 'Gracias por formar parte de LA Z Detroit.'}
         </Text>
       </ScrollView>
       <BottomNavigation />
@@ -192,6 +248,10 @@ const styles = StyleSheet.create({
   retry: { marginTop: 24, width: '100%' },
   content: { paddingBottom: 180, paddingHorizontal: spacing.md, paddingTop: spacing.md },
   title: { fontFamily: fonts.displayExtraBold, fontSize: 36 },
+  guestCard: { alignItems: 'center', borderRadius: radii.lg, borderWidth: 1, gap: 16, marginTop: spacing.lg, padding: spacing.lg },
+  guestTitle: { fontFamily: fonts.displayExtraBold, fontSize: 26, textAlign: 'center' },
+  guestBody: { fontFamily: fonts.body, fontSize: 14, lineHeight: 21, textAlign: 'center' },
+  guestRowLabel: { flex: 1, fontFamily: fonts.bodySemiBold, fontSize: 15, marginLeft: 12 },
   profileRow: { alignItems: 'center', flexDirection: 'row', marginTop: 24 },
   avatar: { alignItems: 'center', borderRadius: 48, height: 96, justifyContent: 'center', width: 96 },
   avatarText: { color: '#FEFEFE', fontFamily: fonts.displayExtraBold, fontSize: 34 },
