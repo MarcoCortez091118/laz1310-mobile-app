@@ -1,10 +1,12 @@
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import {
   ImageBackground,
   StyleSheet,
   View,
 } from 'react-native';
 
+import { getBootstrap } from '../features/content/api';
+import { useContentVersion } from '../features/content/ContentVersionProvider';
 import { useAppTheme } from '../theme/ThemeProvider';
 
 interface AppBackgroundProps extends PropsWithChildren {
@@ -16,8 +18,42 @@ export function AppBackground({
   enabled = true,
 }: AppBackgroundProps) {
   const { colors, preference } = useAppTheme();
+  const { releaseId } = useContentVersion();
+  const [remoteImageUrl, setRemoteImageUrl] = useState<string | null>(null);
+  const [remoteEnabled, setRemoteEnabled] = useState(true);
+  const [remoteFailed, setRemoteFailed] = useState(false);
 
-  if (!enabled) {
+  useEffect(() => {
+    let active = true;
+
+    void getBootstrap(releaseId)
+      .then((bootstrap) => {
+        if (!active) return;
+        setRemoteEnabled(bootstrap.theme.backgroundEnabled ?? true);
+        setRemoteImageUrl(bootstrap.theme.backgroundImageUrl ?? null);
+        setRemoteFailed(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setRemoteEnabled(true);
+        setRemoteImageUrl(null);
+        setRemoteFailed(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [releaseId]);
+
+  const source = useMemo(
+    () =>
+      remoteImageUrl && !remoteFailed
+        ? { uri: remoteImageUrl }
+        : require('../../assets/brand/Back.png'),
+    [remoteFailed, remoteImageUrl],
+  );
+
+  if (!enabled || !remoteEnabled) {
     return (
       <View style={[styles.root, { backgroundColor: colors.black }]}>
         {children}
@@ -34,8 +70,9 @@ export function AppBackground({
   return (
     <ImageBackground
       imageStyle={{ opacity: imageOpacity }}
+      onError={() => setRemoteFailed(true)}
       resizeMode="cover"
-      source={require('../../assets/brand/Detroit-BG.webp')}
+      source={source}
       style={[styles.root, { backgroundColor: colors.black }]}
     >
       <View
