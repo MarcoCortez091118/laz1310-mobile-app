@@ -55,8 +55,8 @@ export default function ProfileScreen() {
           <Text style={[styles.errorBody, { color: colors.muted }]}>
             {error ??
               (english
-                ? 'Firebase is authenticated, but LA Z API could not sync the profile.'
-                : 'Firebase está autenticado, pero LA Z API no pudo sincronizar el perfil.')}
+                ? 'Please check your connection and try again.'
+                : 'Revisa tu conexión e inténtalo de nuevo.')}
           </Text>
           <View style={styles.retry}>
             <PrimaryButton label={english ? 'Retry' : 'Reintentar'} onPress={() => void refreshProfile()} />
