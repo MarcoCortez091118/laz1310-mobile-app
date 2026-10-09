@@ -38,6 +38,8 @@ export const CONTACT_CHANNELS = [
   },
 ] as const;
 
+export type ContactChannel = (typeof CONTACT_CHANNELS)[number];
+
 export function advertisingMailto(language: AppLanguage): string {
   const subject = language === 'en'
     ? 'Advertising with LA Z 1310'
