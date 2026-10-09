@@ -39,7 +39,7 @@ export default function PrizesV3() {
     <V3Page title={en ? 'PRIZES' : 'PREMIOS'}>
       <View style={styles.poster}>
         <Image
-          source={require('../assets/brand/v3-giveaway-banner.webp')}
+          source={require('../assets/brand/v3-tigers-giveaway.webp')}
           resizeMode="cover"
           accessibilityLabel={en ? 'LA Z Detroit register to win tickets' : 'La Z Detroit regístrate para ganar boletos'}
           style={styles.posterArtwork}
