@@ -61,6 +61,9 @@ jobs:
       - name: Verify LA Z public contact and sales destinations
         run: npm run check:contact-v1
 
+      - name: Verify V3-approved PDF routes and integrations
+        run: npm run check:v3-pdf
+
       - name: Export web smoke build
         run: npx expo export --platform web --output-dir dist-ci
 
