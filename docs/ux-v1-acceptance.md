@@ -20,8 +20,14 @@ semantics remain unchanged.
   horizontal push; browser/system share handles its own native presentation.
 - Radio remains accessible from Home and the MiniPlayer while the stream
   continues across navigation.
-- Home order: branding/actions; listen live; published banners; active dynamics;
-  programs with actionable cards; the approved Spotify CTA.
+- Product-approved Home order (top to bottom): header with logo, weather and
+  notifications; horizontally scrollable shortcut buttons (Todos, Dinámicas,
+  Clima, Programas, Notificaciones); published banners; live radio card;
+  published Dynamics carousel; Programs with actionable cards; Spotify playlist;
+  persistent bottom navigation.
+- Shortcut buttons are navigation, **not content filters**. `Todos` means all
+  Home modules are visible and scrolls Home to the top when pressed. Other
+  buttons open their existing published module routes; no fake filtering state.
 - Published promotional/dynamic content disappears naturally when not available.
   Home Banners are user-swiped, Dynamics retains its intentionally approved
   auto-advance (PR #34); never show two competing automatically moving banners.
@@ -60,9 +66,11 @@ semantics remain unchanged.
 
 ## Manual device acceptance (required before merge/release)
 
-1. Android small and normal-size devices: Home loads; Radio is visible without
-   scrolling below both carousels; the player/mini player never covers an
-   actionable button. Test light and dark appearance.
+1. Android small and normal-size devices: Home loads in the specified order
+   (Header -> horizontal shortcuts -> Banners -> Radio -> Dynamics -> Programs
+   -> Spotify -> bottom navigation); swipe the shortcuts and check all five
+   labels/buttons work. `Todos` returns to the complete Home feed. Verify
+   mini player does not cover an actionable button. Test light/dark appearance.
 2. Change all four tabs repeatedly: no growing back history, no unreachable
    routes, and the radio stream keeps playing.
 3. Tap Radio Share: Android system Sharesheet opens with the exact Spanish

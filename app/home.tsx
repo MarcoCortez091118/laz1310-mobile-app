@@ -1,5 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
+import { useRef } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -24,13 +25,42 @@ import { useLanguage } from '../src/i18n/LanguageProvider';
 import { useAppTheme } from '../src/theme/ThemeProvider';
 import { fonts, spacing } from '../src/theme/tokens';
 
+type HomeModuleRoute = '/dynamics' | '/weather' | '/programs' | '/notifications';
+type HomeCategory = {
+  id: 'all' | 'dynamics' | 'weather' | 'programs' | 'notifications';
+  label: string;
+  route?: HomeModuleRoute;
+};
+
 export default function HomeScreen() {
   const router = useRouter();
   const { colors } = useAppTheme();
   const { language } = useLanguage();
   const english = language === 'en';
   const { programs, loading: programsLoading, error: programsError } = usePrograms();
+  const scrollRef = useRef<ScrollView>(null);
 
+  // These are navigation shortcuts, not filters. All content is shown on Home.
+  const categories: HomeCategory[] = [
+    { id: 'all', label: english ? 'All' : 'Todos' },
+    { id: 'dynamics', label: english ? 'Dynamics' : 'Dinámicas', route: '/dynamics' },
+    { id: 'weather', label: english ? 'Weather' : 'Clima', route: '/weather' },
+    { id: 'programs', label: english ? 'Programs' : 'Programas', route: '/programs' },
+    {
+      id: 'notifications',
+      label: english ? 'Notifications' : 'Notificaciones',
+      route: '/notifications',
+    },
+  ];
+
+  const navigateCategory = (category: HomeCategory) => {
+    if (category.route) {
+      router.push(category.route);
+      return;
+    }
+
+    scrollRef.current?.scrollTo({ x: 0, y: 0, animated: true });
+  };
 
   return (
     <SafeAreaView
@@ -38,6 +68,7 @@ export default function HomeScreen() {
       style={styles.safe}
     >
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
@@ -66,8 +97,45 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <LiveRadioCard />
+        <ScrollView
+          accessibilityLabel={english ? 'Browse sections' : 'Explorar secciones'}
+          horizontal
+          contentContainerStyle={styles.categories}
+          showsHorizontalScrollIndicator={false}
+        >
+          {categories.map((category) => {
+            const selected = category.id === 'all';
+            return (
+              <Pressable
+                accessibilityLabel={category.label}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                key={category.id}
+                onPress={() => navigateCategory(category)}
+                style={({ pressed }) => [
+                  styles.category,
+                  {
+                    backgroundColor: selected ? colors.red : colors.surfaceElevated,
+                    opacity: pressed ? 0.72 : 1,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.categoryText,
+                    { color: selected ? '#FEFEFE' : colors.white },
+                    selected && styles.categoryTextActive,
+                  ]}
+                >
+                  {category.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+
         <BannerCarousel />
+        <LiveRadioCard />
         <PromoHero />
 
         <View style={styles.sectionHeader}>
@@ -186,6 +254,28 @@ const styles = StyleSheet.create({
     height: 48,
     justifyContent: 'center',
     width: 48,
+  },
+  categories: {
+    alignItems: 'center',
+    gap: 10,
+    paddingRight: spacing.md,
+  },
+  category: {
+    alignItems: 'center',
+    borderRadius: 999,
+    justifyContent: 'center',
+    minHeight: 48,
+    minWidth: 88,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 10,
+  },
+  categoryText: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  categoryTextActive: {
+    fontFamily: fonts.bodyBold,
   },
   sectionHeader: {
     alignItems: 'center',
