@@ -56,11 +56,17 @@ function AppNavigator() {
         <StatusBar style={preference === 'dark' ? 'light' : 'dark'} />
         <Stack
           screenOptions={{
-            animation: 'fade',
+            animation: 'slide_from_right',
             contentStyle: { backgroundColor: 'transparent' },
             headerShown: false,
           }}
-        />
+        >
+          <Stack.Screen name="index" options={{ animation: 'none' }} />
+          <Stack.Screen name="home" options={{ animation: 'none' }} />
+          <Stack.Screen name="radio" options={{ animation: 'none' }} />
+          <Stack.Screen name="explore" options={{ animation: 'none' }} />
+          <Stack.Screen name="profile/index" options={{ animation: 'none' }} />
+        </Stack>
         <MiniPlayer
           onDismiss={() => setMiniPlayerDismissed(true)}
           visible={showMiniPlayer}
