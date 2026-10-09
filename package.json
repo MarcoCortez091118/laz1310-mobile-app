@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "check:product-identity": "node scripts/check-product-identity.mjs",
-    "check:contact-v1": "node scripts/check-contact-v1.mjs"
+    "check:contact-v1": "node scripts/check-contact-v1.mjs",
+    "check:v3-pdf": "node scripts/check-v3-pdf.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/barlow-condensed": "^0.4.1",
