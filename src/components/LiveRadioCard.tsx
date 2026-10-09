@@ -41,7 +41,7 @@ export function LiveRadioCard() {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={english ? 'Open live radio' : 'Abrir radio en vivo'}
-        onPress={() => router.push('/radio')}
+        onPress={() => router.replace('/radio')}
         style={styles.content}
       >
         <View style={[styles.accent, { backgroundColor: colors.red }]} />
