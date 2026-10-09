@@ -1,4 +1,4 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import {
   Image,
   Linking,
@@ -38,7 +38,7 @@ export function SpotifyPlaylistCard() {
 
         <View style={styles.spotifyRow}>
           <Text style={styles.inText}>EN</Text>
-          <Ionicons color="#F51B1B" name="logo-spotify" size={33} />
+          <FontAwesome color="#F51B1B" name="spotify" size={33} />
           <Text style={styles.spotifyText}>Spotify</Text>
         </View>
       </View>
