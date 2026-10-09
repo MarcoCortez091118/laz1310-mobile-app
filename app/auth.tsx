@@ -54,7 +54,7 @@ export default function AuthScreen() {
         case 'registerPassword': return ['Protect your account', 'Use a password with at least 10 characters.'];
         case 'registerName': return ['What is your name?', 'This name will appear on your LA Z profile.'];
         case 'loginEmail': return ['Welcome back', 'Enter your account email.'];
-        case 'loginPassword': return ['Enter your password', 'Firebase validates your credentials.'];
+        case 'loginPassword': return ['Enter your password', 'Enter your password to continue.'];
         default: return ['', ''];
       }
     }
@@ -64,7 +64,7 @@ export default function AuthScreen() {
       case 'registerPassword': return ['Protege tu cuenta', 'Usa una contraseña de al menos 10 caracteres.'];
       case 'registerName': return ['¿Cómo te llamas?', 'Este nombre aparecerá en tu perfil de LA Z.'];
       case 'loginEmail': return ['Bienvenido de vuelta', 'Ingresa el correo de tu cuenta.'];
-      case 'loginPassword': return ['Ingresa tu contraseña', 'Firebase valida tus credenciales.'];
+      case 'loginPassword': return ['Ingresa tu contraseña', 'Escribe tu contraseña para continuar.'];
       default: return ['', ''];
     }
   }, [english, step]);
@@ -138,8 +138,8 @@ export default function AuthScreen() {
 
           <Text style={[styles.securityNote, { color: colors.muted }]}>
             {english
-              ? 'Your password is processed exclusively by Firebase Authentication. LA Z API receives the ID token and App Check, never your password.'
-              : 'La contraseña se procesa exclusivamente con Firebase Authentication. LA Z API recibe el ID token y App Check, nunca tu contraseña.'}
+              ? 'Your password stays private and is never shared with LA Z.'
+              : 'Tu contraseña se mantiene privada y no se comparte con LA Z.'}
           </Text>
 
           {status === 'syncing' ? (
