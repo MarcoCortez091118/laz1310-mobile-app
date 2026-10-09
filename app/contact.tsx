@@ -46,7 +46,7 @@ export default function ContactScreen() {
                 accessibilityLabel={`${label}: ${channel.detail}`}
                 accessibilityRole="link"
                 key={channel.id}
-                onPress={() => void openContactChannel(channel.url, label, language)}
+                onPress={() => void openContactChannel(channel, language)}
                 style={({ pressed }) => [
                   styles.channel,
                   {
