@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
+import { SupportContactRow } from '../../../src/components/SupportContactRow';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { useAppTheme } from '../../../src/theme/ThemeProvider';
 import { fonts, radii, spacing } from '../../../src/theme/tokens';
@@ -111,6 +112,10 @@ export default function SettingsScreen() {
             </Pressable>
           ))}
         </View>
+        <Text style={[styles.supportTitle, { color: colors.white }]}>
+          {english ? 'Help & support' : 'Ayuda y soporte'}
+        </Text>
+        <SupportContactRow />
       </View>
     </SafeAreaView>
   );
@@ -155,12 +160,13 @@ const styles = StyleSheet.create({
   },
   rowSubtitle: {
     fontFamily: fonts.body,
-    fontSize: 10,
+    fontSize: 13,
     marginTop: 2,
   },
+  supportTitle: { fontFamily: fonts.displayExtraBold, fontSize: 23, marginTop: spacing.lg, marginBottom: 12 },
   value: {
     fontFamily: fonts.bodySemiBold,
-    fontSize: 11,
+    fontSize: 13,
     marginRight: 8,
   },
 });
