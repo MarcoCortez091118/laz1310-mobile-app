@@ -160,7 +160,7 @@ export const v3 = { red: RED, white: WHITE, ink: INK };
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: INK },
-  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: INK },
+  backdrop: { top: 0, bottom: 0, left: 0, right: 0, backgroundColor: INK },
   skyline: { bottom: 0, left: 0, position: 'absolute', width: '100%', height: 330, opacity: 0.6 },
   skylineShade: { bottom: 0, left: 0, right: 0, height: 330, backgroundColor: 'rgba(0,0,0,0.36)', position: 'absolute' },
   topPaint: { top: -14, left: 0, right: 0, height: 128, position: 'absolute', backgroundColor: '#BF0010' },
