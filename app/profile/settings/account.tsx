@@ -94,7 +94,6 @@ export default function AccountScreen() {
           ) : null}
 
           <PrimaryButton label={english ? 'Sign out' : 'Cerrar sesión'} onPress={() => { void signOut().then(() => router.replace('/auth')); }} secondary />
-          <PrimaryButton disabled label={english ? 'Delete account · coming soon' : 'Eliminar cuenta · próximamente'} onPress={() => {}} secondary />
         </View>
       </View>
     </SafeAreaView>
