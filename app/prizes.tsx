@@ -48,18 +48,26 @@ export default function PrizesScreen() {
     <V3Screen title={english ? 'PRIZES' : 'PREMIOS'}>
       <View style={styles.banner}>
         {featured?.imageUrl ? (
-          <Image source={{ uri: featured.imageUrl }} resizeMode="cover" style={styles.bannerArtwork} />
+          <>
+            <Image source={{ uri: featured.imageUrl }} resizeMode="cover" style={styles.bannerArtwork} />
+            <View style={styles.bannerShade}>
+              <Text style={styles.bannerTitle}>
+                {english ? 'REGISTER HERE' : 'REGÍSTRATE AQUÍ'}
+              </Text>
+              <Text style={styles.bannerSubtitle}>
+                {english ? 'TO WIN PRIZES' : 'PARA GANAR PREMIOS'}
+              </Text>
+            </View>
+          </>
         ) : (
-          <Image source={require('../assets/brand/La Z Icon.webp')} resizeMode="cover" style={styles.bannerArtwork} />
+          <Image
+            accessible
+            accessibilityLabel={english ? 'LA Z Detroit promotional ticket giveaway poster' : 'Anuncio de LA Z Detroit: Regístrate para ganar boletos'}
+            source={require('../assets/brand/v3-giveaway-banner.webp')}
+            resizeMode="cover"
+            style={styles.bannerArtwork}
+          />
         )}
-        <View style={styles.bannerShade}>
-          <Text style={styles.bannerTitle}>
-            {english ? 'REGISTER HERE' : 'REGÍSTRATE AQUÍ'}
-          </Text>
-          <Text style={styles.bannerSubtitle}>
-            {english ? 'TO WIN PRIZES' : 'PARA GANAR PREMIOS'}
-          </Text>
-        </View>
       </View>
 
       {loading ? (
