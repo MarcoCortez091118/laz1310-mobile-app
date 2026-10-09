@@ -66,7 +66,7 @@ email, or form data is sent over the network.
 The existing direct-stream architecture remains unchanged:
 
 ```text
-Device -> RadioOnlineHD
+Device -> configured external live-stream endpoint
 ```
 
 FastAPI must not proxy, retransmit, cache, or store the audio stream.
