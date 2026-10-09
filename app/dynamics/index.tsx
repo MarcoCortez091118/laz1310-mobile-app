@@ -80,6 +80,62 @@ export default function DynamicsListScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader title={english ? 'Dynamics' : 'Dinámicas'} />
 
+        <Pressable
+          accessibilityLabel={
+            english ? 'Open my participations' : 'Abrir mis participaciones'
+          }
+          accessibilityRole="button"
+          onPress={() => router.push('/dynamics/participations')}
+          style={({ pressed }) => [
+            styles.participationsCard,
+            {
+              backgroundColor: colors.surfaceElevated,
+              borderColor: colors.border,
+              opacity: pressed ? 0.8 : 1,
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.participationsIcon,
+              { backgroundColor: 'rgba(211,10,18,0.14)' },
+            ]}
+          >
+            <Ionicons
+              color={colors.red}
+              name="ticket-outline"
+              size={24}
+            />
+          </View>
+
+          <View style={styles.participationsCopy}>
+            <Text
+              style={[
+                styles.participationsTitle,
+                { color: colors.white },
+              ]}
+            >
+              {english ? 'My participations' : 'Mis participaciones'}
+            </Text>
+            <Text
+              style={[
+                styles.participationsBody,
+                { color: colors.muted },
+              ]}
+            >
+              {english
+                ? 'View your registration history and campaign entries.'
+                : 'Consulta tu historial de registros y participaciones.'}
+            </Text>
+          </View>
+
+          <Ionicons
+            color={colors.gray}
+            name="chevron-forward"
+            size={20}
+          />
+        </Pressable>
+
         <Text style={[styles.title, { color: colors.white }]}>{english ? 'Available' : 'Disponibles'}</Text>
         <Text style={[styles.subtitle, { color: colors.muted }]}>
           {english ? 'Promotions and activations published by LA Z.' : 'Promociones y activaciones publicadas por LA Z.'}
@@ -151,7 +207,34 @@ export default function DynamicsListScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   content: { paddingBottom: 180, paddingHorizontal: spacing.md },
-  title: { fontFamily: fonts.displayExtraBold, fontSize: 32, marginTop: spacing.md },
+  participationsCard: {
+    alignItems: 'center',
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: spacing.md,
+    padding: spacing.md,
+  },
+  participationsIcon: {
+    alignItems: 'center',
+    borderRadius: 24,
+    height: 46,
+    justifyContent: 'center',
+    width: 46,
+  },
+  participationsCopy: { flex: 1 },
+  participationsTitle: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+  },
+  participationsBody: {
+    fontFamily: fonts.body,
+    fontSize: 10,
+    lineHeight: 15,
+    marginTop: 2,
+  },
+  title: { fontFamily: fonts.displayExtraBold, fontSize: 32, marginTop: spacing.lg },
   subtitle: { fontFamily: fonts.body, fontSize: 12, lineHeight: 18, marginTop: 3 },
   state: { alignItems: 'center', gap: 12, paddingVertical: 72 },
   stateText: { fontFamily: fonts.body, fontSize: 12 },
