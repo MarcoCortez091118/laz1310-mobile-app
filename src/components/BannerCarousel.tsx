@@ -20,7 +20,6 @@ import { useAppTheme } from '../theme/ThemeProvider';
 import { radii, spacing } from '../theme/tokens';
 
 const CARD_GAP = 10;
-const AUTO_ADVANCE_MS = 5000;
 const BANNER_ASPECT_RATIO = 3;
 
 function BannerCard({
@@ -70,7 +69,6 @@ export function BannerCarousel() {
   const carouselRef = useRef<ScrollView>(null);
   const [banners, setBanners] = useState<BannerItem[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isInteracting, setIsInteracting] = useState(false);
   const cardWidth = Math.max(280, viewportWidth - spacing.md * 2);
   const snapInterval = cardWidth + CARD_GAP;
 
@@ -92,24 +90,6 @@ export function BannerCarousel() {
       active = false;
     };
   }, [releaseId]);
-
-  useEffect(() => {
-    if (banners.length <= 1 || isInteracting) return;
-
-    const interval = setInterval(() => {
-      setActiveIndex((current) => {
-        const next = (current + 1) % banners.length;
-        carouselRef.current?.scrollTo({
-          x: next * snapInterval,
-          y: 0,
-          animated: true,
-        });
-        return next;
-      });
-    }, AUTO_ADVANCE_MS);
-
-    return () => clearInterval(interval);
-  }, [banners.length, isInteracting, snapInterval]);
 
   const indicators = useMemo(
     () => banners.map((banner, index) => `${banner.title}-${index}`),
@@ -133,8 +113,6 @@ export function BannerCarousel() {
         disableIntervalMomentum
         horizontal
         onMomentumScrollEnd={handleMomentumEnd}
-        onScrollBeginDrag={() => setIsInteracting(true)}
-        onScrollEndDrag={() => setIsInteracting(false)}
         ref={carouselRef}
         scrollEnabled={banners.length > 1}
         showsHorizontalScrollIndicator={false}
