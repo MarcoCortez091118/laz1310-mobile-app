@@ -35,7 +35,7 @@ function PageBackdrop() {
       <View style={styles.paintStroke} />
       <View style={styles.paintFine} />
       <ImageBackground
-        source={require('../../../assets/brand/v3-detroit-skyline.webp')}
+        source={require('../../../assets/brand/v3-detroit-skyline-full.webp')}
         resizeMode="stretch"
         style={styles.skyline}
         imageStyle={styles.skylineImage}
