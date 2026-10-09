@@ -1,5 +1,21 @@
 const googleServicesFile = process.env.GOOGLE_SERVICES_JSON;
 const googleServiceInfoPlist = process.env.GOOGLE_SERVICE_INFO_PLIST;
+// A native Android EAS build cannot prebuild React Native Firebase without the
+// Android Firebase file. EAS file-type variables resolve to a file path on the
+// build worker; the raw JSON must never be added to this repository.
+if (
+  process.env.EAS_BUILD === 'true' &&
+  process.env.EAS_BUILD_PLATFORM === 'android' &&
+  !googleServicesFile?.trim()
+) {
+  throw new Error(
+    'LA Z 1310 Android EAS Build is missing GOOGLE_SERVICES_JSON. ' +
+      'In Expo project Environment variables, upload the Firebase Android ' +
+      'google-services.json as a Secret FILE for the selected EAS environment ' +
+      '(preview for --profile preview). Never commit the JSON to Git.'
+  );
+}
+
 const productionPush =
   process.env.EAS_BUILD_PROFILE === 'production' || process.env.NODE_ENV === 'production';
 
