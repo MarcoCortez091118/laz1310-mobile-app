@@ -13,12 +13,14 @@ import {
   displayTemperature,
 } from '../features/weather/presentation';
 import { useWeatherUnit } from '../features/weather/WeatherUnitProvider';
+import { useLanguage } from '../i18n/LanguageProvider';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { fonts, radii } from '../theme/tokens';
 
 export function WeatherHeaderBadge() {
   const router = useRouter();
   const { colors } = useAppTheme();
+  const { language } = useLanguage();
   const { unit } = useWeatherUnit();
   const [weather, setWeather] = useState<WeatherResponse | null>(null);
 
@@ -52,7 +54,7 @@ export function WeatherHeaderBadge() {
 
   return (
     <Pressable
-      accessibilityLabel="Abrir clima"
+      accessibilityLabel={language === 'en' ? 'Open weather' : 'Abrir clima'}
       accessibilityRole="button"
       onPress={() => router.push('/weather')}
       style={({ pressed }) => [
@@ -92,7 +94,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: 'row',
     gap: 5,
-    height: 36,
+    minHeight: 48,
     justifyContent: 'center',
     paddingHorizontal: 9,
   },
