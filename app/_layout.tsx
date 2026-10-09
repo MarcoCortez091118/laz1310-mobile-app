@@ -46,12 +46,14 @@ function AppNavigator() {
     hasStarted &&
     !miniPlayerDismissed &&
     pathname !== '/' &&
-    pathname !== '/radio';
+    pathname !== '/radio' &&
+    !isV3Route;
 
   const weatherDetail = pathname.startsWith('/weather/');
+  const isV3Route = ['/', '/radio', '/prizes', '/advertise', '/contact', '/privacy'].includes(pathname);
 
   return (
-    <AppBackground enabled={!weatherDetail}>
+    <AppBackground enabled={!weatherDetail && !isV3Route}>
       <View style={styles.app}>
         <StatusBar style={preference === 'dark' ? 'light' : 'dark'} />
         <Stack
