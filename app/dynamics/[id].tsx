@@ -16,8 +16,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ApiError } from '../../src/api/client';
 import { PrimaryButton } from '../../src/components/PrimaryButton';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
+import { useAuth } from '../../src/features/auth/AuthProvider';
+import { getFirebaseSecurityTokens } from '../../src/features/auth/firebase';
 import { useContentVersion } from '../../src/features/content/ContentVersionProvider';
-import { DynamicCampaign, getDynamic } from '../../src/features/dynamics/api';
+import {
+  DynamicCampaign,
+  ParticipationStatusResponse,
+  getDynamic,
+  getParticipationStatus,
+} from '../../src/features/dynamics/api';
 import { dynamicDeadline } from '../../src/features/dynamics/presentation';
 import { useLanguage } from '../../src/i18n/LanguageProvider';
 import { useAppTheme } from '../../src/theme/ThemeProvider';
@@ -29,8 +36,11 @@ export default function DynamicDetailScreen() {
   const { colors } = useAppTheme();
   const { language } = useLanguage();
   const english = language === 'en';
+  const { isAuthenticated } = useAuth();
   const { releaseId, refresh: refreshContentVersion } = useContentVersion();
   const [campaign, setCampaign] = useState<DynamicCampaign | null>(null);
+  const [participationStatus, setParticipationStatus] =
+    useState<ParticipationStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,14 +68,32 @@ export default function DynamicDetailScreen() {
       try {
         const result = await getDynamic(id, requestedReleaseId ?? undefined);
         setCampaign(result.item);
+
+        if (
+          result.item.participation.type === 'form' &&
+          result.item.participation.requiresAuth &&
+          isAuthenticated
+        ) {
+          try {
+            const security = await getFirebaseSecurityTokens(true);
+            setParticipationStatus(
+              await getParticipationStatus(result.item.id, security),
+            );
+          } catch {
+            setParticipationStatus(null);
+          }
+        } else {
+          setParticipationStatus(null);
+        }
       } catch (requestError) {
         setCampaign(null);
+        setParticipationStatus(null);
         setError(errorCopy(requestError));
       } finally {
         setLoading(false);
       }
     },
-    [english, errorCopy, id],
+    [english, errorCopy, id, isAuthenticated],
   );
 
   useFocusEffect(
@@ -81,11 +109,28 @@ export default function DynamicDetailScreen() {
 
   const handlePrimaryAction = () => {
     if (!campaign || campaign.status !== 'active') return;
+
     if (campaign.participation.type === 'form') {
-      router.push({ pathname: '/dynamics/[id]/participate', params: { id: campaign.id } });
+      if (participationStatus?.participated) {
+        router.push('/dynamics/participations');
+        return;
+      }
+
+      if (campaign.participation.requiresAuth && !isAuthenticated) {
+        router.push('/auth');
+        return;
+      }
+
+      router.push({
+        pathname: '/dynamics/[id]/participate',
+        params: { id: campaign.id },
+      });
       return;
     }
-    if (campaign.participation.url) void Linking.openURL(campaign.participation.url);
+
+    if (campaign.participation.url) {
+      void Linking.openURL(campaign.participation.url);
+    }
   };
 
   return (
@@ -157,13 +202,52 @@ export default function DynamicDetailScreen() {
               </View>
             ) : null}
 
+            {campaign.participation.type === 'form' &&
+            participationStatus?.participated ? (
+              <View
+                style={[
+                  styles.participatingCard,
+                  {
+                    backgroundColor: colors.surfaceElevated,
+                    borderColor: colors.border,
+                  },
+                ]}
+              >
+                <Ionicons
+                  color="#56C985"
+                  name="checkmark-circle-outline"
+                  size={25}
+                />
+                <View style={styles.participatingCopy}>
+                  <Text
+                    style={[styles.participatingTitle, { color: colors.white }]}
+                  >
+                    {english
+                      ? 'You are already participating'
+                      : 'Ya estás participando'}
+                  </Text>
+                  <Text
+                    style={[styles.participatingBody, { color: colors.muted }]}
+                  >
+                    {english
+                      ? 'Wait for campaign updates through the email registered to your LA Z account and, if enabled, app notifications.'
+                      : 'Espera los resultados o avisos en el correo registrado en tu cuenta LA Z y, si están habilitadas, mediante notificaciones de la app.'}
+                  </Text>
+                </View>
+              </View>
+            ) : null}
+
             <PrimaryButton
               disabled={campaign.status !== 'active' || (campaign.participation.type === 'external_url' && !campaign.participation.url)}
               label={campaign.status !== 'active'
                 ? english ? 'Dynamic closed' : 'Dinámica cerrada'
                 : campaign.participation.type === 'external_url'
                   ? english ? 'Open link' : 'Abrir enlace'
-                  : english ? 'Open form' : 'Abrir formulario'}
+                  : participationStatus?.participated
+                    ? english ? 'My participations' : 'Mis participaciones'
+                    : campaign.participation.requiresAuth && !isAuthenticated
+                      ? english ? 'Sign in to participate' : 'Inicia sesión para participar'
+                      : english ? 'Participate' : 'Participar'}
               onPress={handlePrimaryAction}
             />
 
@@ -210,6 +294,10 @@ const styles = StyleSheet.create({
   body: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, marginTop: 5 },
   closedCard: { alignItems: 'center', borderRadius: radii.md, borderWidth: 1, flexDirection: 'row', gap: 10, padding: spacing.md },
   closedText: { flex: 1, fontFamily: fonts.bodyMedium, fontSize: 12 },
+  participatingCard: { alignItems: 'flex-start', borderRadius: radii.md, borderWidth: 1, flexDirection: 'row', gap: 10, padding: spacing.md },
+  participatingCopy: { flex: 1 },
+  participatingTitle: { fontFamily: fonts.bodyBold, fontSize: 13 },
+  participatingBody: { fontFamily: fonts.body, fontSize: 10, lineHeight: 15, marginTop: 3 },
   legalRow: { flexDirection: 'row', justifyContent: 'center', gap: 20 },
   legal: { fontFamily: fonts.bodySemiBold, fontSize: 10 },
   backToList: { alignItems: 'center', paddingVertical: 10 },
