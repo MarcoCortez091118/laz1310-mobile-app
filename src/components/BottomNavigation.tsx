@@ -16,22 +16,20 @@ type IoniconName = ComponentProps<typeof Ionicons>['name'];
 type TabRoute = '/home' | '/radio' | '/explore' | '/profile';
 
 interface TabItem {
-  id: 'home' | 'news' | 'radio' | 'explore' | 'profile';
+  id: 'home' | 'radio' | 'explore' | 'profile';
   icon: IoniconName;
   iconActive: IoniconName;
-  route?: TabRoute;
+  route: TabRoute;
 }
 
 const items: TabItem[] = [
   { id: 'home', icon: 'home-outline', iconActive: 'home', route: '/home' },
-  { id: 'news', icon: 'newspaper-outline', iconActive: 'newspaper' },
   { id: 'radio', icon: 'radio-outline', iconActive: 'radio', route: '/radio' },
   { id: 'explore', icon: 'compass-outline', iconActive: 'compass', route: '/explore' },
   { id: 'profile', icon: 'person-outline', iconActive: 'person', route: '/profile' },
 ];
 
-function isActive(pathname: string, route?: string) {
-  if (!route) return false;
+function isActive(pathname: string, route: string) {
 
   if (route === '/home') {
     return pathname === '/home' || pathname.startsWith('/notifications');
@@ -61,7 +59,6 @@ export function BottomNavigation() {
   const english = language === 'en';
   const labels: Record<TabItem['id'], string> = {
     home: english ? 'Home' : 'Inicio',
-    news: english ? 'News' : 'Noticias',
     radio: 'Radio',
     explore: english ? 'Explore' : 'Explorar',
     profile: english ? 'Profile' : 'Perfil',
@@ -85,12 +82,15 @@ export function BottomNavigation() {
         return (
           <Pressable
             accessibilityLabel={label}
-            accessibilityRole="button"
+            accessibilityRole="tab"
+            accessibilityState={{ selected: active }}
             key={item.id}
-            onPress={() => item.route && router.push(item.route)}
+            onPress={() => {
+              if (!active) router.replace(item.route);
+            }}
             style={({ pressed }) => [
               styles.item,
-              { opacity: pressed && item.route ? 0.72 : 1 },
+              { opacity: pressed ? 0.72 : 1 },
             ]}
           >
             <View
@@ -147,7 +147,9 @@ const styles = StyleSheet.create({
   item: {
     alignItems: 'center',
     gap: 4,
-    minWidth: 58,
+    minWidth: 64,
+    minHeight: 56,
+    justifyContent: 'center',
   },
   iconWrap: {
     alignItems: 'center',
@@ -164,7 +166,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: fonts.body,
-    fontSize: 10,
+    fontSize: 12,
   },
   activeLabel: {
     fontFamily: fonts.bodySemiBold,
