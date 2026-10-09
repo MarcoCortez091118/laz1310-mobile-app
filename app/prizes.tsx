@@ -97,14 +97,19 @@ export default function PrizesScreen() {
         <View style={styles.formPreview}>
           <Text style={styles.formHeadline}>{featured.title}</Text>
           <Text style={styles.helpText}>{featured.context || featured.description}</Text>
-          <View style={styles.decorativeFields} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={english ? 'Open the verified prize entry form' : 'Abrir formulario oficial para participar'}
+            onPress={() => router.push(`/dynamics/${featured.id}/participate`)}
+            style={styles.decorativeFields}
+          >
             <View style={styles.fieldPair}>
               <View style={styles.fieldBox}><Text style={styles.fieldCopy}>{english ? 'First name' : 'Nombre'}</Text></View>
               <View style={styles.fieldBox}><Text style={styles.fieldCopy}>{english ? 'Last name' : 'Apellido'}</Text></View>
             </View>
             <View style={styles.fieldBox}><Text style={styles.fieldCopy}>{english ? 'Phone number' : 'Teléfono'}</Text></View>
             <View style={styles.fieldBox}><Text style={styles.fieldCopy}>{english ? 'Email' : 'Correo'}</Text></View>
-          </View>
+          </Pressable>
           <Text style={styles.formHint}>
             {english
               ? 'Tap Register to complete the verified form and agree to the campaign terms.'
