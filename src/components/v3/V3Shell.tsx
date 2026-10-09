@@ -36,7 +36,7 @@ export function V3Backdrop() {
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       <View style={styles.backdrop} />
       <Image
-        source={require('../../../assets/brand/La Z Icon.webp')}
+        source={require('../../../assets/brand/v3-detroit-skyline.webp')}
         resizeMode="cover"
         style={styles.skyline}
       />
@@ -161,8 +161,8 @@ export const v3 = { red: RED, white: WHITE, ink: INK };
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: INK },
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: INK },
-  skyline: { bottom: 0, left: 0, position: 'absolute', width: '100%', height: 380, opacity: 0.42 },
-  skylineShade: { bottom: 0, left: 0, right: 0, height: 380, backgroundColor: 'rgba(0,0,0,0.43)', position: 'absolute' },
+  skyline: { bottom: 0, left: 0, position: 'absolute', width: '100%', height: 330, opacity: 0.6 },
+  skylineShade: { bottom: 0, left: 0, right: 0, height: 330, backgroundColor: 'rgba(0,0,0,0.36)', position: 'absolute' },
   topPaint: { top: -14, left: 0, right: 0, height: 128, position: 'absolute', backgroundColor: '#BF0010' },
   topStroke: { position: 'absolute', top: 104, left: -50, right: -60, backgroundColor: RED, height: 25 },
   topStrokeTwo: { position: 'absolute', top: 122, left: -50, right: -60, backgroundColor: '#610006', height: 9 },
