@@ -42,16 +42,18 @@ function AppNavigator() {
     }
   }, [hasStarted, pathname]);
 
+  const isV3Screen = ['/', '/radio', '/prizes', '/advertise', '/contact', '/privacy'].includes(pathname);
   const showMiniPlayer =
     hasStarted &&
     !miniPlayerDismissed &&
     pathname !== '/' &&
-    pathname !== '/radio';
+    pathname !== '/radio' &&
+    !isV3Screen;
 
   const weatherDetail = pathname.startsWith('/weather/');
 
   return (
-    <AppBackground enabled={!weatherDetail}>
+    <AppBackground enabled={!weatherDetail && !isV3Screen}>
       <View style={styles.app}>
         <StatusBar style={preference === 'dark' ? 'light' : 'dark'} />
         <Stack
