@@ -57,6 +57,10 @@ semantics remain unchanged.
 - Guest Profile exposes Sign In/Register, Appearance, Language and public
   Privacy Policy without forcing authentication. Auth-dependent features stay
   behind existing token checks.
+- Explore offers guest-accessible Contact and Advertise with us. Contact
+  exposes LA Z's public website, Facebook, Instagram and WhatsApp. Advertise
+  uses a native mail composer to sales@laz1310.com and does not mix it with
+  NeuroMarket technical support (Support@neuromarket.io).
 - The UI does not expose unavailable Sleep Timer, Favorite, Volume, Events,
   unsupported Terms routes or empty News navigation. NeuroMarket Support is
   actionable in guest Profile, Settings and Privacy & About.

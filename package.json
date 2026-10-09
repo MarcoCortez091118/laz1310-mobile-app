@@ -9,7 +9,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "check:product-identity": "node scripts/check-product-identity.mjs"
+    "check:product-identity": "node scripts/check-product-identity.mjs",
+    "check:contact-v1": "node scripts/check-contact-v1.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/barlow-condensed": "^0.4.1",

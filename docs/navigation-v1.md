@@ -35,6 +35,8 @@ single screen.
 │   ├── /dynamics/[id]/participate
 │   └── /dynamics/confirmation
 ├── /explore
+├── /contact
+├── /advertise
 ├── /auth
 └── /profile
     └── /profile/settings

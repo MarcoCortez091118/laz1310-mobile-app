@@ -48,7 +48,24 @@ export default function ExploreScreen() {
       icon: 'mic-outline' as const,
       route: '/programs' as const,
     },
-
+    {
+      id: 'contact',
+      title: english ? 'Contact' : 'Contacto',
+      subtitle: english
+        ? 'Website, Facebook, Instagram and WhatsApp.'
+        : 'Sitio web, Facebook, Instagram y WhatsApp.',
+      icon: 'chatbubbles-outline' as const,
+      route: '/contact' as const,
+    },
+    {
+      id: 'advertise',
+      title: english ? 'Advertise with us' : 'Promociónate con nosotros',
+      subtitle: english
+        ? 'Talk to our team about advertising your business.'
+        : 'Hablemos de publicidad para tu negocio.',
+      icon: 'megaphone-outline' as const,
+      route: '/advertise' as const,
+    },
   ];
 
   return (
@@ -69,8 +86,10 @@ export default function ExploreScreen() {
         <View style={styles.grid}>
           {modules.map((item) => (
             <Pressable
+              accessibilityLabel={item.title}
+              accessibilityRole="button"
               key={item.id}
-              onPress={() => item.route && router.push(item.route)}
+              onPress={() => router.push(item.route)}
               style={({ pressed }) => [
                 styles.card,
                 {
