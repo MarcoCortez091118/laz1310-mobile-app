@@ -103,7 +103,7 @@ export default function WeatherListScreen() {
               {english ? 'LA Z markets' : 'Mercados de LA Z'}
             </Text>
             <Text style={[styles.subtitle, { color: colors.muted }]}>
-              {english ? 'Current conditions from LA Z API' : 'Condiciones actuales desde LA Z API'}
+              {english ? 'See the latest weather in your cities' : 'Consulta el clima de tus ciudades'}
             </Text>
           </View>
 
