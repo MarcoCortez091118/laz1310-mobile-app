@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   },
   host: {
     fontFamily: fonts.bodyMedium,
-    fontSize: 9,
+    fontSize: 12,
   },
   schedule: {
     fontFamily: fonts.body,
