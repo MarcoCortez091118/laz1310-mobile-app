@@ -121,10 +121,15 @@ export default function DynamicsParticipationScreen() {
         return null;
       }
 
-      const security = await getFirebaseSecurityTokens(true);
-      const status = await getParticipationStatus(dynamicId, security);
-      setParticipationStatus(status);
-      return status;
+      try {
+        const security = await getFirebaseSecurityTokens(true);
+        const status = await getParticipationStatus(dynamicId, security);
+        setParticipationStatus(status);
+        return status;
+      } catch {
+        setParticipationStatus(null);
+        return null;
+      }
     },
     [isAuthenticated],
   );
@@ -189,11 +194,15 @@ export default function DynamicsParticipationScreen() {
 
   const editableFields = useMemo(() => {
     if (!campaign || campaign.participation.type !== 'form') return [];
-    return campaign.participation.fields.filter(
-      (field) =>
-        !campaign.participation.requiresAuth || !isAccountBackedField(field),
-    );
-  }, [campaign]);
+    return campaign.participation.fields.filter((field) => {
+      if (!campaign.participation.requiresAuth || !isAccountBackedField(field)) {
+        return true;
+      }
+      if (field.key === 'name') return !profile?.displayName;
+      if (field.key === 'email') return !profile?.email;
+      return true;
+    });
+  }, [campaign, profile?.displayName, profile?.email]);
 
   const validation = useMemo(() => {
     if (!campaign || campaign.participation.type !== 'form') return {};
