@@ -48,6 +48,9 @@ jobs:
       - name: Verify NeuroMarket public identity and support
         run: npm run check:product-identity
 
+      - name: Verify LA Z public contact and sales destinations
+        run: npm run check:contact-v1
+
       - name: Export web smoke build
         run: npx expo export --platform web --output-dir dist-ci
 
