@@ -17,6 +17,7 @@ import { LiveBadge } from '../src/components/LiveBadge';
 import { LiveRadioCard } from '../src/components/LiveRadioCard';
 import { ProgramCard } from '../src/components/ProgramCard';
 import { PromoHero } from '../src/components/PromoHero';
+import { SpotifyPlaylistCard } from '../src/components/SpotifyPlaylistCard';
 import { WeatherHeaderBadge } from '../src/components/WeatherHeaderBadge';
 import { programScheduleLabel } from '../src/features/programs/presentation';
 import { usePrograms } from '../src/features/programs/usePrograms';
@@ -183,6 +184,8 @@ export default function HomeScreen() {
             </Text>
           </View>
         )}
+
+        <SpotifyPlaylistCard />
       </ScrollView>
 
       <BottomNavigation />
