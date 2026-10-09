@@ -25,7 +25,7 @@ interface IconButtonProps {
 export function IconButton({
   name,
   onPress,
-  size = 42,
+  size = 48,
   iconSize = 21,
   backgroundColor,
   iconColor,
