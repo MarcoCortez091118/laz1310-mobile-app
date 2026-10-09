@@ -15,8 +15,8 @@ export default function V3Splash() {
       <Image
         accessible
         accessibilityLabel="LA Z Detroit, 107.9 FM, 1310 AM, Marcando Territorio"
-        source={require('../assets/brand/La Z Icon.webp')}
-        resizeMode="contain"
+        source={require('../assets/brand/v3-splash-cover.webp')}
+        resizeMode="cover"
         style={styles.cover}
       />
     </View>
