@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     color: '#FEFEFE',
     flexShrink: 1,
     fontFamily: fonts.bodySemiBold,
-    fontSize: 9,
+    fontSize: 11,
     letterSpacing: 0.3,
   },
   glow: {
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   },
   schedule: {
     fontFamily: fonts.body,
-    fontSize: 10,
+    fontSize: 12,
     lineHeight: 14,
   },
 });
