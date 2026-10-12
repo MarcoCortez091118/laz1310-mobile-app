@@ -17,14 +17,10 @@ export function authErrorMessage(error: unknown, language: AppLanguage = 'es') {
       return english
         ? 'Google sign-in requires an installed Android or iOS app.'
         : 'El acceso con Google requiere la aplicación instalada en Android o iOS.';
-    case 'auth/google-configuration-required':
+    case 'auth/google-token-unavailable':
       return english
-        ? 'Google sign-in is not configured for this build. Contact support.'
-        : 'El acceso con Google no está configurado en esta versión. Contacta a soporte.';
-    case 'auth/google-id-token-missing':
-      return english
-        ? 'Google could not verify this app. Check the Google sign-in configuration.'
-        : 'Google no pudo verificar esta app. Revisa la configuración del inicio de sesión.';
+        ? 'Google did not provide a usable sign-in credential. Try again.'
+        : 'Google no proporcionó una credencial válida. Inténtalo nuevamente.';
     case 'auth/operation-not-allowed':
       return english
         ? 'Google sign-in is not enabled for this app in Firebase.'
