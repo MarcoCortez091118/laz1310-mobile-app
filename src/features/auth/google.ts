@@ -11,6 +11,8 @@ import {
 } from '@react-native-firebase/auth';
 import { Platform } from 'react-native';
 
+import { selectGoogleCredentialTokens } from './google-credential';
+
 /**
  * Native Google identity is exchanged for a *Firebase* session. LA Z FastAPI
  * only ever receives a Firebase ID token plus App Check through the same
@@ -27,33 +29,32 @@ export async function signInFirebaseGoogle(): Promise<User | null> {
     throw googleAuthError('auth/google-native-required', 'Google sign-in requires a native Android or iOS build.');
   }
 
-  // A WEB OAuth client ID is required to request an ID token for Firebase.
-  // This is a public OAuth client identifier, never a client secret.
+  // The public Web OAuth client ID is optional for native Google Sign-In.
+  // When it isn't bundled by Metro, Android can still obtain a Google access
+  // token using its already-registered package and signing certificate.
+  // Firebase accepts that access token without a Web Client ID in JavaScript.
   const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim();
-  if (!webClientId || !webClientId.endsWith('.apps.googleusercontent.com')) {
-    throw googleAuthError(
-      'auth/google-configuration-required',
-      'Google sign-in is not configured. Set EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ' +
-      'to the Google WEB OAuth client ID for the LA Z Firebase project.',
-    );
-  }
+  const hasValidWebClientId = !!webClientId &&
+    webClientId.endsWith('.apps.googleusercontent.com');
 
-  GoogleSignin.configure({ webClientId });
+  GoogleSignin.configure(hasValidWebClientId ? { webClientId } : {});
   await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
 
   const response = await GoogleSignin.signIn();
   if (!isSuccessResponse(response)) return null;
 
   const idToken = response.data.idToken;
-  if (!idToken) {
-    throw googleAuthError(
-      'auth/google-id-token-missing',
-      'Google did not return an ID token. Verify the OAuth WEB client ID ' +
-      'and the Android signing-certificate SHA fingerprints in Firebase.',
-    );
-  }
-
-  const googleCredential = GoogleAuthProvider.credential(idToken);
+  // Original native Google Sign-In returns a null idToken if no Web OAuth
+  // client ID was supplied. In that case ask the SDK for its access token;
+  // the token stays in memory and is exchanged exclusively with Firebase.
+  const accessToken = idToken?.trim()
+    ? null
+    : (await GoogleSignin.getTokens()).accessToken;
+  const tokens = selectGoogleCredentialTokens({ idToken, accessToken });
+  const googleCredential = GoogleAuthProvider.credential(
+    tokens.idToken,
+    tokens.accessToken,
+  );
   const result = await signInWithCredential(getAuth(getApp()), googleCredential);
   return result.user;
 }
