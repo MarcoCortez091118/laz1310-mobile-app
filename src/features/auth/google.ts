@@ -34,10 +34,11 @@ export async function signInFirebaseGoogle(): Promise<User | null> {
   // token using its already-registered package and signing certificate.
   // Firebase accepts that access token without a Web Client ID in JavaScript.
   const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim();
-  const hasValidWebClientId = !!webClientId &&
-    webClientId.endsWith('.apps.googleusercontent.com');
-
-  GoogleSignin.configure(hasValidWebClientId ? { webClientId } : {});
+  GoogleSignin.configure(
+    webClientId?.endsWith('.apps.googleusercontent.com')
+      ? { webClientId }
+      : {},
+  );
   await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
 
   const response = await GoogleSignin.signIn();
