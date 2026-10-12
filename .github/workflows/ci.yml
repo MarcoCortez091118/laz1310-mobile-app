@@ -64,6 +64,9 @@ jobs:
       - name: Verify Google authentication and sign-out behavior
         run: npm run check:google-auth
 
+      - name: Verify Home and detail dynamics artwork presentation
+        run: npm run check:dynamics-artwork
+
       - name: Export web smoke build
         run: npx expo export --platform web --output-dir dist-ci
 

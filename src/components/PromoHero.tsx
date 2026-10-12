@@ -18,7 +18,6 @@ import {
   DynamicCampaign,
   getDynamics,
 } from '../features/dynamics/api';
-import { dynamicDeadline } from '../features/dynamics/presentation';
 import { useLanguage } from '../i18n/LanguageProvider';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { fonts, radii, spacing } from '../theme/tokens';
@@ -36,7 +35,9 @@ function PromoCard({ campaign, width }: PromoCardProps) {
   const { colors } = useAppTheme();
   const { language } = useLanguage();
   const english = language === 'en';
-  const label = campaign.artworkLabel.trim() || (english ? 'Promotion' : 'Promoción');
+  // Artwork already carries the promotion's creative text. Only show the
+  // artworkLabel supplied by the backend; never invent an overlay label.
+  const label = campaign.artworkLabel?.trim();
 
   return (
     <Pressable
@@ -64,25 +65,12 @@ function PromoCard({ campaign, width }: PromoCardProps) {
         source={{ uri: campaign.imageUrl }}
         style={styles.image}
       />
-      <View style={styles.scrim} />
-      <View style={styles.bottomShade} />
-
-      <View style={styles.labelPill}>
-        <View style={[styles.labelDot, { backgroundColor: colors.red }]} />
-        <Text style={styles.labelText}>{label.toUpperCase()}</Text>
-      </View>
-
-      <View style={styles.copy}>
-        <Text numberOfLines={2} style={[styles.title, { color: '#FEFEFE' }]}>
-          {campaign.title}
-        </Text>
-        <Text style={styles.deadline}>
-          {dynamicDeadline(campaign.endsAt, campaign.timezone, language)}
-        </Text>
-        <View style={[styles.cta, { backgroundColor: colors.red }]}>
-          <Text style={styles.ctaText}>{english ? 'JOIN' : 'PARTICIPAR'}</Text>
+      {label ? (
+        <View style={styles.labelPill}>
+          <View style={[styles.labelDot, { backgroundColor: colors.red }]} />
+          <Text style={styles.labelText}>{label.toUpperCase()}</Text>
         </View>
-      </View>
+      ) : null}
     </Pressable>
   );
 }
@@ -238,22 +226,6 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
   },
-  scrim: {
-    backgroundColor: 'rgba(5,1,1,0.22)',
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
-  bottomShade: {
-    backgroundColor: 'rgba(5,1,1,0.62)',
-    bottom: 0,
-    height: '58%',
-    left: 0,
-    position: 'absolute',
-    right: 0,
-  },
   labelPill: {
     alignItems: 'center',
     backgroundColor: 'rgba(5,1,1,0.72)',
@@ -276,39 +248,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 10,
     letterSpacing: 1.1,
-  },
-  copy: {
-    bottom: spacing.lg,
-    left: spacing.lg,
-    position: 'absolute',
-    right: spacing.lg,
-  },
-  title: {
-    fontFamily: fonts.displayBlack,
-    fontSize: 38,
-    lineHeight: 38,
-    maxWidth: '90%',
-    textShadowColor: 'rgba(0,0,0,0.45)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 8,
-  },
-  deadline: {
-    color: '#FEFEFE',
-    fontFamily: fonts.bodyMedium,
-    fontSize: 10,
-    marginTop: 5,
-  },
-  cta: {
-    alignSelf: 'flex-start',
-    borderRadius: 10,
-    marginTop: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  ctaText: {
-    color: '#FEFEFE',
-    fontFamily: fonts.bodyBold,
-    fontSize: 12,
   },
   dots: {
     alignItems: 'center',
