@@ -78,44 +78,6 @@ export default function AuthScreen() {
       loginPassword: 'loginEmail',
     };
     setFormError(null);
-    const loginGoogle = async () => {
-    if (submitting) return;
-    setSubmitting(true);
-    setFormError(null);
-    try {
-      const completed = await signInWithGoogle();
-      if (completed) router.replace('/profile');
-    } catch (error) {
-      setFormError(authErrorMessage(error, language));
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const googleButton = (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={english ? 'Continue with Google' : 'Continuar con Google'}
-      accessibilityState={{ disabled: submitting }}
-      disabled={submitting}
-      onPress={() => void loginGoogle()}
-      style={({ pressed }) => [
-        styles.googleButton,
-        { backgroundColor: colors.surfaceElevated, borderColor: colors.border,
-          opacity: submitting ? 0.5 : pressed ? 0.78 : 1 },
-      ]}
-    >
-      {submitting ? (
-        <ActivityIndicator color={colors.red} size="small" />
-      ) : (
-        <Ionicons color={colors.white} name="logo-google" size={21} />
-      )}
-      <Text style={[styles.googleLabel, { color: colors.white }]}>
-        {english ? 'Continue with Google' : 'Continuar con Google'}
-      </Text>
-    </Pressable>
-  );
-
   if (step === 'welcome') {
       router.back();
       return;
@@ -150,6 +112,44 @@ export default function AuthScreen() {
       setSubmitting(false);
     }
   };
+
+  const loginGoogle = async () => {
+      if (submitting) return;
+      setSubmitting(true);
+      setFormError(null);
+      try {
+        const completed = await signInWithGoogle();
+        if (completed) router.replace('/profile');
+      } catch (error) {
+        setFormError(authErrorMessage(error, language));
+      } finally {
+        setSubmitting(false);
+      }
+    };
+  
+    const googleButton = (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={english ? 'Continue with Google' : 'Continuar con Google'}
+        accessibilityState={{ disabled: submitting }}
+        disabled={submitting}
+        onPress={() => void loginGoogle()}
+        style={({ pressed }) => [
+          styles.googleButton,
+          { backgroundColor: colors.surfaceElevated, borderColor: colors.border,
+            opacity: submitting ? 0.5 : pressed ? 0.78 : 1 },
+        ]}
+      >
+        {submitting ? (
+          <ActivityIndicator color={colors.red} size="small" />
+        ) : (
+          <Ionicons color={colors.white} name="logo-google" size={21} />
+        )}
+        <Text style={[styles.googleLabel, { color: colors.white }]}>
+          {english ? 'Continue with Google' : 'Continuar con Google'}
+        </Text>
+      </Pressable>
+    );
 
   if (step === 'welcome') {
     return (
