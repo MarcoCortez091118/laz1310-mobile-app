@@ -18,16 +18,21 @@ import { Platform } from 'react-native';
  *
  * A cancellation returns null; it must not change application auth state.
  */
+function googleAuthError(code: string, message: string): Error & { code: string } {
+  return Object.assign(new Error(message), { code });
+}
+
 export async function signInFirebaseGoogle(): Promise<User | null> {
   if (Platform.OS !== 'android' && Platform.OS !== 'ios') {
-    throw new Error('Google sign-in requires a native Android or iOS build.');
+    throw googleAuthError('auth/google-native-required', 'Google sign-in requires a native Android or iOS build.');
   }
 
   // A WEB OAuth client ID is required to request an ID token for Firebase.
   // This is a public OAuth client identifier, never a client secret.
   const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim();
   if (!webClientId || !webClientId.endsWith('.apps.googleusercontent.com')) {
-    throw new Error(
+    throw googleAuthError(
+      'auth/google-configuration-required',
       'Google sign-in is not configured. Set EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ' +
       'to the Google WEB OAuth client ID for the LA Z Firebase project.',
     );
@@ -41,7 +46,8 @@ export async function signInFirebaseGoogle(): Promise<User | null> {
 
   const idToken = response.data.idToken;
   if (!idToken) {
-    throw new Error(
+    throw googleAuthError(
+      'auth/google-id-token-missing',
       'Google did not return an ID token. Verify the OAuth WEB client ID ' +
       'and the Android signing-certificate SHA fingerprints in Firebase.',
     );
