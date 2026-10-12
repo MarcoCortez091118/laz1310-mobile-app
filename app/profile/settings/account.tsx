@@ -2,6 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
+  Alert,
   StyleSheet,
   Text,
   View,
@@ -55,6 +56,45 @@ export default function AccountScreen() {
     }
   };
 
+  const confirmSignOut = () => {
+    if (working) return;
+
+    Alert.alert(
+      english ? 'Sign out?' : '¿Cerrar sesión?',
+      english
+        ? 'You will need to sign in again to access your LA Z account.'
+        : 'Tendrás que iniciar sesión nuevamente para acceder a tu cuenta LA Z.',
+      [
+        {
+          text: english ? 'Cancel' : 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: english ? 'Sign out' : 'Cerrar sesión',
+          style: 'destructive',
+          onPress: () => {
+            if (working) return;
+            setWorking(true);
+            setMessage(null);
+            setError(null);
+            void signOut()
+              .then(() => router.replace('/auth'))
+              .catch((signOutError: unknown) => {
+                setError(
+                  signOutError instanceof Error
+                    ? signOutError.message
+                    : english
+                      ? 'We could not sign you out. Please try again.'
+                      : 'No pudimos cerrar tu sesión. Inténtalo de nuevo.',
+                );
+              })
+              .finally(() => setWorking(false));
+          },
+        },
+      ],
+    );
+  };
+
   if (!profile) return null;
 
   return (
@@ -93,7 +133,12 @@ export default function AccountScreen() {
             </>
           ) : null}
 
-          <PrimaryButton label={english ? 'Sign out' : 'Cerrar sesión'} onPress={() => { void signOut().then(() => router.replace('/auth')); }} secondary />
+          <PrimaryButton
+            disabled={working}
+            label={working ? (english ? 'Processing…' : 'Procesando…') : english ? 'Sign out' : 'Cerrar sesión'}
+            onPress={confirmSignOut}
+            secondary
+          />
         </View>
       </View>
     </SafeAreaView>

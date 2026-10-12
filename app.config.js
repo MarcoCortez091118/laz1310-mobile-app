@@ -38,6 +38,7 @@ module.exports = ({ config }) => ({
   plugins: [
     'expo-router',
     '@react-native-firebase/app',
+    '@react-native-google-signin/google-signin',
     '@react-native-firebase/auth',
     '@react-native-firebase/app-check',
     '@react-native-firebase/messaging',

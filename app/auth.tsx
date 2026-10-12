@@ -30,7 +30,7 @@ type Step =
 
 export default function AuthScreen() {
   const router = useRouter();
-  const { isAuthenticated, status, registerWithEmail, signInWithEmail } = useAuth();
+  const { isAuthenticated, status, registerWithEmail, signInWithEmail, signInWithGoogle } = useAuth();
   const { colors } = useAppTheme();
   const { language } = useLanguage();
   const english = language === 'en';
@@ -113,6 +113,47 @@ export default function AuthScreen() {
     }
   };
 
+  const loginGoogle = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    setFormError(null);
+    try {
+      const completed = await signInWithGoogle();
+      if (completed) router.replace('/profile');
+    } catch (error) {
+      setFormError(authErrorMessage(error, language));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const googleButton = (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={english ? 'Continue with Google' : 'Continuar con Google'}
+      accessibilityState={{ disabled: submitting }}
+      disabled={submitting}
+      onPress={() => void loginGoogle()}
+      style={({ pressed }) => [
+        styles.googleButton,
+        {
+          backgroundColor: colors.surfaceElevated,
+          borderColor: colors.border,
+          opacity: submitting ? 0.5 : pressed ? 0.78 : 1,
+        },
+      ]}
+    >
+      {submitting ? (
+        <ActivityIndicator color={colors.red} size="small" />
+      ) : (
+        <Ionicons color={colors.white} name="logo-google" size={21} />
+      )}
+      <Text style={[styles.googleLabel, { color: colors.white }]}>
+        {english ? 'Continue with Google' : 'Continuar con Google'}
+      </Text>
+    </Pressable>
+  );
+
   if (step === 'welcome') {
     return (
       <SafeAreaView edges={['top', 'bottom']} style={styles.safe}>
@@ -134,7 +175,14 @@ export default function AuthScreen() {
           <View style={styles.actions}>
             <PrimaryButton label={english ? 'Create account' : 'Crear cuenta'} onPress={() => { setFormError(null); setStep('registerEmail'); }} />
             <PrimaryButton label={english ? 'I already have an account' : 'Ya tengo cuenta'} onPress={() => { setFormError(null); setStep('loginEmail'); }} secondary />
+            {googleButton}
           </View>
+          {formError ? (
+            <View style={[styles.errorCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+              <Ionicons color={colors.red} name="alert-circle-outline" size={20} />
+              <Text style={[styles.errorText, { color: colors.white }]}>{formError}</Text>
+            </View>
+          ) : null}
 
           <Text style={[styles.securityNote, { color: colors.muted }]}>
             {english
@@ -263,6 +311,14 @@ export default function AuthScreen() {
         ) : null}
 
         <View style={styles.next}>
+          {!isRegister ? (
+            <>
+              <Text style={[styles.alternativeLabel, { color: colors.muted }]}>
+                {english ? 'OR SIGN IN WITH' : 'O INICIA SESIÓN CON'}
+              </Text>
+              {googleButton}
+            </>
+          ) : null}
           {step === 'registerEmail' ? <PrimaryButton disabled={!email.trim().includes('@')} label={english ? 'Next' : 'Siguiente'} onPress={() => setStep('registerPassword')} /> : null}
           {step === 'registerPassword' ? <PrimaryButton disabled={password.length < 10} label={english ? 'Next' : 'Siguiente'} onPress={() => setStep('registerName')} /> : null}
           {step === 'registerName' ? <PrimaryButton disabled={name.trim().length < 2 || !privacyAccepted || submitting} label={submitting ? (english ? 'Creating account…' : 'Creando cuenta…') : (english ? 'Create account' : 'Crear cuenta')} onPress={() => void createAccount()} /> : null}
@@ -298,4 +354,7 @@ const styles = StyleSheet.create({
   policyLink: { alignSelf: 'flex-start', marginLeft: 32, marginTop: 10, paddingVertical: 4 },
   policyLinkText: { fontFamily: fonts.bodyBold, fontSize: 12, letterSpacing: 0.3 },
   next: { gap: 10, marginTop: 34 },
+  googleButton: { alignItems: 'center', borderRadius: radii.round, borderWidth: 1, flexDirection: 'row', gap: 13, justifyContent: 'center', minHeight: 54, paddingHorizontal: 18 },
+  googleLabel: { fontFamily: fonts.bodyBold, fontSize: 15 },
+  alternativeLabel: { fontFamily: fonts.bodyBold, fontSize: 11, letterSpacing: 1, textAlign: 'center', marginTop: 10, marginBottom: 3 },
 });
