@@ -156,11 +156,12 @@ export default function DynamicDetailScreen() {
         {!loading && campaign ? (
           <>
             <View style={[styles.hero, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Image resizeMode="cover" source={{ uri: campaign.imageUrl }} style={styles.heroImage} />
-              <View style={styles.heroScrim} />
-              <Text style={[styles.artLabel, { color: colors.red }]}>{campaign.artworkLabel}</Text>
-              <Text style={styles.heroTitle}>{campaign.title}</Text>
-              <Text style={styles.brand}>{campaign.context}</Text>
+              <Image
+                accessibilityLabel={campaign.title}
+                resizeMode="cover"
+                source={{ uri: campaign.imageUrl }}
+                style={styles.heroImage}
+              />
             </View>
 
             <Text style={[styles.title, { color: colors.white }]}>{campaign.title}</Text>
@@ -275,12 +276,8 @@ const styles = StyleSheet.create({
   stateText: { fontFamily: fonts.body, fontSize: 12 },
   errorCard: { borderRadius: radii.lg, borderWidth: 1, gap: 14, marginTop: spacing.lg, padding: spacing.lg },
   errorText: { fontFamily: fonts.body, fontSize: 13, lineHeight: 20 },
-  hero: { aspectRatio: 1, borderRadius: radii.lg, borderWidth: 1, marginTop: 8, overflow: 'hidden', padding: spacing.lg, width: '100%' },
+  hero: { aspectRatio: 1, borderRadius: radii.lg, borderWidth: 1, marginTop: 8, overflow: 'hidden', width: '100%' },
   heroImage: { bottom: 0, left: 0, position: 'absolute', right: 0, top: 0 },
-  heroScrim: { bottom: 0, left: 0, position: 'absolute', right: 0, top: 0, backgroundColor: 'rgba(5,1,1,0.62)' },
-  artLabel: { fontFamily: fonts.bodyBold, fontSize: 10, letterSpacing: 1.2 },
-  heroTitle: { bottom: 56, color: '#FEFEFE', fontFamily: fonts.displayBlack, fontSize: 46, left: 24, lineHeight: 44, position: 'absolute', right: 24 },
-  brand: { bottom: 24, color: '#FEFEFE', fontFamily: fonts.displayBold, fontSize: 18, left: 24, position: 'absolute' },
   title: { fontFamily: fonts.displayExtraBold, fontSize: 32, lineHeight: 34 },
   deadline: { fontFamily: fonts.bodySemiBold, fontSize: 14 },
   description: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19 },
