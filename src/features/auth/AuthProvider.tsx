@@ -27,6 +27,7 @@ import {
   updateFirebaseDisplayName,
 } from './firebase';
 import { detachPushDeviceBeforeSignOut } from '../notifications/device';
+import { clearGoogleAccountSelection, signInFirebaseGoogle } from './google';
 import { PRIVACY_POLICY_VERSION } from '../privacy/policy';
 
 type AuthStatus =
@@ -49,6 +50,7 @@ interface AuthContextValue {
     displayName: string,
   ) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<boolean>;
   signOut: () => Promise<void>;
   updateDisplayName: (displayName: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -179,15 +181,26 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [synchronize],
   );
 
+  const signInWithGoogle = useCallback(async (): Promise<boolean> => {
+    const user = await signInFirebaseGoogle();
+    if (!user) return false; // Account picker was cancelled.
+    await synchronize(user);
+    return true;
+  }, [synchronize]);
+
   const signOut = useCallback(async () => {
+    const wasGoogleUser = firebaseUser?.providerData.some(
+      (provider) => provider.providerId === 'google.com',
+    );
     syncGeneration.current += 1;
     await detachPushDeviceBeforeSignOut();
     await signOutFirebase();
+    if (wasGoogleUser) await clearGoogleAccountSelection();
     setFirebaseUser(null);
     setProfile(null);
     setError(null);
     setStatus('signedOut');
-  }, []);
+  }, [firebaseUser]);
 
   const updateDisplayName = useCallback(
     async (displayName: string) => {
@@ -239,6 +252,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       error,
       registerWithEmail,
       signInWithEmail,
+      signInWithGoogle,
       signOut,
       updateDisplayName,
       refreshProfile,
@@ -254,6 +268,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       sendVerificationEmail,
       acceptPrivacyPolicyConsent,
       signInWithEmail,
+      signInWithGoogle,
       signOut,
       status,
       updateDisplayName,
