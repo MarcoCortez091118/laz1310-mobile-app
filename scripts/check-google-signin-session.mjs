@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import ts from 'typescript';
 
 const read = (path) => readFileSync(path, 'utf8');
 const account = read('app/profile/settings/account.tsx');
@@ -32,11 +33,46 @@ assert.match(authProvider, /await synchronize\(user\)/);
 assert.match(authProvider, /clearGoogleAccountSelection\(\)/);
 
 assert.match(google, /EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID/);
-assert.match(google, /GoogleSignin\.configure\(\{ webClientId \}\)/);
+assert.match(google, /GoogleSignin\.configure\(/);
+assert.match(google, /webClientId\?\.endsWith/);
 assert.match(google, /GoogleSignin\.signIn\(\)/);
 assert.match(google, /if \(!isSuccessResponse\(response\)\) return null/);
-assert.match(google, /GoogleAuthProvider\.credential\(idToken\)/);
+assert.match(google, /GoogleSignin\.getTokens\(\)/);
+assert.match(google, /selectGoogleCredentialTokens\(\{ idToken, accessToken \}\)/);
+assert.match(google, /GoogleAuthProvider\.credential\(/);
+assert.match(google, /tokens\.idToken/);
+assert.match(google, /tokens\.accessToken/);
 assert.match(google, /signInWithCredential\(getAuth\(getApp\(\)\), googleCredential\)/);
+assert.doesNotMatch(google, /auth\/google-configuration-required/);
+
+// Behavioral unit tests of the pure TypeScript token-selection policy, without
+// mocking Firebase or placing real OAuth tokens in CI.
+const tsSource = read('src/features/auth/google-credential.ts');
+const compiled = ts.transpileModule(tsSource, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const moduleUrl = 'data:text/javascript;base64,' + Buffer.from(compiled).toString('base64');
+const { selectGoogleCredentialTokens } = await import(moduleUrl);
+
+assert.deepEqual(
+  selectGoogleCredentialTokens({ idToken: ' ID ', accessToken: ' ACCESS ' }),
+  { kind: 'idToken', idToken: 'ID', accessToken: null },
+  'prefer Google ID token when configured',
+);
+assert.deepEqual(
+  selectGoogleCredentialTokens({ idToken: null, accessToken: ' ACCESS ' }),
+  { kind: 'accessToken', idToken: null, accessToken: 'ACCESS' },
+  'use Google Access Token when Metro lacks OAuth Web Client ID',
+);
+assert.deepEqual(
+  selectGoogleCredentialTokens({ idToken: '   ', accessToken: ' ACCESS ' }),
+  { kind: 'accessToken', idToken: null, accessToken: 'ACCESS' },
+);
+assert.throws(
+  () => selectGoogleCredentialTokens({ idToken: null, accessToken: '  ' }),
+  (error) => error.code === 'auth/google-token-unavailable',
+  'no Firebase session may be created from empty Google credentials',
+);
 assert.doesNotMatch(google, /createUserWithEmailAndPassword/);
 assert.doesNotMatch(google, /linkWithCredential/);
 
