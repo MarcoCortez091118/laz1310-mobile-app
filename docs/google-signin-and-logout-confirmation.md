@@ -11,9 +11,13 @@ Issue: #62. Changes are based on the **original main**, not on the V3 design bra
 - **Tu cuenta LA Z → Ya tengo cuenta:** adds **Continuar con Google** on
   the sign-in email/password steps, and also on the account entry screen.
   Existing email/password registration and sign-in remain in place.
-- Google native account selector produces an identity token; the Firebase
-  `GoogleAuthProvider.credential(idToken)` and `signInWithCredential` log in
-  to the **existing Firebase Auth project**. Then the existing
+- Google native account chooser produces an ID token **if an optional
+  OAuth Web Client ID is available**; without it, the SDK can retrieve a
+  Google OAuth access token via `GoogleSignin.getTokens()`. Firebase accepts
+  either `GoogleAuthProvider.credential(idToken)` or
+  `GoogleAuthProvider.credential(null, accessToken)` before
+  `signInWithCredential` logs in to the **existing Firebase Auth project**.
+  Then the existing
   `AuthProvider.synchronize(user)` requests the same
   `POST /api/v1/auth/session` using Firebase ID token + Firebase App Check
   and fetches/updates the same LA Z user profile keyed by Firebase UID.
@@ -38,16 +42,21 @@ Issue: #62. Changes are based on the **original main**, not on the V3 design bra
    Download an up-to-date `google-services.json` **if these fingerprints
    caused Google OAuth client settings to change**, and update the EAS
    FILE environment variable `GOOGLE_SERVICES_JSON` for `preview`.
-3. Obtain the **Web application type OAuth client ID** associated with
-   the same Firebase/Google Cloud project (not the Android OAuth client
-   and not a client secret). Define
-   `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` as a **Plain text**
-   `preview` EAS environment variable. A web OAuth client identifier
-   is public and is included in the app bundle. Never put private OAuth
-   client secrets in an `EXPO_PUBLIC_*` variable.
-4. Use a new **native EAS Android build** because the package
-   `@react-native-google-signin/google-signin` and its Expo config
-   plugin introduce native code. **Expo Go is insufficient.**
+3. The public **Web OAuth Client ID** from this Firebase project
+   is **optional** for native sign-in. If already available as
+   `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, Google Sign-In requests an ID token.
+   If absent (e.g., when Metro serves JS without the Expo EAS environment),
+   the existing native Google SDK can request an access token and exchange
+   that token **only with Firebase Authentication**, which issues the same
+   Firebase ID token for FastAPI. Do not put an OAuth client secret in Mobile.
+   Azure's server-side Firebase settings do not automatically propagate to
+   Expo and **must not be repurposed as mobile environment variables**.
+4. The Google native module was previously added in PR #63. **No new
+   native library or prebuild configuration is introduced by Issue #66**;
+   an existing Development Client containing that module can receive this
+   patch via Metro (restart with `npx expo start --dev-client -c`).
+   Only devices whose APK predates installation of this native library need
+   a one-time replacement build. **Expo Go is insufficient.**
 5. On iOS, provide the existing `GOOGLE_SERVICE_INFO_PLIST` EAS File
    for the relevant environment, register `com.neuromarket.laz1310`
    and Google URL scheme through the config plugin before building iOS.
@@ -55,16 +64,17 @@ Issue: #62. Changes are based on the **original main**, not on the V3 design bra
 Example after the branch is checked out and EAS configured:
 
 ```bash
+git fetch origin
+git switch --track origin/fix/LAZ-MOBILE-google-login-no-client-id
 npm install
-npx expo-doctor
-npx eas-cli@latest env:list --environment preview
-npx eas-cli@latest build --platform android --profile preview
+npx expo start --dev-client -c
 ```
 
-If EAS Preview does not supply the Firebase Android file, the existing
-React Native Firebase plugin will fail during Prebuild with
-`Path to google-services.json is not defined`. This PR does **not**
-replace/remove that plugin or change Firebase credentials.
+For a **new native EAS Preview build** (not required for an already-installed
+compatible Development Client), the native Firebase file variable
+`GOOGLE_SERVICES_JSON` must still be provided in the corresponding EAS
+environment. This JS-only sign-in correction neither replaces that file nor
+changes existing Azure/Firebase credentials.
 
 ## Physical test matrix
 
@@ -73,7 +83,8 @@ replace/remove that plugin or change Firebase credentials.
   airplane-mode failures should not display false success.
 - **Email/password:** Existing sign-in and new account paths unchanged.
 - **Google login:** From Welcome or Ya tengo cuenta → Google picker
-  → Firebase user persists → LA Z FastAPI business profile synchronized;
+  (both with and without the optional Web Client ID) →
+  Firebase user persists → LA Z FastAPI business profile synchronized;
   confirm Firebase UID is stable after log out and log in again.
 - **OAuth sheet cancel:** no error and no change to Firebase session.
 - **Google provider collision:** meaningful error, no automatic account
