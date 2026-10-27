@@ -29,6 +29,14 @@ export const CONTACT_CHANNELS = [
     url: 'https://www.instagram.com/laz1310am/',
   },
   {
+    id: 'tiktok',
+    icon: 'logo-tiktok',
+    labelEs: 'TikTok',
+    labelEn: 'TikTok',
+    detail: '@laz1310am',
+    url: 'https://www.tiktok.com/@laz1310am',
+  },
+  {
     id: 'whatsapp',
     icon: 'logo-whatsapp',
     labelEs: 'WhatsApp',
