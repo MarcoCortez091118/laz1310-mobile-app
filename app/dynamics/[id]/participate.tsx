@@ -64,12 +64,12 @@ function submissionError(error: unknown, english: boolean) {
         : 'Inicia sesión con tu cuenta LA Z antes de participar.';
     case 404:
       return english
-        ? 'This dynamic is no longer available. Go back and refresh the list.'
-        : 'La dinámica ya no está disponible. Regresa y actualiza la lista.';
+        ? 'This prize is no longer available. Go back and refresh the list.'
+        : 'El premio ya no está disponible. Regresa y actualiza la lista.';
     case 409:
       return english
-        ? 'This dynamic changed, closed, or your account already has an entry.'
-        : 'Esta dinámica cambió, cerró o tu cuenta ya tiene una participación registrada.';
+        ? 'This prize changed, closed, or your account already has an entry.'
+        : 'Este premio cambió o cerró, o tu cuenta ya tiene una participación registrada.';
     case 422:
       return english
         ? 'Review the additional fields and consent.'
@@ -138,8 +138,8 @@ export default function DynamicsParticipationScreen() {
     if (!id) {
       setLoadError(
         english
-          ? 'The dynamic identifier is missing.'
-          : 'Falta el identificador de la dinámica.',
+          ? 'The prize identifier is missing.'
+          : 'Falta el identificador del premio.',
       );
       setLoading(false);
       return;
@@ -346,8 +346,8 @@ export default function DynamicsParticipationScreen() {
             <Ionicons color={colors.red} name="open-outline" size={28} />
             <Text style={[styles.errorText, { color: colors.white }]}>
               {english
-                ? 'This dynamic uses external participation.'
-                : 'Esta dinámica utiliza participación externa.'}
+                ? 'This prize uses external participation.'
+                : 'Este premio requiere participación externa.'}
             </Text>
             {campaign.participation.url ? (
               <PrimaryButton
@@ -419,8 +419,8 @@ export default function DynamicsParticipationScreen() {
                 </Text>
                 <Text style={[styles.alreadyBody, { color: colors.muted }]}>
                   {english
-                    ? 'Your account already has an accepted entry for this dynamic. Keep access to your registered email and enable LA Z notifications to receive campaign updates.'
-                    : 'Tu cuenta ya tiene una participación aceptada en esta dinámica. Mantén acceso a tu correo registrado y habilita las notificaciones de LA Z para recibir avisos de la campaña.'}
+                    ? 'Your account already has an accepted entry for this prize. Keep access to your registered email and enable LA Z notifications to receive campaign updates.'
+                    : 'Tu cuenta ya tiene una participación aceptada para este premio. Mantén acceso a tu correo registrado y habilita las notificaciones de LA Z para recibir avisos de la campaña.'}
                 </Text>
                 {participationStatus.receipt?.submittedAt ? (
                   <Text style={[styles.receivedAt, { color: colors.muted }]}>
@@ -447,8 +447,8 @@ export default function DynamicsParticipationScreen() {
                       ? 'Your LA Z account supplies your identity. Complete only any additional information requested below.'
                       : 'Tu cuenta LA Z proporciona tu identidad. Completa únicamente la información adicional solicitada.'
                     : english
-                      ? 'Complete the information requested by this dynamic.'
-                      : 'Completa la información solicitada por esta dinámica.'}
+                      ? 'Complete the information requested for this prize.'
+                      : 'Completa la información solicitada para este premio.'}
                 </Text>
 
                 {campaign.participation.requiresAuth && profile ? (
@@ -583,8 +583,8 @@ export default function DynamicsParticipationScreen() {
                       style={[styles.noExtraText, { color: colors.muted }]}
                     >
                       {english
-                        ? 'No additional information is required for this dynamic.'
-                        : 'Esta dinámica no requiere información adicional.'}
+                        ? 'No additional information is required for this prize.'
+                        : 'Este premio no requiere información adicional.'}
                     </Text>
                   </View>
                 )}
@@ -660,8 +660,8 @@ export default function DynamicsParticipationScreen() {
                 {campaign.status !== 'active' ? (
                   <Text style={[styles.warningText, { color: colors.red }]}>
                     {english
-                      ? 'This dynamic is not accepting entries right now.'
-                      : 'Esta dinámica no acepta participaciones en este momento.'}
+                      ? 'This prize is not accepting entries right now.'
+                      : 'Este premio no acepta participaciones en este momento.'}
                   </Text>
                 ) : null}
 

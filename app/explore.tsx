@@ -23,7 +23,7 @@ export default function ExploreScreen() {
   const modules = [
     {
       id: 'dynamics',
-      title: english ? 'Dynamics' : 'Dinámicas',
+      title: english ? 'Prizes' : 'Premios',
       subtitle: english
         ? 'Join LA Z promotions and contests.'
         : 'Participa en promociones y concursos de LA Z.',

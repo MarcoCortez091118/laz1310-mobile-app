@@ -41,7 +41,7 @@ function PromoCard({ campaign, width }: PromoCardProps) {
 
   return (
     <Pressable
-      accessibilityLabel={`${english ? 'Open dynamic' : 'Abrir dinámica'} ${campaign.title}`}
+      accessibilityLabel={`${english ? 'Open prize' : 'Abrir premio'} ${campaign.title}`}
       accessibilityRole="button"
       onPress={() =>
         router.push({
