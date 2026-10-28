@@ -60,6 +60,8 @@ jobs:
 
       - name: Verify LA Z public contact and sales destinations
         run: npm run check:contact-v1
+      - name: Verify advertising form, consent and FastAPI-only transport
+        run: npm run check:advertising-form
 
       - name: Verify Google authentication and sign-out behavior
         run: npm run check:google-auth

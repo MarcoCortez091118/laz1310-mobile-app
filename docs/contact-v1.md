@@ -1,76 +1,48 @@
-# LA Z 1310 Mobile — Contact & advertising V1
+# LA Z 1310 App — Public contact and Advertising V2
 
-Issue: #54
+## Contact
 
-## Product scope
+The existing public contact channels are not changed in this PR. Station sales email
+remains `sales@laz1310.com`; technical help remains separate.
 
-Contact and advertising are independent **public** flows from Explore. They
-require no account, authentication, database write, API endpoint, third-party
-SDK or new native permissions. They use React Native's native Linking.
+## Promociónate con nosotros (/advertise)
 
-### Contact / Contacto (route: `/contact`)
+The former `mailto:` CTA is replaced by a brand-aligned mobile form based on the
+approved October 27, 2026 screenshot. Fields: Nombre, Apellido, Compañía
+(optional), Teléfono, Correo, ¿Cómo te podemos ayudar? The user must explicitly
+accept the terms and read the privacy notice; consent is never pre-selected.
+The terms explanation is accessible and links to the in-app privacy notice.
 
-Show the four product-provided public LA Z destinations in this order:
+### Submission flow
 
-1. Website — https://laz1310.com
-2. Facebook — https://www.facebook.com/laz1310
-3. Instagram — https://www.instagram.com/laz1310am/
-4. WhatsApp — https://wa.me/13132911310
+1. Local validation enforces required fields, phone/email format, message length
+   and consent. Invalid forms cannot submit.
+2. Acquire Firebase App Check from the native app (sign-in optional).
+3. Send to FastAPI POST `/api/v1/advertising/leads`, with `Idempotency-Key`,
+   `X-Firebase-AppCheck`, and Authorization if the user is signed in.
+4. FastAPI validates the data again, rate limits and forwards server-to-server
+   to the configured n8n production webhook (secret Azure setting).
+5. Only a confirmed 202 response (n8n accepted request) shows success. A failed
+   or ambiguous response keeps all fields and does not silently re-send.
 
-Each accessible row opens the exact HTTPS URL in the OS-selected
-browser/application. Website, social app and WhatsApp availability are controlled
-by device/app configuration. Users may copy the visible destination details.
-On failure, show localized feedback with the URL as a fallback.
+No mobile code includes the n8n webhook URL. App never writes a lead to
+Firestore. The backend stores only transient idempotency metadata (not the form
+values). No additional Android/iOS native permissions or third-party SDKs.
 
-### Promote your business / Promociónate con nosotros (route: `/advertise`)
+### Important operational semantics
 
-Provide a dedicated commercial information screen with a CTA that invokes
-the system email app via a `mailto:` link:
+The n8n webhook currently acknowledges that the workflow started, not that
+the Gmail send finished. The UI confirms **request receipt**, never final
+email delivery. A workflow failure after acknowledgment needs n8n monitoring.
 
-- Recipient: `sales@laz1310.com`
-- Subject (ES): `Quiero promocionarme en LA Z 1310`
-- Subject (EN): `Advertising with LA Z 1310`
+### QA
 
-The address remains visible and selectable. No automatic send happens:
-the listener reviews and sends the email in their own app. Missing mail apps
-produce localized fallback guidance with the sales address. The app does not
-collect commercial leads or email contents.
-
-**Do not confuse** `sales@laz1310.com` (station advertising)
-with `Support@neuromarket.io` (NeuroMarket technical/privacy support).
-Do not brand a third-party streaming host as operator.
-
-## UX/navigation invariants
-
-- Explore retains existing Dynamics, Weather and Programs modules and adds
-  Contact and Advertise as new working options; nothing is disabled.
-- The approved Home hierarchy and four persistent bottom destinations do not
-  change. Secondary Contact/Advertise screens use back-navigation, and scrolling
-  reserves space for the MiniPlayer.
-- English and Spanish typography, dark/light theming, 48dp+ hit targets,
-  screen-reader names and graceful external-app failures must be maintained.
-- URLs and sales email are constants in `src/config/contact.ts`, consumed by
-  typed linking actions; no user input or untrusted server URL construction.
-
-## Verification
-
-CI: Expo dependency compatibility, Expo Doctor, TypeScript, static public-link
-regression check, web export smoke build and dependency audit.
-
-Physical device QA (Android and iOS):
-1. Logged out, enter Explore > Contact. Open all four links; verify correct
-   domain/profile/phone as provided. Try a device without WhatsApp.
-2. Enter Explore > Advertise. Tap Contact Sales. Confirm system composer
-   recipient, language-specific subject, and that nothing is sent by the app.
-3. Dismiss composer; ensure navigation, direct radio playback and MiniPlayer
-   continue uninterrupted. Try without a configured email client.
-4. Test Spanish/English, light/dark, small displays, large font and screen reader.
-5. Verify technical Support from Profile/Settings remains distinct from sales.
-6. Revisit Home/Radio/Dynamics/Programs; no structural regressions.
-
-## SDLC / rollback
-
-Issue -> feature branch based on fresh `main` -> focused PR -> CI -> device QA
--> manual review/merge -> downloadable APK acceptance.
-No FastAPI/Admin changes, secrets or migrations. Rollback by reverting this PR;
-native store releases still require separate approval.
+- Spanish/English, large fonts, 320dp+ displays, safe-area and MiniPlayer
+- Dark/light contexts, guest and signed-in users, valid App Check token
+- Empty/invalid fields, unchecked consent, double tap, timeout/409/429/503
+- Appetize and sideload preview may need App Check debug enrollment; do not
+  disable production App Check
+- n8n workflow execution audit: verify all six fields, terms and destination,
+  without posting real customer data in automated tests
+- CI: Expo Doctor, TypeScript, check:contact-v1, check:advertising-form
+- No merge or deployment until manual QA and reviewer approval
