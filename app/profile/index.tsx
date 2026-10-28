@@ -82,7 +82,7 @@ export default function ProfileScreen() {
             <Text style={[styles.guestBody, { color: colors.muted }]}>
               {english
                 ? 'Listen freely. Sign in only when you want to join promotions or manage your account.'
-                : 'Escucha libremente. Inicia sesión cuando quieras participar en dinámicas o administrar tu cuenta.'}
+                : 'Escucha libremente. Inicia sesión cuando quieras participar por premios o administrar tu cuenta.'}
             </Text>
             <PrimaryButton label={english ? 'Sign in or register' : 'Iniciar sesión o registrarse'} onPress={() => router.push('/auth')} />
           </View>
@@ -201,7 +201,7 @@ export default function ProfileScreen() {
             <Ionicons color={colors.red} name="ticket-outline" size={21} />
             <View style={styles.rowCopy}>
               <Text style={[styles.rowTitle, { color: colors.white }]}>{english ? 'My participations' : 'Mis participaciones'}</Text>
-              <Text style={[styles.rowSubtitle, { color: colors.muted }]}>{english ? 'Dynamics registered with your LA Z account' : 'Dynamics registradas con tu cuenta LA Z'}</Text>
+              <Text style={[styles.rowSubtitle, { color: colors.muted }]}>{english ? 'Prize entries associated with your LA Z account' : 'Participaciones en premios con tu cuenta LA Z'}</Text>
             </View>
             <Ionicons color={colors.gray} name="chevron-forward" size={20} />
           </Pressable>

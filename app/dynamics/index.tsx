@@ -40,12 +40,12 @@ export default function DynamicsListScreen() {
     (requestError: unknown) => {
       if (requestError instanceof ApiError && requestError.status === 503) {
         return english
-          ? 'Dynamics are temporarily unavailable.'
-          : 'Dinámicas no está disponible temporalmente.';
+          ? 'Prizes are temporarily unavailable.'
+          : 'Los premios no están disponibles temporalmente.';
       }
       return english
-        ? 'We could not load published dynamics.'
-        : 'No pudimos cargar las dinámicas publicadas.';
+        ? 'We could not load published prizes.'
+        : 'No pudimos cargar los premios publicados.';
     },
     [english],
   );
@@ -78,7 +78,7 @@ export default function DynamicsListScreen() {
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <ScreenHeader title={english ? 'Dynamics' : 'Dinámicas'} />
+        <ScreenHeader title={english ? 'Prizes' : 'Premios'} />
 
         <Pressable
           accessibilityLabel={
@@ -138,13 +138,13 @@ export default function DynamicsListScreen() {
 
         <Text style={[styles.title, { color: colors.white }]}>{english ? 'Available' : 'Disponibles'}</Text>
         <Text style={[styles.subtitle, { color: colors.muted }]}>
-          {english ? 'Promotions and activations published by LA Z.' : 'Promociones y activaciones publicadas por LA Z.'}
+          {english ? 'Prizes and promotions published by LA Z.' : 'Premios y promociones publicados por LA Z.'}
         </Text>
 
         {loading ? (
           <View style={styles.state}>
             <ActivityIndicator color={colors.red} />
-            <Text style={[styles.stateText, { color: colors.muted }]}>{english ? 'Loading dynamics…' : 'Consultando dinámicas…'}</Text>
+            <Text style={[styles.stateText, { color: colors.muted }]}>{english ? 'Loading prizes…' : 'Consultando premios…'}</Text>
           </View>
         ) : null}
 
@@ -159,7 +159,7 @@ export default function DynamicsListScreen() {
         {!loading && !error && items.length === 0 ? (
           <View style={[styles.emptyCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
             <Ionicons color={colors.red} name="sparkles-outline" size={30} />
-            <Text style={[styles.emptyTitle, { color: colors.white }]}>{english ? 'No active dynamics' : 'No hay dinámicas activas'}</Text>
+            <Text style={[styles.emptyTitle, { color: colors.white }]}>{english ? 'No active prizes' : 'No hay premios activos'}</Text>
             <Text style={[styles.emptyBody, { color: colors.muted }]}>
               {english ? 'When LA Z publishes a new promotion it will appear here.' : 'Cuando LA Z publique una nueva promoción aparecerá aquí.'}
             </Text>
@@ -170,7 +170,7 @@ export default function DynamicsListScreen() {
           <View style={styles.list}>
             {items.map((item) => (
               <Pressable
-                accessibilityLabel={`${english ? 'Open dynamic' : 'Abrir dinámica'} ${item.title}`}
+                accessibilityLabel={`${english ? 'Open prize' : 'Abrir premio'} ${item.title}`}
                 accessibilityRole="button"
                 key={item.id}
                 onPress={() => router.push({ pathname: '/dynamics/[id]', params: { id: item.id } })}

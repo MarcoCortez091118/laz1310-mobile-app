@@ -43,8 +43,8 @@ export default function SettingsScreen() {
       id: 'notifications',
       title: english ? 'Notifications' : 'Notificaciones',
       subtitle: english
-        ? 'Push, general, radio, programs and dynamics'
-        : 'Push, general, radio, programas y dinámicas',
+        ? 'Push, general, radio, programs and prizes'
+        : 'Push, general, radio, programas y premios',
       route: '/profile/settings/notifications' as const,
     },
     {

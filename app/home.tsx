@@ -43,7 +43,7 @@ export default function HomeScreen() {
   // These are navigation shortcuts, not filters. All content is shown on Home.
   const categories: HomeCategory[] = [
     { id: 'all', label: english ? 'All' : 'Todos' },
-    { id: 'dynamics', label: english ? 'Dynamics' : 'Dinámicas', route: '/dynamics' },
+    { id: 'dynamics', label: english ? 'Prizes' : 'Premios', route: '/dynamics' },
     { id: 'weather', label: english ? 'Weather' : 'Clima', route: '/weather' },
     { id: 'programs', label: english ? 'Programs' : 'Programas', route: '/programs' },
     {

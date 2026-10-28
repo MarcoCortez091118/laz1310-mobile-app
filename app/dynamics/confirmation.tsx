@@ -58,7 +58,7 @@ export default function DynamicsConfirmationScreen() {
 
         <View style={styles.actions}>
           <PrimaryButton label={english ? 'My participations' : 'Mis participaciones'} onPress={() => router.replace('/dynamics/participations')} />
-          <PrimaryButton label={english ? 'Back to Dynamics' : 'Volver a Dinámicas'} onPress={() => router.replace('/dynamics')} secondary />
+          <PrimaryButton label={english ? 'Back to Prizes' : 'Volver a Premios'} onPress={() => router.replace('/dynamics')} secondary />
           <PrimaryButton label={english ? 'Back to Home' : 'Volver a Inicio'} onPress={() => router.replace('/home')} secondary />
         </View>
       </View>

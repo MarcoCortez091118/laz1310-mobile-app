@@ -48,10 +48,10 @@ export default function DynamicDetailScreen() {
     (requestError: unknown) => {
       if (requestError instanceof ApiError && requestError.status === 404) {
         return english
-          ? 'This dynamic is no longer available in the current release.'
-          : 'Esta dinámica ya no está disponible en la publicación actual.';
+          ? 'This prize is no longer available in the current release.'
+          : 'Este premio ya no está disponible en la publicación actual.';
       }
-      return english ? 'We could not load this dynamic.' : 'No pudimos cargar esta dinámica.';
+      return english ? 'We could not load this prize.' : 'No pudimos cargar este premio.';
     },
     [english],
   );
@@ -59,7 +59,7 @@ export default function DynamicDetailScreen() {
   const load = useCallback(
     async (requestedReleaseId?: string | null) => {
       if (!id) {
-        setError(english ? 'The dynamic identifier is missing.' : 'Falta el identificador de la dinámica.');
+        setError(english ? 'The prize identifier is missing.' : 'Falta el identificador del premio.');
         setLoading(false);
         return;
       }
@@ -136,12 +136,12 @@ export default function DynamicDetailScreen() {
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <ScreenHeader title={english ? 'Dynamic' : 'Dinámica'} />
+        <ScreenHeader title={english ? 'Prize' : 'Premio'} />
 
         {loading ? (
           <View style={styles.state}>
             <ActivityIndicator color={colors.red} />
-            <Text style={[styles.stateText, { color: colors.muted }]}>{english ? 'Loading dynamic…' : 'Cargando dinámica…'}</Text>
+            <Text style={[styles.stateText, { color: colors.muted }]}>{english ? 'Loading prize…' : 'Cargando premio…'}</Text>
           </View>
         ) : null}
 
@@ -198,7 +198,7 @@ export default function DynamicDetailScreen() {
               <View style={[styles.closedCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
                 <Ionicons color={colors.red} name="lock-closed-outline" size={22} />
                 <Text style={[styles.closedText, { color: colors.white }]}>
-                  {english ? 'This dynamic is closed or has not opened yet.' : 'Esta dinámica está cerrada o todavía no abre.'}
+                  {english ? 'This prize is closed or has not opened yet.' : 'Este premio está cerrado o todavía no comienza.'}
                 </Text>
               </View>
             ) : null}
@@ -241,7 +241,7 @@ export default function DynamicDetailScreen() {
             <PrimaryButton
               disabled={campaign.status !== 'active' || (campaign.participation.type === 'external_url' && !campaign.participation.url)}
               label={campaign.status !== 'active'
-                ? english ? 'Dynamic closed' : 'Dinámica cerrada'
+                ? english ? 'Prize closed' : 'Premio cerrado'
                 : campaign.participation.type === 'external_url'
                   ? english ? 'Open link' : 'Abrir enlace'
                   : participationStatus?.participated
@@ -259,7 +259,7 @@ export default function DynamicDetailScreen() {
 
             <Link href="/dynamics" asChild>
               <Pressable style={styles.backToList}>
-                <Text style={[styles.backToListText, { color: colors.red }]}>{english ? 'View all dynamics' : 'Ver todas las dinámicas'}</Text>
+                <Text style={[styles.backToListText, { color: colors.red }]}>{english ? 'View all prizes' : 'Ver todos los premios'}</Text>
               </Pressable>
             </Link>
           </>

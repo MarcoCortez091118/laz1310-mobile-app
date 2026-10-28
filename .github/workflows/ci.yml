@@ -75,6 +75,9 @@ jobs:
       - name: Verify subtle red corner brush artwork and layout
         run: npm run check:background-brush
 
+      - name: Verify Premios / Prizes labels without breaking dynamics routes
+        run: npm run check:prizes-label
+
       - name: Export web smoke build
         run: npx expo export --platform web --output-dir dist-ci
 

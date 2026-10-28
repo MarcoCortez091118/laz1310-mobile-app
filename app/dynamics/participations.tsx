@@ -116,7 +116,7 @@ export default function MyDynamicsParticipationsScreen() {
         />
 
         <Text style={[styles.heading, { color: colors.white }]}>
-          {english ? 'Your Dynamics history' : 'Tu historial de Dynamics'}
+          {english ? 'Your prize entries' : 'Tu historial de premios'}
         </Text>
         <Text style={[styles.subtitle, { color: colors.muted }]}>
           {english
@@ -177,11 +177,11 @@ export default function MyDynamicsParticipationsScreen() {
             </Text>
             <Text style={[styles.emptyBody, { color: colors.muted }]}>
               {english
-                ? 'When you register for an in-app Dynamic with your LA Z account, it will appear here.'
-                : 'Cuando te registres en una Dynamic dentro de la app con tu cuenta LA Z, aparecerá aquí.'}
+                ? 'When you enter a prize campaign in the app with your LA Z account, it will appear here.'
+                : 'Cuando participes en un premio desde la app con tu cuenta LA Z, aparecerá aquí.'}
             </Text>
             <PrimaryButton
-              label={english ? 'View Dynamics' : 'Ver Dynamics'}
+              label={english ? 'View Prizes' : 'Ver Premios'}
               onPress={() => router.push('/dynamics')}
             />
           </View>
@@ -225,7 +225,7 @@ export default function MyDynamicsParticipationsScreen() {
                     style={[styles.itemTitle, { color: colors.white }]}
                   >
                     {item.dynamicTitle ||
-                      (english ? 'LA Z Dynamic' : 'Dynamic de LA Z')}
+                      (english ? 'LA Z Prize' : 'Premio de LA Z')}
                   </Text>
                   <Text style={[styles.itemStatus, { color: '#56C985' }]}>
                     {english ? 'ENTRY ACCEPTED' : 'PARTICIPACIÓN ACEPTADA'}
