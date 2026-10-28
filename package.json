@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "check:product-identity": "node scripts/check-product-identity.mjs",
     "check:contact-v1": "node scripts/check-contact-v1.mjs",
+    "check:advertising-form": "node scripts/check-advertising-form.mjs",
     "check:google-auth": "node scripts/check-google-signin-session.mjs",
     "check:dynamics-artwork": "node scripts/check-dynamics-artwork.mjs"
   },
