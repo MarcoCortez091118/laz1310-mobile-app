@@ -69,6 +69,9 @@ jobs:
       - name: Verify Home and detail dynamics artwork presentation
         run: npm run check:dynamics-artwork
 
+      - name: Verify approved light and dark vinyl assets
+        run: npm run check:vinyl-theme
+
       - name: Export web smoke build
         run: npx expo export --platform web --output-dir dist-ci
 
