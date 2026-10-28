@@ -13,7 +13,8 @@
     "check:contact-v1": "node scripts/check-contact-v1.mjs",
     "check:advertising-form": "node scripts/check-advertising-form.mjs",
     "check:google-auth": "node scripts/check-google-signin-session.mjs",
-    "check:dynamics-artwork": "node scripts/check-dynamics-artwork.mjs"
+    "check:dynamics-artwork": "node scripts/check-dynamics-artwork.mjs",
+    "check:vinyl-theme": "node scripts/check-vinyl-theme.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/barlow-condensed": "^0.4.1",

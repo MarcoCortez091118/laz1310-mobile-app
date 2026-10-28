@@ -6,7 +6,14 @@ import {
   View,
 } from 'react-native';
 
-import { colors } from '../theme/tokens';
+import { useAppTheme } from '../theme/ThemeProvider';
+
+// These are the exact LA Z 1310 vinyl artworks approved for each theme.
+// Keep static require() calls so Metro bundles both assets for offline playback.
+const vinylSources = {
+  dark: require('../../assets/brand/Disc-Black.png'),
+  light: require('../../assets/brand/Disc-White.png'),
+} as const;
 
 interface VinylArtworkProps {
   size?: number;
@@ -17,6 +24,7 @@ export function VinylArtwork({
   size = 280,
   playing = false,
 }: VinylArtworkProps) {
+  const { colors, preference } = useAppTheme();
   const rotation = useRef(new Animated.Value(0)).current;
   const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
@@ -65,7 +73,7 @@ export function VinylArtwork({
         }}
       >
         <Image
-          source={require('../../assets/brand/vinyl-primary.png')}
+          source={vinylSources[preference]}
           style={styles.image}
         />
       </Animated.View>
