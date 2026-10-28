@@ -1,7 +1,9 @@
 import { PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import {
+  Image,
   ImageBackground,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
 
@@ -18,6 +20,10 @@ export function AppBackground({
   enabled = true,
 }: AppBackgroundProps) {
   const { colors, preference } = useAppTheme();
+  const { width: windowWidth } = useWindowDimensions();
+  const brushWidth = Math.min(238, Math.max(170, windowWidth * 0.54));
+  const brushHeight = (brushWidth * 443) / 512;
+  const brushOpacity = preference === 'dark' ? 0.16 : 0.12;
   const { releaseId } = useContentVersion();
   const [remoteImageUrl, setRemoteImageUrl] = useState<string | null>(null);
   const [remoteEnabled, setRemoteEnabled] = useState(true);
@@ -79,6 +85,45 @@ export function AppBackground({
         pointerEvents="none"
         style={[StyleSheet.absoluteFill, { backgroundColor: overlayColor }]}
       />
+      <View
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        pointerEvents="none"
+        style={StyleSheet.absoluteFill}
+      >
+        <Image
+          accessibilityIgnoresInvertColors
+          resizeMode="contain"
+          source={require('../../assets/brand/brush-red-corners.png')}
+          style={[
+            styles.cornerBrush,
+            {
+              top: -brushHeight * 0.37,
+              left: -brushWidth * 0.47,
+              width: brushWidth,
+              height: brushHeight,
+              opacity: brushOpacity,
+              transform: [{ rotate: '-12deg' }],
+            },
+          ]}
+        />
+        <Image
+          accessibilityIgnoresInvertColors
+          resizeMode="contain"
+          source={require('../../assets/brand/brush-red-corners.png')}
+          style={[
+            styles.cornerBrush,
+            {
+              bottom: -brushHeight * 0.35,
+              right: -brushWidth * 0.46,
+              width: brushWidth,
+              height: brushHeight,
+              opacity: brushOpacity,
+              transform: [{ rotate: '168deg' }],
+            },
+          ]}
+        />
+      </View>
       {children}
     </ImageBackground>
   );
@@ -87,5 +132,8 @@ export function AppBackground({
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+  },
+  cornerBrush: {
+    position: 'absolute',
   },
 });
