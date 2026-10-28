@@ -14,7 +14,8 @@
     "check:advertising-form": "node scripts/check-advertising-form.mjs",
     "check:google-auth": "node scripts/check-google-signin-session.mjs",
     "check:dynamics-artwork": "node scripts/check-dynamics-artwork.mjs",
-    "check:vinyl-theme": "node scripts/check-vinyl-theme.mjs"
+    "check:vinyl-theme": "node scripts/check-vinyl-theme.mjs",
+    "check:background-brush": "node scripts/check-background-brush.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/barlow-condensed": "^0.4.1",

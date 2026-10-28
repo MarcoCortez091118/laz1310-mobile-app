@@ -72,6 +72,9 @@ jobs:
       - name: Verify approved light and dark vinyl assets
         run: npm run check:vinyl-theme
 
+      - name: Verify subtle red corner brush artwork and layout
+        run: npm run check:background-brush
+
       - name: Export web smoke build
         run: npx expo export --platform web --output-dir dist-ci
 
