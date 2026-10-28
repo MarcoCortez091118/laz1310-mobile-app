@@ -12,11 +12,15 @@ for (const address of [
   'https://laz1310.com',
   'https://www.facebook.com/laz1310',
   'https://www.instagram.com/laz1310am/',
+  'https://www.tiktok.com/@laz1310am',
   'https://wa.me/13132911310',
 ]) {
   assert.ok(config.includes(address), `Missing approved LA Z contact: ${address}`);
 }
 
+assert.match(config, /id: 'tiktok'/);
+assert.match(config, /icon: 'logo-tiktok'/);
+assert.match(config, /detail: '@laz1310am'/);
 assert.match(config, /sales@laz1310\.com/);
 assert.match(config, /Quiero promocionarme en LA Z 1310/);
 assert.match(config, /Advertising with LA Z 1310/);
