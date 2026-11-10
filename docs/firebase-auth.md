@@ -127,3 +127,39 @@ Deferred:
 8. Edit display name and confirm persistence.
 9. Submit an App-Check-protected Dynamic.
 10. Regression-test radio background playback.
+
+## Android release — Play Integrity
+
+Production native builds (`__DEV__ === false`) use Play Integrity automatically. Only
+development builds use the debug provider. The app initializes App Check before
+Firebase Auth (email and Google), and the SDK refreshes its tokens for users.
+
+### Operator checklist
+
+1. Create the Google Play app with Android package `com.neuromarket.laz1310`.
+   In Play Console, link Play Integrity to the same Google Cloud project used
+   by the Firebase app. Enable Play Integrity API.
+2. In Firebase Console > App Check, register the Android app with Play
+   Integrity. Configure the **Google Play app-signing certificate SHA-256**
+   (from Play Console > App integrity); do not confuse it with the upload
+   certificate. Verify package, Firebase Android app and EAS project match.
+   Register relevant SHA-1/SHA-256 fingerprints for Google Sign-In too.
+3. Configure EAS `production` with `GOOGLE_SERVICES_JSON`, API endpoint and
+   any required OAuth values. Never include debug tokens or debug provider
+   overrides in the production build.
+4. Build an Android App Bundle with
+   `eas build --platform android --profile production` and test a version
+   installed from Google Play **internal testing**. Sideloaded preview APKs
+   and Appetize cannot prove Play-recognized attestation.
+5. Validate new email and Google registrations, guest path, persistent
+   session, `POST /api/v1/auth/session`, `GET /api/v1/me`, FCM and protected
+   submissions on physical devices. Confirm Firebase App Check metrics and
+   FastAPI rejects invalid/missing tokens.
+6. Before enabling Firebase Auth/Firestore/Storage App Check enforcement,
+   audit all clients sharing the Firebase project, including Website and
+   WebAdmin. Enable enforcement per product only after the live clients
+   successfully attest. Monitor errors; disable that product's enforcement
+   in Firebase Console to roll back if legitimate clients are blocked.
+
+Never bypass FastAPI authorization or put server-side Firebase Admin
+credentials in the app. Do not disable App Check to make a bad build pass.
