@@ -27,6 +27,8 @@ export interface FirebaseSecurityTokens {
 }
 
 export function firebaseAuth() {
+  // App Check must initialize before Firebase Auth when Auth enforcement is enabled.
+  initializeNativeAppCheck();
   return getAuth(getApp());
 }
 
@@ -34,7 +36,7 @@ export function observeFirebaseUser(listener: (user: User | null) => void) {
   return onAuthStateChanged(firebaseAuth(), listener);
 }
 
-export async function initializeNativeAppCheck() {
+export function initializeNativeAppCheck() {
   if (Platform.OS === 'web') {
     throw new Error('Firebase App Check is available only in native LA Z builds');
   }
@@ -64,7 +66,7 @@ export async function getFirebaseSecurityTokens(
   requireAuth = true,
   forceIdTokenRefresh = false,
 ): Promise<FirebaseSecurityTokens> {
-  const appCheck = await initializeNativeAppCheck();
+  const appCheck = initializeNativeAppCheck();
   const [{ token: appCheckToken }, user] = await Promise.all([
     getAppCheckToken(appCheck, false),
     Promise.resolve(firebaseAuth().currentUser),
