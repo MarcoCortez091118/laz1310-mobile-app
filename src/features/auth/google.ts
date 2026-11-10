@@ -2,16 +2,15 @@ import {
   GoogleSignin,
   isSuccessResponse,
 } from '@react-native-google-signin/google-signin';
-import { getApp } from '@react-native-firebase/app';
 import {
   GoogleAuthProvider,
-  getAuth,
   signInWithCredential,
   type User,
 } from '@react-native-firebase/auth';
 import { Platform } from 'react-native';
 
 import { selectGoogleCredentialTokens } from './google-credential';
+import { firebaseAuth } from './firebase';
 
 /**
  * Native Google identity is exchanged for a *Firebase* session. LA Z FastAPI
@@ -56,7 +55,7 @@ export async function signInFirebaseGoogle(): Promise<User | null> {
     tokens.idToken,
     tokens.accessToken,
   );
-  const result = await signInWithCredential(getAuth(getApp()), googleCredential);
+  const result = await signInWithCredential(firebaseAuth(), googleCredential);
   return result.user;
 }
 
