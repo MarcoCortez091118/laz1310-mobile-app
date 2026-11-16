@@ -7,6 +7,7 @@ const account = read('app/profile/settings/account.tsx');
 const auth = read('app/auth.tsx');
 const authProvider = read('src/features/auth/AuthProvider.tsx');
 const google = read('src/features/auth/google.ts');
+const firebase = read('src/features/auth/firebase.ts');
 const appConfig = read('app.config.js');
 const pkg = JSON.parse(read('package.json'));
 
@@ -42,7 +43,10 @@ assert.match(google, /selectGoogleCredentialTokens\(\{ idToken, accessToken \}\)
 assert.match(google, /GoogleAuthProvider\.credential\(/);
 assert.match(google, /tokens\.idToken/);
 assert.match(google, /tokens\.accessToken/);
-assert.match(google, /signInWithCredential\(getAuth\(getApp\(\)\), googleCredential\)/);
+assert.match(google, /signInWithCredential\(firebaseAuth\(\), googleCredential\)/);
+assert.match(firebase, /export function firebaseAuth\(\) \{\s*\/\/[^\n]*\n\s*initializeNativeAppCheck\(\);\s*return getAuth\(getApp\(\)\)/);
+assert.match(firebase, /provider: __DEV__ \? 'debug' : 'playIntegrity'/);
+assert.match(firebase, /provider: __DEV__ \? 'debug' : 'appAttestWithDeviceCheckFallback'/);
 assert.doesNotMatch(google, /auth\/google-configuration-required/);
 
 // Behavioral unit tests of the pure TypeScript token-selection policy, without
