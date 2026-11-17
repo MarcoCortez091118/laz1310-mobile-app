@@ -52,7 +52,7 @@ export async function signInFirebaseGoogle(): Promise<User | null> {
     throw atAuthStage('google-services', error);
   }
 
-  let response;
+  let response: Awaited<ReturnType<typeof GoogleSignin.signIn>>;
   try {
     response = await GoogleSignin.signIn();
   } catch (error) {
@@ -60,7 +60,7 @@ export async function signInFirebaseGoogle(): Promise<User | null> {
   }
   if (!isSuccessResponse(response)) return null;
 
-  let googleCredential;
+  let googleCredential: ReturnType<typeof GoogleAuthProvider.credential>;
   try {
     const idToken = response.data.idToken;
     // Without a configured Web OAuth Client ID the native provider can
