@@ -16,6 +16,7 @@ import { BrandLogo } from '../src/components/BrandLogo';
 import { PrimaryButton } from '../src/components/PrimaryButton';
 import { useAuth } from '../src/features/auth/AuthProvider';
 import { authErrorMessage } from '../src/features/auth/errors';
+import { authFailureInfo } from '../src/features/auth/diagnostics';
 import { useLanguage } from '../src/i18n/LanguageProvider';
 import { useAppTheme } from '../src/theme/ThemeProvider';
 import { fonts, radii, spacing } from '../src/theme/tokens';
@@ -121,6 +122,10 @@ export default function AuthScreen() {
       const completed = await signInWithGoogle();
       if (completed) router.replace('/profile');
     } catch (error) {
+      // Safe for production logs: stage, provider code and optional HTTP
+      // status / request ID only; never log tokens, email or native messages.
+      const diagnostic = authFailureInfo(error);
+      if (diagnostic) console.warn('LAZ_AUTH_GOOGLE_FAILURE', diagnostic);
       setFormError(authErrorMessage(error, language));
     } finally {
       setSubmitting(false);
