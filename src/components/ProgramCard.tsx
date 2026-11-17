@@ -17,6 +17,8 @@ interface ProgramCardProps {
   schedule: string;
   hostName?: string | null;
   imageUrl?: string | null;
+  /** Home hides the overlay so the full artwork remains unobstructed. */
+  showArtworkLabel?: boolean;
   style?: StyleProp<ViewStyle>;
   onPress?: () => void;
 }
@@ -26,6 +28,7 @@ export function ProgramCard({
   schedule,
   hostName,
   imageUrl,
+  showArtworkLabel = true,
   style,
   onPress,
 }: ProgramCardProps) {
@@ -52,17 +55,21 @@ export function ProgramCard({
           <>
             <Image
               accessibilityIgnoresInvertColors
-              resizeMode="cover"
+              resizeMode="contain"
               source={{ uri: imageUrl }}
               style={StyleSheet.absoluteFill}
             />
-            <View style={styles.imageScrim} />
-            <View style={styles.artworkLabel}>
-              <Ionicons color="#FEFEFE" name="mic" size={15} />
-              <Text numberOfLines={1} style={styles.artworkLabelText}>
-                {hostName || 'LA Z 1310'}
-              </Text>
-            </View>
+            {showArtworkLabel ? (
+              <>
+                <View style={styles.imageScrim} />
+                <View style={styles.artworkLabel}>
+                  <Ionicons color="#FEFEFE" name="mic" size={15} />
+                  <Text numberOfLines={1} style={styles.artworkLabelText}>
+                    {hostName || 'LA Z 1310'}
+                  </Text>
+                </View>
+              </>
+            ) : null}
           </>
         ) : (
           <>
@@ -106,10 +113,11 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     borderWidth: 1,
     minHeight: 230,
+    minWidth: 0,
     overflow: 'hidden',
   },
   artwork: {
-    height: 132,
+    aspectRatio: 1,
     justifyContent: 'flex-end',
     overflow: 'hidden',
     padding: spacing.md,
@@ -168,6 +176,7 @@ const styles = StyleSheet.create({
   },
   copy: {
     gap: 5,
+    minWidth: 0,
     padding: spacing.sm,
   },
   title: {
