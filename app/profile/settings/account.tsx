@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   Alert,
+  Linking,
   StyleSheet,
   Text,
   View,
@@ -12,6 +13,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton } from '../../../src/components/PrimaryButton';
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { useAuth } from '../../../src/features/auth/AuthProvider';
+import { requestBusinessAccountDeletion } from '../../../src/features/auth/api';
+import { getFirebaseSecurityTokens } from '../../../src/features/auth/firebase';
 import { useLanguage } from '../../../src/i18n/LanguageProvider';
 import { useAppTheme } from '../../../src/theme/ThemeProvider';
 import { fonts, radii, spacing } from '../../../src/theme/tokens';
@@ -95,6 +98,52 @@ export default function AccountScreen() {
     );
   };
 
+  const confirmAccountDeletionRequest = () => {
+    if (working) return;
+    Alert.alert(
+      english ? 'Request account deletion?' : '¿Solicitar eliminación de cuenta?',
+      english
+        ? 'LA Z 1310 will register your request for identity verification and review. Your account and associated data are NOT deleted immediately.'
+        : 'LA Z 1310 registrará tu solicitud para verificar tu identidad y revisarla. Tu cuenta y tus datos NO se eliminarán inmediatamente.',
+      [
+        { text: english ? 'Cancel' : 'Cancelar', style: 'cancel' },
+        {
+          text: english ? 'Submit request' : 'Solicitar eliminación',
+          style: 'destructive',
+          onPress: () => {
+            if (working) return;
+            setWorking(true);
+            setMessage(null);
+            setError(null);
+            void getFirebaseSecurityTokens(true)
+              .then((tokens) => requestBusinessAccountDeletion(tokens))
+              .then((request) => {
+                setMessage(
+                  request.status === 'pending_verification'
+                    ? (english
+                        ? 'Request registered. Your identity must be verified. Contact sales@laz1310.com to follow up.'
+                        : 'Solicitud registrada. Debemos verificar tu identidad. Para dar seguimiento, escribe a sales@laz1310.com.')
+                    : (english
+                        ? 'Request registered and pending review. For follow-up, contact sales@laz1310.com.'
+                        : 'Solicitud registrada y pendiente de revisión. Para dar seguimiento, escribe a sales@laz1310.com.'),
+                );
+              })
+              .catch((requestError: unknown) => {
+                setError(
+                  requestError instanceof Error
+                    ? requestError.message
+                    : english
+                      ? 'Your request could not be registered.'
+                      : 'No se pudo registrar tu solicitud.',
+                );
+              })
+              .finally(() => setWorking(false));
+          },
+        },
+      ],
+    );
+  };
+
   if (!profile) return null;
 
   return (
@@ -139,6 +188,23 @@ export default function AccountScreen() {
             onPress={confirmSignOut}
             secondary
           />
+          <PrimaryButton
+            disabled={working}
+            label={english ? 'Request account deletion' : 'Solicitar eliminación de cuenta'}
+            onPress={confirmAccountDeletionRequest}
+            secondary
+          />
+          <Text
+            onPress={() => {
+              void Linking.openURL('https://laz1310.com/eliminar-cuenta/').catch(() => {
+                setError(english ? 'Could not open the help page.' : 'No se pudo abrir la página de ayuda.');
+              });
+            }}
+            accessibilityRole="link"
+            style={[styles.deletionHelp, { color: colors.muted }]}
+          >
+            {english ? 'Learn about identity verification, data deletion and retention' : 'Conoce cómo verificamos tu identidad, eliminamos y conservamos datos'}
+          </Text>
         </View>
       </View>
     </SafeAreaView>
@@ -157,4 +223,5 @@ const styles = StyleSheet.create({
   verified: { fontFamily: fonts.bodyBold, fontSize: 9, letterSpacing: 1 },
   message: { fontFamily: fonts.bodyMedium, fontSize: 11, lineHeight: 16, marginTop: 14 },
   actions: { gap: 12, marginTop: spacing.lg },
+  deletionHelp: { fontFamily: fonts.body, fontSize: 12, lineHeight: 18, textDecorationLine: 'underline', textAlign: 'center' },
 });
