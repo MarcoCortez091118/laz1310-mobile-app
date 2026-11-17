@@ -9,6 +9,7 @@ export type AuthFailureStage =
   | 'google-services'
   | 'google-account'
   | 'google-credentials'
+  | 'google-firebase-credential'
   | 'firebase-credential'
   | 'app-check'
   | 'api-session'

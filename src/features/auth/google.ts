@@ -81,7 +81,7 @@ export async function signInFirebaseGoogle(): Promise<User | null> {
     const result = await signInWithCredential(firebaseAuth(), googleCredential);
     return result.user;
   } catch (error) {
-    throw atAuthStage('firebase-credential', error);
+    throw atAuthStage('google-firebase-credential', error);
   }
 }
 

@@ -62,12 +62,31 @@ assert.match(
 );
 assert.doesNotMatch(authErrorMessage(staged, 'en'), /private|PRIVATE/);
 
+// Google OAuth / Firebase failures must not be reported as password failures.
+const googleFirebaseFailure = atAuthStage('google-firebase-credential', {
+  code: 'auth/invalid-credential',
+  message: 'PRIVATE_SHOULD_NOT_APPEAR',
+});
+const googleFirebaseError = authErrorMessage(googleFirebaseFailure, 'es');
+assert.match(googleFirebaseError, /Firebase rechazó la credencial de Google/);
+assert.match(googleFirebaseError, /google-firebase-credential.*auth\/invalid-credential/);
+assert.doesNotMatch(googleFirebaseError, /[Cc]orreo o contraseña incorrectos|PRIVATE/);
+assert.match(authErrorMessage(googleFirebaseFailure, 'en'), /Firebase rejected the Google sign-in credential/);
+assert.match(
+  authErrorMessage(atAuthStage('google-firebase-credential', { code: 'auth/some-new-code' }), 'es'),
+  /Firebase no pudo completar el acceso con Google/,
+);
+assert.match(
+  authErrorMessage({ code: 'auth/invalid-credential' }, 'es'),
+  /Correo o contraseña incorrectos/,
+);
+
 const google = read('src/features/auth/google.ts');
 const firebase = read('src/features/auth/firebase.ts');
 const provider = read('src/features/auth/AuthProvider.tsx');
 const screen = read('app/auth.tsx');
 assert.match(google, /atAuthStage\('google-account', error\)/);
-assert.match(google, /atAuthStage\('firebase-credential', error\)/);
+assert.match(google, /atAuthStage\('google-firebase-credential', error\)/);
 assert.match(firebase, /atAuthStage\('app-check', error\)/);
 assert.match(provider, /atAuthStage\('api-session', error\)/);
 assert.match(screen, /LAZ_AUTH_GOOGLE_FAILURE/);
