@@ -29,7 +29,7 @@ import {
 import { detachPushDeviceBeforeSignOut } from '../notifications/device';
 import { clearGoogleAccountSelection, signInFirebaseGoogle } from './google';
 import { PRIVACY_POLICY_VERSION } from '../privacy/policy';
-import { atAuthStage } from './diagnostics';
+import { atAuthStage, authFailureInfo } from './diagnostics';
 
 type AuthStatus =
   | 'initializing'
@@ -166,8 +166,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
       }
 
       setFirebaseUser(user);
-      void synchronize(user).catch(() => {
-        // The provider exposes the synchronization error to UI.
+      void synchronize(user).catch((error) => {
+        // Existing sessions can fail verification before the login screen
+        // opens. Log only sanitized stage/status data, not user details.
+        const diagnostic = authFailureInfo(error);
+        if (diagnostic) console.warn('LAZ_AUTH_RESTORE_FAILURE', diagnostic);
       });
     });
 
