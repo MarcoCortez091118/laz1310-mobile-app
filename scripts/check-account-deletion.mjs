@@ -9,7 +9,7 @@ assert.match(account, /Solicitar eliminación de cuenta/);
 assert.match(account, /Alert\.alert\(/);
 assert.match(account, /getFirebaseSecurityTokens\(true\)/);
 assert.match(account, /requestBusinessAccountDeletion\(tokens\)/);
-assert.match(account, /pending_review/);
+assert.match(api, /pending_review/);
 assert.match(account, /pending_verification/);
 assert.match(account, /https:\/\/laz1310\.com\/eliminar-cuenta\//);
 assert.doesNotMatch(account, /deleteUser\(/);
