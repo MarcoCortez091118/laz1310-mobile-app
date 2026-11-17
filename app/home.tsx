@@ -181,6 +181,7 @@ export default function HomeScreen() {
                 onPress={() => router.push(`/programs/${program.id}`)}
                 hostName={program.hostName}
                 imageUrl={program.imageUrl}
+                showArtworkLabel={false}
                 schedule={programScheduleLabel(program, language)}
                 style={styles.programCarouselCard}
                 title={program.name}
@@ -195,8 +196,9 @@ export default function HomeScreen() {
                 onPress={() => router.push(`/programs/${program.id}`)}
                 hostName={program.hostName}
                 imageUrl={program.imageUrl}
+                showArtworkLabel={false}
                 schedule={programScheduleLabel(program, language)}
-                style={styles.programPairCard}
+                style={programs.length === 1 ? styles.programSingleCard : styles.programPairCard}
                 title={program.name}
               />
             ))}
@@ -293,9 +295,16 @@ const styles = StyleSheet.create({
   programs: {
     flexDirection: 'row',
     gap: 14,
+    minWidth: 0,
+  },
+  programSingleCard: {
+    alignSelf: 'center',
+    maxWidth: 380,
+    width: '100%',
   },
   programPairCard: {
     flex: 1,
+    minWidth: 0,
   },
   programCarousel: {
     gap: 14,
