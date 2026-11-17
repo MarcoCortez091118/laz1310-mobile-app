@@ -68,6 +68,12 @@ export function authErrorMessage(error: unknown, language: AppLanguage = 'es') {
         ? 'The password does not meet the security policy.'
         : 'La contraseña no cumple la política de seguridad.';
     case 'auth/invalid-credential':
+      if (diagnostic?.stage === 'google-firebase-credential') {
+        return (english
+          ? 'Firebase rejected the Google sign-in credential. Check Google authentication configuration for this Android build.'
+          : 'Firebase rechazó la credencial de Google. Revisa la configuración de autenticación de Google para esta compilación Android.') + suffix;
+      }
+      return english ? 'Incorrect email or password.' : 'Correo o contraseña incorrectos.';
     case 'auth/wrong-password':
     case 'auth/user-not-found':
       return english ? 'Incorrect email or password.' : 'Correo o contraseña incorrectos.';
@@ -95,6 +101,10 @@ export function authErrorMessage(error: unknown, language: AppLanguage = 'es') {
             return (english
               ? 'Google did not return a usable credential for Firebase.'
               : 'Google no entregó una credencial válida para Firebase.') + suffix;
+          case 'google-firebase-credential':
+            return (english
+              ? 'Firebase could not complete Google sign-in. Check that Google sign-in is enabled for this Firebase project and the OAuth credentials match this Android build.'
+              : 'Firebase no pudo completar el acceso con Google. Comprueba que Google esté habilitado en Firebase y que las credenciales OAuth coincidan con esta compilación Android.') + suffix;
           case 'firebase-credential':
             return (english
               ? 'Firebase could not accept the Google sign-in credential.'
