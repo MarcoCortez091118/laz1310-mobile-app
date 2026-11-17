@@ -69,3 +69,21 @@ export function acceptBusinessPrivacyPolicy(
     body: JSON.stringify({ policyVersion }),
   });
 }
+
+export interface AccountDeletionRequest {
+  id: string;
+  status: 'pending_review' | 'pending_verification';
+  requestedAt: string;
+}
+
+/**
+ * Account deletion is a reviewed request, NOT immediate Firebase Auth deletion.
+ * Tokens are attached by the existing protected API client.
+ */
+export function requestBusinessAccountDeletion(tokens: FirebaseSecurityTokens) {
+  return apiRequest<AccountDeletionRequest>('/api/v1/me/deletion-requests', {
+    method: 'POST',
+    headers: authHeaders(tokens),
+    body: JSON.stringify({ confirm: true }),
+  });
+}
