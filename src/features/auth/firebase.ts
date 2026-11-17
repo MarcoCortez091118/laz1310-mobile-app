@@ -19,6 +19,8 @@ import {
 } from '@react-native-firebase/auth';
 import { Platform } from 'react-native';
 
+import { atAuthStage } from './diagnostics';
+
 let appCheckInstance: AppCheck | null = null;
 
 export interface FirebaseSecurityTokens {
@@ -66,20 +68,29 @@ export async function getFirebaseSecurityTokens(
   requireAuth = true,
   forceIdTokenRefresh = false,
 ): Promise<FirebaseSecurityTokens> {
-  const appCheck = initializeNativeAppCheck();
-  const [{ token: appCheckToken }, user] = await Promise.all([
-    getAppCheckToken(appCheck, false),
-    Promise.resolve(firebaseAuth().currentUser),
-  ]);
-
-  if (!user && requireAuth) {
-    throw new Error('Firebase authentication is required');
+  let appCheckToken: string;
+  try {
+    const appCheck = initializeNativeAppCheck();
+    ({ token: appCheckToken } = await getAppCheckToken(appCheck, false));
+  } catch (error) {
+    throw atAuthStage('app-check', error);
   }
 
-  return {
-    appCheckToken,
-    idToken: user ? await getIdToken(user, forceIdTokenRefresh) : undefined,
-  };
+  const user = firebaseAuth().currentUser;
+  if (!user && requireAuth) {
+    throw atAuthStage('firebase-credential', new Error('Firebase authentication is required'));
+  }
+
+  let idToken: string | undefined;
+  if (user) {
+    try {
+      idToken = await getIdToken(user, forceIdTokenRefresh);
+    } catch (error) {
+      throw atAuthStage('firebase-credential', error);
+    }
+  }
+
+  return { appCheckToken, idToken };
 }
 
 export async function registerFirebaseEmail(
