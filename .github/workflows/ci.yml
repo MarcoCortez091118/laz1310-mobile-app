@@ -69,6 +69,9 @@ jobs:
       - name: Verify Home and detail dynamics artwork presentation
         run: npm run check:dynamics-artwork
 
+      - name: Verify Programs square artwork, layouts and Home label
+        run: npm run check:program-artwork
+
       - name: Verify approved light and dark vinyl assets
         run: npm run check:vinyl-theme
 
