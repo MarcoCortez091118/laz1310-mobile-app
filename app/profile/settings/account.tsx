@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {
   Alert,
   Linking,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -148,7 +149,7 @@ export default function AccountScreen() {
 
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader title={english ? 'Account' : 'Cuenta'} />
 
         <Text style={[styles.title, { color: colors.white }]}>{english ? 'Your account' : 'Tu cuenta'}</Text>
@@ -206,14 +207,14 @@ export default function AccountScreen() {
             {english ? 'Learn about identity verification, data deletion and retention' : 'Conoce cómo verificamos tu identidad, eliminamos y conservamos datos'}
           </Text>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  content: { paddingHorizontal: spacing.md },
+  content: { paddingHorizontal: spacing.md, paddingBottom: 80 },
   title: { fontFamily: fonts.displayExtraBold, fontSize: 30, marginTop: spacing.lg },
   subtitle: { fontFamily: fonts.body, fontSize: 12, lineHeight: 18, marginTop: 4 },
   card: { borderRadius: radii.md, borderWidth: 1, marginTop: spacing.lg, padding: spacing.md },
