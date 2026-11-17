@@ -179,7 +179,7 @@ export default function ProgramDetailScreen() {
             <>
               <Image
                 accessibilityIgnoresInvertColors
-                resizeMode="cover"
+                resizeMode="contain"
                 source={{ uri: program.imageUrl }}
                 style={StyleSheet.absoluteFill}
               />
