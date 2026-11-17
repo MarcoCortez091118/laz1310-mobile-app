@@ -84,6 +84,9 @@ jobs:
       - name: Verify Premios / Prizes labels without breaking dynamics routes
         run: npm run check:prizes-label
 
+      - name: Verify account deletion request flow and protected API contract
+        run: npm run check:account-deletion
+
       - name: Export web smoke build
         run: npx expo export --platform web --output-dir dist-ci
 
