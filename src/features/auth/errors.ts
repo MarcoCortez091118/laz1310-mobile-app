@@ -1,7 +1,18 @@
 import type { AppLanguage } from '../../i18n/LanguageProvider';
+import { authFailureInfo } from './diagnostics';
 
 export function authErrorMessage(error: unknown, language: AppLanguage = 'es') {
   const english = language === 'en';
+  const diagnostic = authFailureInfo(error);
+  const reference = diagnostic
+    ? [
+        diagnostic.stage,
+        ...(diagnostic.code ? [diagnostic.code] : []),
+        ...(diagnostic.httpStatus ? ['HTTP ' + diagnostic.httpStatus] : []),
+        ...(diagnostic.requestId ? [diagnostic.requestId] : []),
+      ].join(' · ')
+    : null;
+  const suffix = reference ? ' (' + reference + ')' : '';
   if (!error || typeof error !== 'object' || !('code' in error)) {
     return error instanceof Error
       ? error.message
@@ -17,6 +28,10 @@ export function authErrorMessage(error: unknown, language: AppLanguage = 'es') {
       return english
         ? 'Google sign-in requires an installed Android or iOS app.'
         : 'El acceso con Google requiere la aplicación instalada en Android o iOS.';
+    case 'auth/google-config-invalid':
+      return english
+        ? 'Google OAuth Web Client ID is invalid in this build.' + suffix
+        : 'El identificador OAuth Web de Google es inválido en esta compilación.' + suffix;
     case 'auth/google-token-unavailable':
       return english
         ? 'Google did not provide a usable sign-in credential. Try again.'
@@ -32,11 +47,12 @@ export function authErrorMessage(error: unknown, language: AppLanguage = 'es') {
     case '12501':
     case 'SIGN_IN_CANCELLED':
       return english ? 'Google sign-in cancelled.' : 'Se canceló el acceso con Google.';
+    case '10':
     case '12500':
     case 'DEVELOPER_ERROR':
       return english
-        ? 'Google rejected this build. Check the Android OAuth SHA fingerprints and web client ID.'
-        : 'Google rechazó esta compilación. Revisa las huellas SHA de Android y el cliente OAuth web.';
+        ? 'Google rejected this build. Check the Android OAuth SHA fingerprints and web client ID.' + suffix
+        : 'Google rechazó esta compilación. Revisa las huellas SHA de Android y el cliente OAuth web.' + suffix;
     case 'PLAY_SERVICES_NOT_AVAILABLE':
       return english
         ? 'Update or enable Google Play Services and try again.'
@@ -65,9 +81,38 @@ export function authErrorMessage(error: unknown, language: AppLanguage = 'es') {
         : 'No pudimos comunicarnos con Firebase. Revisa tu conexión.';
     case 'auth/user-disabled':
       return english ? 'This account is disabled.' : 'Esta cuenta está deshabilitada.';
-    default:
+    default: {
+      // Distinguish an OAuth problem from failed App Check or API sync without
+      // exposing native error messages, user data or credentials.
+      if (diagnostic) {
+        switch (diagnostic.stage) {
+          case 'google-services':
+          case 'google-account':
+            return (english
+              ? 'Google sign-in failed. Verify this build’s Google OAuth configuration and Android signing certificate.'
+              : 'Falló el acceso con Google. Revisa la configuración OAuth y la firma Android de esta compilación.') + suffix;
+          case 'google-credentials':
+            return (english
+              ? 'Google did not return a usable credential for Firebase.'
+              : 'Google no entregó una credencial válida para Firebase.') + suffix;
+          case 'firebase-credential':
+            return (english
+              ? 'Firebase could not accept the Google sign-in credential.'
+              : 'Firebase no pudo aceptar la credencial de acceso de Google.') + suffix;
+          case 'app-check':
+            return (english
+              ? 'This installation could not pass app security verification. Use an authorized build installed through the intended distribution channel.'
+              : 'Esta instalación no superó la verificación de seguridad. Utiliza una compilación autorizada instalada desde su canal de distribución previsto.') + suffix;
+          case 'api-session':
+          case 'api-profile':
+            return (english
+              ? 'Firebase signed you in, but LA Z could not complete the session or profile synchronization.'
+              : 'Firebase inició sesión, pero LA Z no pudo sincronizar la sesión o el perfil.') + suffix;
+        }
+      }
       return english
         ? 'We could not complete authentication.'
         : 'No pudimos completar la autenticación.';
+    }
   }
 }

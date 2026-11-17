@@ -13,6 +13,7 @@
     "check:contact-v1": "node scripts/check-contact-v1.mjs",
     "check:advertising-form": "node scripts/check-advertising-form.mjs",
     "check:google-auth": "node scripts/check-google-signin-session.mjs",
+    "check:auth-diagnostics": "node scripts/check-auth-failure-diagnostics.mjs",
     "check:dynamics-artwork": "node scripts/check-dynamics-artwork.mjs",
     "check:program-artwork": "node scripts/check-program-artwork.mjs",
     "check:vinyl-theme": "node scripts/check-vinyl-theme.mjs",

@@ -11,6 +11,7 @@ import { Platform } from 'react-native';
 
 import { selectGoogleCredentialTokens } from './google-credential';
 import { firebaseAuth } from './firebase';
+import { atAuthStage } from './diagnostics';
 
 /**
  * Native Google identity is exchanged for a *Firebase* session. LA Z FastAPI
@@ -33,30 +34,55 @@ export async function signInFirebaseGoogle(): Promise<User | null> {
   // token using its already-registered package and signing certificate.
   // Firebase accepts that access token without a Web Client ID in JavaScript.
   const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim();
-  GoogleSignin.configure(
-    webClientId?.endsWith('.apps.googleusercontent.com')
-      ? { webClientId }
-      : {},
-  );
-  await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+  try {
+    // A malformed supplied value must not silently switch to the fallback.
+    if (webClientId && !webClientId.endsWith('.apps.googleusercontent.com')) {
+      throw googleAuthError(
+        'auth/google-config-invalid',
+        'The configured Google OAuth Web Client ID is invalid.',
+      );
+    }
+    GoogleSignin.configure(
+      webClientId?.endsWith('.apps.googleusercontent.com')
+        ? { webClientId }
+        : {},
+    );
+    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+  } catch (error) {
+    throw atAuthStage('google-services', error);
+  }
 
-  const response = await GoogleSignin.signIn();
+  let response: Awaited<ReturnType<typeof GoogleSignin.signIn>>;
+  try {
+    response = await GoogleSignin.signIn();
+  } catch (error) {
+    throw atAuthStage('google-account', error);
+  }
   if (!isSuccessResponse(response)) return null;
 
-  const idToken = response.data.idToken;
-  // Original native Google Sign-In returns a null idToken if no Web OAuth
-  // client ID was supplied. In that case ask the SDK for its access token;
-  // the token stays in memory and is exchanged exclusively with Firebase.
-  const accessToken = idToken?.trim()
-    ? null
-    : (await GoogleSignin.getTokens()).accessToken;
-  const tokens = selectGoogleCredentialTokens({ idToken, accessToken });
-  const googleCredential = GoogleAuthProvider.credential(
-    tokens.idToken,
-    tokens.accessToken,
-  );
-  const result = await signInWithCredential(firebaseAuth(), googleCredential);
-  return result.user;
+  let googleCredential: ReturnType<typeof GoogleAuthProvider.credential>;
+  try {
+    const idToken = response.data.idToken;
+    // Without a configured Web OAuth Client ID the native provider can
+    // return an access token rather than an ID token.
+    const accessToken = idToken?.trim()
+      ? null
+      : (await GoogleSignin.getTokens()).accessToken;
+    const tokens = selectGoogleCredentialTokens({ idToken, accessToken });
+    googleCredential = GoogleAuthProvider.credential(
+      tokens.idToken,
+      tokens.accessToken,
+    );
+  } catch (error) {
+    throw atAuthStage('google-credentials', error);
+  }
+
+  try {
+    const result = await signInWithCredential(firebaseAuth(), googleCredential);
+    return result.user;
+  } catch (error) {
+    throw atAuthStage('firebase-credential', error);
+  }
 }
 
 /**

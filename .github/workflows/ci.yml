@@ -66,6 +66,9 @@ jobs:
       - name: Verify Google authentication and sign-out behavior
         run: npm run check:google-auth
 
+      - name: Verify privacy-safe Google/App Check/Api auth diagnostics
+        run: npm run check:auth-diagnostics
+
       - name: Verify Home and detail dynamics artwork presentation
         run: npm run check:dynamics-artwork
 

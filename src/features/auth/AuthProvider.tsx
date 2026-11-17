@@ -29,6 +29,7 @@ import {
 import { detachPushDeviceBeforeSignOut } from '../notifications/device';
 import { clearGoogleAccountSelection, signInFirebaseGoogle } from './google';
 import { PRIVACY_POLICY_VERSION } from '../privacy/policy';
+import { atAuthStage, authFailureInfo } from './diagnostics';
 
 type AuthStatus =
   | 'initializing'
@@ -92,7 +93,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
           true,
           forceTokenRefresh,
         );
-        let businessProfile = await createBusinessSession(tokens);
+        let businessProfile: LazUserProfile;
+        try {
+          businessProfile = await createBusinessSession(tokens);
+        } catch (error) {
+          throw atAuthStage('api-session', error);
+        }
         const defaults = deviceProfileDefaults();
 
         const patch = {
@@ -107,14 +113,22 @@ export function AuthProvider({ children }: PropsWithChildren) {
         };
 
         if (Object.keys(patch).length > 0) {
-          businessProfile = await patchBusinessProfile(tokens, patch);
+          try {
+            businessProfile = await patchBusinessProfile(tokens, patch);
+          } catch (error) {
+            throw atAuthStage('api-profile', error);
+          }
         }
 
         if (privacyPolicyVersion) {
-          businessProfile = await acceptBusinessPrivacyPolicy(
-            tokens,
-            privacyPolicyVersion,
-          );
+          try {
+            businessProfile = await acceptBusinessPrivacyPolicy(
+              tokens,
+              privacyPolicyVersion,
+            );
+          } catch (error) {
+            throw atAuthStage('api-profile', error);
+          }
         }
 
         if (generation === syncGeneration.current) {
@@ -152,8 +166,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
       }
 
       setFirebaseUser(user);
-      void synchronize(user).catch(() => {
-        // The provider exposes the synchronization error to UI.
+      void synchronize(user).catch((error) => {
+        // Existing sessions can fail verification before the login screen
+        // opens. Log only sanitized stage/status data, not user details.
+        const diagnostic = authFailureInfo(error);
+        if (diagnostic) console.warn('LAZ_AUTH_RESTORE_FAILURE', diagnostic);
       });
     });
 
