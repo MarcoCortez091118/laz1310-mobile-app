@@ -51,8 +51,8 @@ export function authErrorMessage(error: unknown, language: AppLanguage = 'es') {
     case '12500':
     case 'DEVELOPER_ERROR':
       return english
-        ? 'Google rejected this build. Check the Android OAuth SHA fingerprints and web client ID.'
-        : 'Google rechazó esta compilación. Revisa las huellas SHA de Android y el cliente OAuth web.';
+        ? 'Google rejected this build. Check the Android OAuth SHA fingerprints and web client ID.' + suffix
+        : 'Google rechazó esta compilación. Revisa las huellas SHA de Android y el cliente OAuth web.' + suffix;
     case 'PLAY_SERVICES_NOT_AVAILABLE':
       return english
         ? 'Update or enable Google Play Services and try again.'
