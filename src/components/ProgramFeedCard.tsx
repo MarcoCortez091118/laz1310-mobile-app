@@ -108,11 +108,10 @@ export function ProgramFeedCard({
             <>
               <Image
                 accessibilityIgnoresInvertColors
-                resizeMode="cover"
+                resizeMode="contain"
                 source={{ uri: program.imageUrl }}
                 style={StyleSheet.absoluteFill}
               />
-              <View style={styles.artworkScrim} />
             </>
           ) : (
             <View
@@ -133,11 +132,6 @@ export function ProgramFeedCard({
             </View>
           ) : null}
 
-          <View style={[styles.artworkTime, { backgroundColor: colors.red }]}>
-            <Text numberOfLines={1} style={styles.artworkTimeText}>
-              {schedule}
-            </Text>
-          </View>
         </View>
 
         <View style={styles.meta}>
@@ -253,19 +247,12 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   artwork: {
+    aspectRatio: 1,
     borderRadius: 14,
     height: 94,
     overflow: 'hidden',
     position: 'relative',
     width: 94,
-  },
-  artworkScrim: {
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    backgroundColor: 'rgba(5,1,1,0.16)',
   },
   artworkGlow: {
     borderRadius: 999,
@@ -287,20 +274,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.displayBlack,
     fontSize: 18,
     lineHeight: 17,
-  },
-  artworkTime: {
-    bottom: 10,
-    borderRadius: 5,
-    left: 10,
-    maxWidth: 76,
-    paddingHorizontal: 7,
-    paddingVertical: 4,
-    position: 'absolute',
-  },
-  artworkTimeText: {
-    color: '#FEFEFE',
-    fontFamily: fonts.bodyBold,
-    fontSize: 7,
   },
   meta: {
     flex: 1,
